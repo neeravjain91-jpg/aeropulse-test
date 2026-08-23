@@ -1,0 +1,328 @@
+:root {
+  --gcs-cyan: var(--cyan);
+  --gcs-green: var(--green);
+  --gcs-amber: var(--amber);
+  --gcs-red: var(--red);
+  --gcs-muted: var(--muted);
+}
+
+/* Interactive WebGL engine digital twin */
+.engine-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.engine-twin-state {
+  padding: 5px 9px;
+  color: var(--gcs-green);
+  border: 1px solid rgba(81, 229, 138, 0.35);
+  background: rgba(81, 229, 138, 0.08);
+  font: 800 10px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.12em;
+}
+
+.engine-twin-state.warn {
+  color: var(--gcs-amber);
+  border-color: rgba(255, 197, 54, 0.42);
+  background: rgba(255, 197, 54, 0.09);
+}
+
+.engine-digital-twin {
+  min-height: 510px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 245px;
+  overflow: hidden;
+  border: 1px solid #28506d;
+  border-radius: 9px;
+  background: #050d17;
+  box-shadow: inset 0 0 70px rgba(21, 93, 126, 0.12), 0 18px 42px rgba(0, 0, 0, 0.26);
+}
+
+.engine-viewport {
+  position: relative;
+  min-width: 0;
+  min-height: 510px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(25, 84, 111, 0.2), transparent 49%),
+    linear-gradient(rgba(41, 211, 242, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(41, 211, 242, 0.035) 1px, transparent 1px),
+    #06101c;
+  background-size: auto, 32px 32px, 32px 32px, auto;
+}
+
+#engineCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+
+#engineCanvas:active {
+  cursor: grabbing;
+}
+
+.engine-scanline {
+  position: absolute;
+  inset: -40% 0 auto;
+  height: 42%;
+  opacity: 0.23;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(41, 211, 242, 0.08), transparent);
+  animation: engineScan 5.5s linear infinite;
+}
+
+@keyframes engineScan {
+  to { transform: translateY(340%); }
+}
+
+.engine-hud {
+  position: absolute;
+  top: 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #91a9bc;
+  pointer-events: none;
+  font: 700 10px/1.15 "Segoe UI", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.engine-hud strong {
+  margin-bottom: 2px;
+  color: #e9fbff;
+  font-size: 14px;
+}
+
+.engine-hud-left {
+  left: 18px;
+  padding-left: 11px;
+  border-left: 2px solid var(--gcs-cyan);
+}
+
+.engine-hud-right {
+  right: 18px;
+  padding-right: 11px;
+  align-items: flex-end;
+  border-right: 2px solid var(--gcs-cyan);
+}
+
+.engine-axis {
+  position: absolute;
+  left: 17px;
+  bottom: 19px;
+  width: 55px;
+  height: 55px;
+  pointer-events: none;
+}
+
+.engine-axis::before,
+.engine-axis::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 36px;
+  height: 1px;
+  background: var(--gcs-cyan);
+  transform-origin: left center;
+}
+
+.engine-axis::after { transform: rotate(-58deg); }
+.engine-axis span { position: absolute; color: var(--gcs-muted); font: 800 9px/1 monospace; }
+.engine-axis span:nth-child(1) { right: 0; bottom: 7px; color: var(--gcs-red); }
+.engine-axis span:nth-child(2) { left: 25px; top: 0; color: var(--gcs-green); }
+.engine-axis span:nth-child(3) { left: 2px; bottom: 5px; color: var(--gcs-cyan); }
+
+.engine-help {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  color: rgba(145, 164, 187, 0.75);
+  white-space: nowrap;
+  pointer-events: none;
+  font: 700 9px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.11em;
+}
+
+.engine-inspector {
+  position: relative;
+  padding: 20px 17px;
+  border-left: 1px solid #28506d;
+  background:
+    linear-gradient(180deg, rgba(31, 52, 73, 0.88), rgba(12, 25, 41, 0.96)),
+    #0d1828;
+}
+
+.engine-inspector::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(41, 211, 242, 0.09);
+  pointer-events: none;
+}
+
+.engine-inspector-kicker {
+  color: var(--gcs-cyan);
+  font: 800 9px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.14em;
+}
+
+.engine-inspector h3 {
+  margin: 9px 0 17px;
+  color: #fff;
+  font-size: 19px;
+  text-transform: uppercase;
+}
+
+.component-readings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.component-readings div {
+  padding: 10px 8px;
+  border: 1px solid #304961;
+  background: rgba(5, 13, 23, 0.6);
+}
+
+.component-readings span,
+.component-readings strong {
+  display: block;
+}
+
+.component-readings span {
+  color: var(--gcs-muted);
+  font: 700 8px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.component-readings strong {
+  margin-top: 5px;
+  color: var(--gcs-green);
+  font-size: 13px;
+}
+
+.engine-inspector p {
+  min-height: 54px;
+  margin: 17px 0 12px;
+  color: #a9b7c8;
+  font: 500 12px/1.5 "Segoe UI", sans-serif;
+}
+
+.component-fault {
+  padding: 9px;
+  color: var(--gcs-green);
+  border-left: 2px solid currentColor;
+  background: rgba(5, 13, 23, 0.68);
+  font: 700 10px/1.35 "Segoe UI", sans-serif;
+}
+
+.engine-legend {
+  position: absolute;
+  right: 17px;
+  bottom: 18px;
+  left: 17px;
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #2b3e55;
+  color: var(--gcs-muted);
+  font: 700 9px/1 "Segoe UI", sans-serif;
+  text-transform: uppercase;
+}
+
+.engine-legend span { display: flex; align-items: center; gap: 7px; }
+.engine-legend i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+.legend-normal { color: var(--gcs-green); background: currentColor; }
+.legend-watch { color: var(--gcs-amber); background: currentColor; }
+.legend-critical { color: var(--gcs-red); background: currentColor; }
+
+.engine-toolbar {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 9px;
+  border: 1px solid #253d56;
+  border-top: 0;
+  background: #091423;
+}
+
+button.engine-tool {
+  width: auto;
+  min-width: 84px;
+  margin: 0;
+  padding: 7px 10px;
+  color: #aab9ca;
+  border: 1px solid #30465e;
+  border-radius: 3px;
+  background: #111e2e;
+  box-shadow: none;
+  font: 700 10px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+button.engine-tool:hover,
+button.engine-tool.active {
+  color: #eaffff;
+  border-color: var(--gcs-cyan);
+  background: rgba(41, 211, 242, 0.13);
+  box-shadow: inset 0 -2px 0 var(--gcs-cyan), 0 0 10px rgba(41, 211, 242, 0.1);
+}
+
+.engine-tool-separator {
+  width: 1px;
+  height: 24px;
+  margin: 0 3px;
+  background: #30465e;
+}
+
+.engine-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 9px;
+  padding: 30px;
+  color: var(--gcs-muted);
+  text-align: center;
+}
+
+.engine-fallback strong { color: var(--gcs-amber); font-size: 16px; }
+
+@media (max-width: 980px) {
+  .engine-digital-twin { grid-template-columns: 1fr; }
+  .engine-inspector { min-height: 245px; border-top: 1px solid #28506d; border-left: 0; }
+  .engine-legend { position: static; margin-top: 18px; }
+}
+
+@media (max-width: 640px) {
+  .engine-card-heading { align-items: flex-start; flex-direction: column; }
+  .engine-digital-twin,
+  .engine-viewport { min-height: 420px; }
+  .engine-help { display: none; }
+  .engine-hud-right { top: auto; bottom: 18px; }
+  .engine-tool-separator { display: none; }
+  button.engine-tool { flex: 1 1 42%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .engine-scanline { animation: none; display: none; }
+}
+
+.top .badges {
+
