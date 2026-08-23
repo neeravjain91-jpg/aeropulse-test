@@ -71,6 +71,11 @@
   cursor: grabbing;
 }
 
+#engineCanvas:focus-visible {
+  outline: 2px solid var(--gcs-cyan);
+  outline-offset: -3px;
+}
+
 .engine-thermal-field {
   --thermal-rgb: 81, 229, 138;
   --thermal-level: 0.45;
@@ -209,6 +214,21 @@
   color: #7f9aae;
   font-size: 6px;
 }
+
+.engine-thermal-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 7px;
+  margin-top: 7px;
+  padding-top: 7px;
+  color: #92aab8;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 6px;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+}
+
+.engine-thermal-meta span:first-child { color: rgb(var(--thermal-rgb)); }
 
 .engine-scanline {
   position: absolute;
@@ -464,5 +484,3 @@ button.engine-tool.active {
   .engine-scanline { animation: none; display: none; }
   .engine-thermal-aura { animation: none !important; }
 }
-
-.top .badges {
