@@ -3,12 +3,14 @@ from __future__ import annotations
 import math
 
 from .degradation import estimate_degradation_horizon
+from .navigation import SimulatedGPSSource, DEFAULT_MISSION_WAYPOINTS
 from .risk import mission_risk
 from .rul_service import RULService
 from .simulator import inject_fault, mission_adjust
 
 
 _RUL = RULService()
+_GPS = SimulatedGPSSource()
 
 
 def _dynamic_step(base: dict, index: int, steps: int) -> dict:
@@ -497,6 +499,15 @@ def run_replay(
                         4,
                     ),
 
+                "uav": _GPS.get_position(
+                    progress_ratio=i / max(1, steps - 1),
+                    mission_context={
+                        "altitude_ft": float(point.get("Altitude_ft", scenario.get("altitude_ft", 8000.0))),
+                        "throttle": float(point.get("Throttle", 0.60)),
+                        "mission_phase": str(point.get("Mission_Phase", "CRUISE")),
+                    },
+                ).to_dict(),
+
                 "telemetry": {
                     k: (
                         round(
@@ -676,4 +687,8 @@ def run_replay(
                     "MALE-UAV engine."
                 ),
         },
+
+        "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
+        "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
+        "home_base": _GPS.waypoints[0].to_dict(),
     }

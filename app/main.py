@@ -21,12 +21,16 @@ from .engine_model import ReducedOrderPistonEngine
 from .inference import AeroTwinAI
 from .mission_whatif import MissionScenario
 from .mission_whatif_rul import MissionWhatIfRUL
+from .navigation import DEFAULT_MISSION_WAYPOINTS, SimulatedGPSSource
 from .replay import run_replay
 from .risk import mission_risk
 from .simulator import FAULTS, inject_fault, mission_adjust
 from .telemetry import telemetry_from_engine
 from .uav_mission import UAVMissionSimulator
 from .vibration import VibrationAI, load_demo as load_vibration_demo
+
+
+_GPS = SimulatedGPSSource()
 
 
 app = FastAPI(
@@ -515,6 +519,15 @@ def analyze(
         context,
     )
 
+    uav_pos = _GPS.get_position(
+        progress_ratio=0.15,
+        mission_context={
+            "altitude_ft": float(scenario.altitude_ft),
+            "throttle": 0.60,
+            "mission_phase": "CRUISE" if scenario.operating_state == "CRUISE" else "HIGH",
+        },
+    )
+
     result.update(
         {
             "telemetry": altered,
@@ -523,10 +536,27 @@ def analyze(
             "mission_risk": risk,
             "mission_risk_score": risk["score"],
             "mission_risk_level": risk["level"],
+            "uav": uav_pos.to_dict(),
+            "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
+            "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
+            "home_base": _GPS.waypoints[0].to_dict(),
         }
     )
 
     return result
+
+
+@app.get("/api/mission/waypoints")
+def mission_waypoints():
+    """Returns planned 3D mission waypoints, route coordinates, and base coordinates."""
+    return {
+        "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
+        "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
+        "home_base": _GPS.waypoints[0].to_dict(),
+        "mission_name": "MALE-UAV ISR & Border Patrol Flight Plan",
+        "total_distance_km": round(_GPS.total_distance_km, 2),
+        "disclaimer": "Simulated civilian demonstration coordinates for SIH prototype",
+    }
 
 
 @app.post("/api/mission-whatif-rul")
@@ -832,6 +862,9 @@ async def telemetry_stream(
                         mission.rapid_throttle
                     ),
                 },
+                "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
+                "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
+                "home_base": _GPS.waypoints[0].to_dict(),
             }
         )
 
@@ -1092,6 +1125,15 @@ async def telemetry_stream(
                 "telemetry_source": (
                     telemetry_packet.source
                 ),
+
+                "uav": _GPS.get_position(
+                    progress_ratio=step / max(1, total_steps - 1),
+                    mission_context={
+                        "altitude_ft": telemetry_packet.Altitude_ft,
+                        "throttle": telemetry_packet.Throttle,
+                        "mission_phase": telemetry_packet.Mission_Phase,
+                    },
+                ).to_dict(),
 
                 "telemetry": (
                     _round_telemetry(

@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AeroPulse-X • MALE-UAV Aero-Piston Digital Twin</title>
+<title>AeroPulse-X • MALE-UAV Aero-Piston Digital Twin & Live Mission Map</title>
+<!-- Leaflet OpenStreetMap Engine -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
 :root{
   --bg:#07101f;--panel:#0e1a2d;--panel2:#111f35;--line:#243956;--text:#eff6ff;
@@ -23,6 +27,8 @@ body{
 .badge{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--muted);background:#0b1628}
 .badge.live{color:var(--green);border-color:#285b49;background:#0d231a}
 .badge.err{color:var(--red);border-color:#6b3030;background:#240f0f}
+.badge.warn{color:var(--amber);border-color:#614917;background:#2a200a}
+
 .grid{display:grid;gap:14px}
 .kpis{grid-template-columns:repeat(5,minmax(140px,1fr))}
 .two{grid-template-columns:1.25fr .75fr}
@@ -55,7 +61,7 @@ button:hover{filter:brightness(1.15)}
 .tbl td,.tbl th{padding:7px 8px;border-bottom:1px solid #1f314a;text-align:left}
 .tbl th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
 .scroll{max-height:280px;overflow-y:auto}
-.pill{display:inline-block;border-radius:999px;padding:3px 8px;background:#192b45;border:1px solid #2c4466;font-size:11px}
+.pill{display:inline-block;border-radius:999px;padding:3px 8px;background:#192b45;border:1px solid #2c4466;font-size:11px;font-weight:600}
 .pill.good{background:#112e20;border-color:#285b49;color:#5ce59a}
 .pill.warn{background:#30250e;border-color:#614917;color:#ffd166}
 .pill.bad{background:#331111;border-color:#6e2929;color:#ff7070}
@@ -73,7 +79,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 .hidden{display:none}
 .footer{color:var(--muted);font-size:12px;padding:18px 2px 5px}
 
-/* Phase 6 Hardware Simulation & Engine Cutaway Styles */
+/* Hardware Simulation & Engine Cutaway Styles */
 .hw-banner{
   background:linear-gradient(90deg,#102a45,#0d1e34);border:1px solid #2a4c70;
   border-radius:14px;padding:14px 16px;margin-bottom:14px
@@ -100,6 +106,37 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 .dispatch-card{background:#091322;border-left:4px solid #5ce59a;border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px}
 .dispatch-card.caution{border-color:#ffd166}
 .dispatch-card.nogo{border-color:#ff7070}
+
+/* UAV Live Mission Map & HUD Styles */
+.map-card{
+  background:linear-gradient(180deg,#0e1d32,#091424);border:1px solid #244369;
+  border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 12px 35px #0006
+}
+.map-header{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px
+}
+.map-toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.map-btn{
+  background:#132845;border:1px solid #254b79;color:#eff6ff;padding:5px 10px;
+  border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;width:auto;margin:0
+}
+.map-btn:hover{background:#1c3c69;border-color:#3f77bd}
+.map-btn.active{background:#23579e;border-color:#55d7ff;color:#55d7ff}
+#uavMap{
+  height:380px;width:100%;border-radius:10px;background:#050d18;border:1px solid #1a314f;z-index:1
+}
+.leaflet-container{background:#060e1a!important;font-family:inherit}
+.leaflet-popup-content-wrapper{
+  background:#0c1a2d;color:#eff6ff;border:1px solid #2b4f7a;border-radius:8px;font-size:12px;box-shadow:0 6px 20px #0008
+}
+.leaflet-popup-tip{background:#0c1a2d;border:1px solid #2b4f7a}
+.map-hud{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;
+  background:#060e1a;border:1px solid #182d48;border-radius:10px;padding:10px 12px;margin-top:10px
+}
+.hud-item{display:flex;flex-direction:column}
+.hud-label{font-size:10px;text-transform:uppercase;color:#7b94b2;font-weight:700;letter-spacing:.05em}
+.hud-val{font-size:14px;font-weight:800;color:#eff6ff;margin-top:2px}
 
 @media(max-width:1000px){
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -129,6 +166,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 
     <div class="badges">
       <span id="serverBadge" class="badge">Checking system…</span>
+      <span id="gpsBadge" class="badge live">● SIMULATED GPS / INS</span>
       <span class="badge">Research Prototype</span>
       <span class="badge">GCS Decision Support</span>
     </div>
@@ -140,10 +178,10 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   <div class="hw-banner">
     <div style="width:100%;">
       <div class="hw-title">
-        <span>⚙️</span> Localhost UAV Hardware & Flight Envelope Simulator
+        <span>⚙️</span> Localhost UAV Flight Envelope & Engine Controls
       </div>
       <div style="font-size:12px; color:#91a5c2; margin-top:2px;">
-        Interactive hardware controls driving the thermodynamic cycle, ISA atmospheric model, and Digital Twin.
+        Controls dynamically feed the ISA atmospheric model, UAV navigation waypoint progression, and Digital Twin.
       </div>
 
       <div class="hw-controls">
@@ -201,6 +239,86 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       <div class="s-name">Mechanical / Vib</div>
       <div class="s-score good" id="subScoreMechanical">99%</div>
       <div class="pill good" id="subPillMechanical">Bearings & Shaft</div>
+    </div>
+  </div>
+
+  <!-- UAV LIVE MISSION TRACKING (MAP + HUD) -->
+  <div class="map-card">
+    <div class="map-header">
+      <div>
+        <div class="hw-title">
+          <span>🗺️</span> UAV LIVE MISSION TRACKING & WAYPOINT NAVIGATION
+        </div>
+        <div style="font-size:12px; color:#91a5c2; margin-top:2px;">
+          Deterministic 3D Waypoint Navigation • Health-Aware Flight Trail • Simulated GPS/INS Stream
+        </div>
+      </div>
+
+      <div class="map-toolbar">
+        <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">🎯 Follow UAV: ON</button>
+        <button class="map-btn" onclick="centerOnUAV()">📍 Center UAV</button>
+        <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit Mission</button>
+        <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">👁️ Route</button>
+        <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">🚩 Waypoints</button>
+        <div style="display:flex; align-items:center; gap:4px; margin-left:6px;">
+          <span style="font-size:11px; color:#91a5c2;">Speed:</span>
+          <select id="replaySpeed" style="width:auto; padding:4px 6px; font-size:11px; margin:0;" onchange="updateReplaySpeed(this.value)">
+            <option value="0.5">0.5x</option>
+            <option value="1.0" selected>1.0x</option>
+            <option value="2.0">2.0x</option>
+            <option value="5.0">5.0x</option>
+          </select>
+        </div>
+        <button id="btnPlayPause" class="map-btn" style="background:#225bd8; color:#fff;" onclick="toggleReplayPlayPause()">⏸ Pause</button>
+        <button class="map-btn" style="background:#111f35;" onclick="restartMissionReplay()">↺ Restart</button>
+      </div>
+    </div>
+
+    <!-- Leaflet Map Container -->
+    <div id="uavMap"></div>
+
+    <!-- Live Telemetry Strip Below Map -->
+    <div class="map-hud">
+      <div class="hud-item">
+        <span class="hud-label">Latitude</span>
+        <span class="hud-val info" id="hudLat">28.4520° N</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Longitude</span>
+        <span class="hud-val info" id="hudLon">77.0250° E</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Altitude</span>
+        <span class="hud-val" id="hudAlt">8,000 ft</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Ground Speed</span>
+        <span class="hud-val" id="hudSpeed">142 kt</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Heading</span>
+        <span class="hud-val" id="hudHeading">084°</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Mission Phase</span>
+        <span class="hud-val"><span id="hudPhase" class="pill good">CRUISE</span></span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Progress</span>
+        <span class="hud-val" id="hudProgress">0.0%</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Engine Health</span>
+        <span class="hud-val"><span id="hudHealth" class="pill good">98% Normal</span></span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">Mission Risk</span>
+        <span class="hud-val"><span id="hudRisk" class="pill good">LOW (12)</span></span>
+      </div>
+      <div class="hud-item" style="grid-column: span 2;">
+        <span class="hud-label">Target Waypoint / ETA</span>
+        <span class="hud-val" id="hudWaypoint" style="font-size:12px; color:#55d7ff;">WP01 • Departure (4.2 min)</span>
+      </div>
     </div>
   </div>
 
@@ -548,19 +666,21 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   <div class="card">
     <h2>System Architecture</h2>
     <pre style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#b8d5ff; background:#081424; border:1px solid #1e334f; border-radius:10px; padding:12px; font-size:12px; line-height:1.5; overflow-x:auto;">
-ECU / FADEC / CAN / Simulated Telemetry
+UAV Mission Waypoints & Flight Plan
          ↓
-Data Ingestion & Sensor Trust Validation
+Simulated / Real GPS & INS Navigation Stream
          ↓
-Context-Aware Healthy Digital Twin (Thermodynamics + Altitude/Temp ISA Model)
+Context-Aware UAV Mission Simulator & ISA Atmospheric Model
          ↓
-Expected ↔ Observed Multi-Channel Residuals & Z-Scores
+Reduced-Order Thermodynamic Piston Engine Twin
          ↓
-Hybrid AI/ML Classification + Isolation Forest Anomaly Detection
+Multi-Channel Sensor Observations & Real-Time CAN Bus Stream
          ↓
-Fault Isolation + Prognostics / RUL Degradation Kinetics
+Digital Twin Residuals & Isolation Forest Anomaly Detection
          ↓
-Mission What-If Optimization + Military Maintenance Advisory System
+Hybrid 4-State Health Assessment & RUL Prognostics
+         ↓
+Explainable Mission Risk & Military Flight Dispatch Advisory
     </pre>
   </div>
 
@@ -588,6 +708,302 @@ const hwState = {
   map: 30
 };
 
+// ==========================================
+// 🗺️ Leaflet UAV Mission Map Subsystem
+// ==========================================
+let uavMap = null;
+let uavMarker = null;
+let plannedRoutePolyline = null;
+let flightTrailPolyline = null;
+let waypointLayerGroup = null;
+let followUAV = true;
+let isRouteVisible = true;
+let isWaypointsVisible = true;
+let flightTrailPoints = [];
+let currentWaypoints = [];
+let replayTimeline = [];
+let replayIndex = 0;
+let replayTimer = null;
+let replaySpeedMultiplier = 1.0;
+let isReplayPaused = false;
+let liveSocket = null;
+
+function initUAVMap() {
+  if (uavMap) return;
+
+  const defaultCenter = [28.65, 77.45];
+  uavMap = L.map('uavMap', {
+    center: defaultCenter,
+    zoom: 9,
+    zoomControl: true,
+    attributionControl: false
+  });
+
+  // Dark Matter CartoDB Basemap (Free, open, military GCS theme)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd',
+  }).addTo(uavMap);
+
+  waypointLayerGroup = L.layerGroup().addTo(uavMap);
+
+  // User drag disables auto-follow until re-enabled
+  uavMap.on('dragstart', () => {
+    followUAV = false;
+    $('btnFollow').classList.remove('active');
+    $('btnFollow').textContent = '🎯 Follow UAV: OFF';
+  });
+
+  loadMissionWaypoints();
+}
+
+function createUAVIcon(heading = 0, healthColor = '#5ce59a') {
+  const svg = `
+    <div style="transform: rotate(${heading}deg); transition: transform 0.25s linear; display:flex; align-items:center; justify-content:center; width:44px; height:44px;">
+      <svg width="40" height="40" viewBox="0 0 48 48" style="filter: drop-shadow(0 0 10px ${healthColor});">
+        <!-- Aircraft Wings & Fuselage -->
+        <path d="M24,3 L29,19 L46,26 L46,30 L29,26 L29,38 L35,42 L35,45 L24,42 L13,45 L13,42 L19,38 L19,26 L2,30 L2,26 L19,19 Z" 
+              fill="${healthColor}" stroke="#ffffff" stroke-width="1.8" />
+        <!-- Center Core Glow -->
+        <circle cx="24" cy="24" r="3" fill="#ffffff" />
+      </svg>
+    </div>
+  `;
+  return L.divIcon({
+    html: svg,
+    className: 'uav-aircraft-icon',
+    iconSize: [44, 44],
+    iconAnchor: [22, 22]
+  });
+}
+
+function createWaypointIcon(type = 'CRUISE', wpId = 'WP') {
+  let color = '#55d7ff';
+  let iconSymbol = '📍';
+  if (type === 'BASE' || type === 'RECOVERY') { color = '#5ce59a'; iconSymbol = '🏠'; }
+  else if (type === 'ISR') { color = '#d946ef'; iconSymbol = '🎯'; }
+  else if (type === 'PATROL') { color = '#ffd166'; iconSymbol = '🛡️'; }
+  else if (type === 'CLIMB' || type === 'RETURN') { color = '#38bdf8'; iconSymbol = '↗️'; }
+
+  const html = `
+    <div style="display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -50%); cursor:pointer;">
+      <div style="background:#091526; border:2px solid ${color}; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:12px; box-shadow:0 0 8px ${color};">
+        ${iconSymbol}
+      </div>
+      <div style="background:#091526ee; border:1px solid ${color}; border-radius:4px; padding:1px 4px; font-size:9px; font-weight:bold; color:${color}; margin-top:2px; white-space:nowrap;">
+        ${wpId}
+      </div>
+    </div>
+  `;
+  return L.divIcon({
+    html: html,
+    className: 'wp-map-pin',
+    iconSize: [30, 40],
+    iconAnchor: [15, 20]
+  });
+}
+
+async function loadMissionWaypoints() {
+  try {
+    const data = await api('/api/mission/waypoints');
+    currentWaypoints = data.waypoints || [];
+    renderWaypointsAndPlannedRoute(currentWaypoints, data.planned_route);
+  } catch (e) {
+    console.warn('Waypoint load warning:', e.message);
+  }
+}
+
+function renderWaypointsAndPlannedRoute(waypoints, plannedCoords) {
+  if (!uavMap) return;
+
+  waypointLayerGroup.clearLayers();
+
+  if (plannedCoords && plannedCoords.length > 0) {
+    if (plannedRoutePolyline) uavMap.removeLayer(plannedRoutePolyline);
+    plannedRoutePolyline = L.polyline(plannedCoords, {
+      color: '#38bdf8',
+      weight: 3,
+      opacity: 0.75,
+      dashArray: '8, 8'
+    }).addTo(uavMap);
+  }
+
+  waypoints.forEach(wp => {
+    const marker = L.marker([wp.latitude, wp.longitude], {
+      icon: createWaypointIcon(wp.type, wp.id)
+    });
+    marker.bindPopup(`
+      <div style="font-family:Inter,sans-serif;">
+        <div style="font-weight:bold; font-size:13px; color:#55d7ff;">${wp.id}: ${wp.name}</div>
+        <div style="color:#91a5c2; font-size:11px; margin-top:2px;">Type: <b style="color:#eff6ff;">${wp.type}</b></div>
+        <div style="color:#91a5c2; font-size:11px;">Target Altitude: <b style="color:#5ce59a;">${wp.altitude_ft.toLocaleString()} ft</b></div>
+        <div style="color:#91a5c2; font-size:11px;">Coordinates: ${wp.latitude.toFixed(4)}°N, ${wp.longitude.toFixed(4)}°E</div>
+        <div style="margin-top:6px; font-size:11px; color:#cbd5e1; border-top:1px solid #244369; padding-top:4px;">
+          ${wp.description}
+        </div>
+      </div>
+    `);
+    waypointLayerGroup.addLayer(marker);
+  });
+
+  // Fit view on initial waypoint load
+  if (plannedCoords && plannedCoords.length > 0) {
+    uavMap.fitBounds(L.latLngBounds(plannedCoords), { padding: [40, 40] });
+  }
+}
+
+function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskScore = 0) {
+  if (!uav || !uavMap) return;
+
+  const lat = uav.latitude;
+  const lon = uav.longitude;
+  const heading = uav.heading_deg || 0;
+  const alt = uav.altitude_ft || 0;
+  const speed = uav.ground_speed_kt || 0;
+  const phase = uav.mission_phase || 'CRUISE';
+  const progress = uav.mission_progress || 0;
+
+  // Determine health color
+  let healthColor = '#5ce59a'; // green
+  if (healthState === 'Watch' || riskLevel === 'MEDIUM') healthColor = '#ffd166'; // yellow
+  if (healthState === 'Warning' || healthState === 'Critical' || riskLevel === 'HIGH') healthColor = '#ff7070'; // red
+
+  // Update or create UAV aircraft marker
+  if (!uavMarker) {
+    uavMarker = L.marker([lat, lon], {
+      icon: createUAVIcon(heading, healthColor),
+      zIndexOffset: 1000
+    }).addTo(uavMap);
+
+    uavMarker.bindPopup(`
+      <div style="font-family:Inter,sans-serif;">
+        <div style="font-weight:bold; font-size:13px; color:#5ce59a;">✈️ AeroPulse-X MALE-UAV</div>
+        <div style="font-size:11px; color:#91a5c2; margin-top:2px;">Status: <b id="popupHealth">${healthState}</b></div>
+        <div style="font-size:11px; color:#91a5c2;">Altitude: <b id="popupAlt">${Math.round(alt).toLocaleString()} ft</b></div>
+        <div style="font-size:11px; color:#91a5c2;">Speed: <b id="popupSpeed">${speed} kt</b> | Heading: <b id="popupHeading">${Math.round(heading)}°</b></div>
+      </div>
+    `);
+  } else {
+    uavMarker.setLatLng([lat, lon]);
+    uavMarker.setIcon(createUAVIcon(heading, healthColor));
+  }
+
+  // Update flight trail
+  flightTrailPoints.push({ lat, lon, color: healthColor });
+  if (flightTrailPoints.length > 500) flightTrailPoints.shift(); // Bound memory
+
+  if (flightTrailPolyline) uavMap.removeLayer(flightTrailPolyline);
+  flightTrailPolyline = L.polyline(flightTrailPoints.map(p => [p.lat, p.lon]), {
+    color: healthColor,
+    weight: 4,
+    opacity: 0.9
+  }).addTo(uavMap);
+
+  // Auto-follow UAV if enabled
+  if (followUAV) {
+    uavMap.panTo([lat, lon], { animate: true, duration: 0.25 });
+  }
+
+  // Update HUD Strip Below Map
+  $('hudLat').textContent = `${lat.toFixed(4)}° N`;
+  $('hudLon').textContent = `${lon.toFixed(4)}° E`;
+  $('hudAlt').textContent = `${Math.round(alt).toLocaleString()} ft`;
+  $('hudSpeed').textContent = `${speed} kt`;
+  $('hudHeading').textContent = `${String(Math.round(heading)).padStart(3, '0')}°`;
+  
+  $('hudPhase').textContent = phase;
+  $('hudPhase').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
+
+  $('hudProgress').textContent = `${(progress * 100).toFixed(1)}%`;
+  
+  $('hudHealth').textContent = `${healthState}`;
+  $('hudHealth').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
+
+  $('hudRisk').textContent = `${riskLevel} (${Math.round(riskScore)})`;
+  $('hudRisk').className = 'pill ' + (riskLevel === 'LOW' ? 'good' : riskLevel === 'MEDIUM' ? 'warn' : 'bad');
+
+  if (uav.active_waypoint_name) {
+    $('hudWaypoint').textContent = `${uav.active_waypoint_id} • ${uav.active_waypoint_name} (${uav.eta_next_wp_min} min)`;
+  }
+}
+
+function toggleFollowUAV() {
+  followUAV = !followUAV;
+  const btn = $('btnFollow');
+  if (followUAV) {
+    btn.classList.add('active');
+    btn.textContent = '🎯 Follow UAV: ON';
+    centerOnUAV();
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '🎯 Follow UAV: OFF';
+  }
+}
+
+function centerOnUAV() {
+  if (uavMarker && uavMap) {
+    uavMap.setView(uavMarker.getLatLng(), Math.max(uavMap.getZoom(), 10), { animate: true });
+  }
+}
+
+function fitMissionRoute() {
+  if (plannedRoutePolyline && uavMap) {
+    uavMap.fitBounds(plannedRoutePolyline.getBounds(), { padding: [40, 40], animate: true });
+  }
+}
+
+function togglePlannedRoute() {
+  isRouteVisible = !isRouteVisible;
+  const btn = $('btnRouteToggle');
+  if (isRouteVisible) {
+    btn.classList.add('active');
+    if (plannedRoutePolyline) uavMap.addLayer(plannedRoutePolyline);
+  } else {
+    btn.classList.remove('active');
+    if (plannedRoutePolyline) uavMap.removeLayer(plannedRoutePolyline);
+  }
+}
+
+function toggleWaypoints() {
+  isWaypointsVisible = !isWaypointsVisible;
+  const btn = $('btnWpToggle');
+  if (isWaypointsVisible) {
+    btn.classList.add('active');
+    if (waypointLayerGroup) uavMap.addLayer(waypointLayerGroup);
+  } else {
+    btn.classList.remove('active');
+    if (waypointLayerGroup) uavMap.removeLayer(waypointLayerGroup);
+  }
+}
+
+function updateReplaySpeed(val) {
+  replaySpeedMultiplier = parseFloat(val) || 1.0;
+}
+
+function toggleReplayPlayPause() {
+  isReplayPaused = !isReplayPaused;
+  const btn = $('btnPlayPause');
+  if (isReplayPaused) {
+    btn.textContent = '▶ Play';
+    btn.style.background = '#112e20';
+  } else {
+    btn.textContent = '⏸ Pause';
+    btn.style.background = '#225bd8';
+  }
+}
+
+function restartMissionReplay() {
+  if (replayTimeline.length > 0) {
+    replayIndex = 0;
+    flightTrailPoints = [];
+    isReplayPaused = false;
+    $('btnPlayPause').textContent = '⏸ Pause';
+  }
+}
+
+// ==========================================
+// ⚙️ Existing Dashboard & Digital Twin Logic
+// ==========================================
 function scenario(extra={}){
   return {
     fault:$('fault').value,
@@ -903,6 +1319,11 @@ function renderAnalysis(r){
     $('rul').className = 'kpi ' + (r.rul.rul_hours < 10 ? 'bad' : r.rul.rul_hours < 50 ? 'warn' : 'good');
     $('rulSub').textContent = `90% CI: [${r.rul.rul_lower_hours}h - ${r.rul.rul_upper_hours}h] • ${r.rul.failure_mode_risk||r.rul.status}`;
   }
+
+  // Update Live UAV Map Position
+  if (r.uav) {
+    updateUAVPosition(r.uav, r.health_state, r.mission_risk.level, r.mission_risk.score);
+  }
 }
 
 function renderRisk(r){
@@ -982,6 +1403,9 @@ function drawTimeline(items){
 
 async function runReplay(){
   try{
+    if (replayTimer) clearInterval(replayTimer);
+    flightTrailPoints = [];
+
     const r=await api('/api/replay',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -992,7 +1416,9 @@ async function runReplay(){
       }))
     });
 
-    drawTimeline(r.timeline);
+    replayTimeline = r.timeline || [];
+    drawTimeline(replayTimeline);
+
     const s=r.summary;
     const rr=s.rul_method_demonstrator;
 
@@ -1016,23 +1442,63 @@ async function runReplay(){
     }
     $('events').innerHTML=eventHtml;
 
-    const last=r.timeline[r.timeline.length-1];
-    $('health').textContent=last.health_state;
-    $('health').className='kpi '+stateClass(last.health_state);
-    $('healthIndex').textContent=fmt(last.health_index,1);
-    $('missionRisk').textContent=`${last.risk_level} ${fmt(last.risk_score,0)}`;
-    $('missionRisk').className='kpi '+stateClass(last.risk_level);
+    // Start animated sequential map and telemetry playback
+    replayIndex = 0;
+    isReplayPaused = false;
+    $('btnPlayPause').textContent = '⏸ Pause';
+
+    replayTimer = setInterval(() => {
+      if (isReplayPaused) return;
+
+      if (replayIndex >= replayTimeline.length) {
+        clearInterval(replayTimer);
+        replayTimer = null;
+        return;
+      }
+
+      const p = replayTimeline[replayIndex];
+      if (p) {
+        $('health').textContent=p.health_state;
+        $('health').className='kpi '+stateClass(p.health_state);
+        $('healthIndex').textContent=fmt(p.health_index,1);
+        $('missionRisk').textContent=`${p.risk_level} ${fmt(p.risk_score,0)}`;
+        $('missionRisk').className='kpi '+stateClass(p.risk_level);
+        $('residual').textContent=fmt(p.residual_rms,2);
+
+        if (p.uav) {
+          updateUAVPosition(p.uav, p.health_state, p.risk_level, p.risk_score);
+        }
+
+        if (p.telemetry) {
+          hwState.cht = Math.round(p.telemetry.CHT || 220);
+          hwState.egt1 = Math.round(p.telemetry.EGT1 || 1200);
+          hwState.egt2 = Math.round(p.telemetry.EGT2 || 1205);
+          hwState.egt3 = Math.round(p.telemetry.EGT3 || 1195);
+          hwState.oilPress = Math.round(p.telemetry.Oil_Pressure || 60);
+          hwState.oilTemp = Math.round(p.telemetry.Oil_Temp || 90);
+          hwState.map = +(p.telemetry.MAP_Injector || 30).toFixed(1);
+          hwState.rpm = Math.round(p.telemetry.Engine_RPM || 3000);
+          hwState.fuelFlow = +(p.telemetry.Fuel_Flow || 20).toFixed(1);
+          updateCutawayDisplay();
+          updateCANStream();
+        }
+      }
+      replayIndex++;
+    }, Math.round(200 / replaySpeedMultiplier));
+
   }catch(e){
     alert('Replay error: ' + e.message);
   }
 }
 
-let liveSocket=null;
 async function startLiveStream(){
   if(liveSocket){
     try{ liveSocket.close(); }catch{}
     liveSocket=null;
   }
+  if (replayTimer) clearInterval(replayTimer);
+  flightTrailPoints = [];
+
   const proto=location.protocol==='https:'?'wss':'ws';
   liveSocket=new WebSocket(`${proto}://${location.host}/ws/telemetry`);
   const points=[];
@@ -1044,7 +1510,7 @@ async function startLiveStream(){
       fault_onset_ratio:+$('onset').value,
       playback_interval_s:0.18
     })));
-    $('events').innerHTML='<div class="event"><strong>Live stream active</strong>Telemetry packet stream processing via Digital Twin.</div>';
+    $('events').innerHTML='<div class="event"><strong>Live stream active</strong>Telemetry packet stream processing via Digital Twin & Live Map.</div>';
   };
 
   liveSocket.onmessage=e=>{
@@ -1060,6 +1526,10 @@ async function startLiveStream(){
       $('missionRisk').className='kpi '+stateClass(p.risk_level);
       $('residual').textContent=fmt(p.residual_rms,2);
       $('anomaly').textContent=`streaming • t=${fmt(p.time_min,0)} min • ${p.primary_fault}`;
+
+      if(p.uav){
+        updateUAVPosition(p.uav, p.health_state, p.risk_level, p.risk_score);
+      }
 
       if(p.telemetry){
         hwState.cht = Math.round(p.telemetry.CHT || 220);
@@ -1167,6 +1637,8 @@ async function loadMetrics(){
   }
 }
 
+// Initialization sequence
+initUAVMap();
 setupHardwareListeners();
 checkStatus();
 analyzeSnapshot();
