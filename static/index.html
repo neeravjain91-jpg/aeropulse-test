@@ -7,6 +7,7 @@
 <!-- Leaflet Interactive Geographic Map Engine -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="/static/engine-3d.css" />
 
 <style>
 :root{
@@ -647,83 +648,72 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
   </div>
 
-  <!-- 5. REAL-TIME ENGINE CUTAWAY & RAW CAN BUS MONITOR -->
+  <!-- 5. INTERACTIVE WEBGL ENGINE TWIN & RAW CAN BUS MONITOR -->
   <div class="cutaway-card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div class="engine-card-heading">
       <div style="font-size:15px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:8px;">
-        <span>⚡</span> Real-Time UAV Aero-Piston Engine Cutaway & Thermal Heatmap
+        <span>◈</span> Interactive MALE-UAV Aero-Piston Digital Twin
       </div>
-      <div style="font-size:12px; color:#91a5c2;">
-        Virtual Sensors Active • Thermodynamic State Synchronized
+      <div class="engine-twin-state" id="engineTwinState">
+        DIGITAL TWIN SYNCHRONIZED
       </div>
     </div>
 
-    <!-- SVG Aero-Piston Schematic -->
-    <svg class="cutaway-svg" viewBox="0 0 880 250">
-      <defs>
-        <linearGradient id="engineBody" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#192a40" />
-          <stop offset="100%" stop-color="#0a1422" />
-        </linearGradient>
-      </defs>
+    <div class="engine-digital-twin">
+      <div class="engine-viewport">
+        <canvas id="engineCanvas" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine"></canvas>
+        <div class="engine-thermal-field" id="engineThermalField" aria-hidden="true">
+          <div class="engine-thermal-aura engine-thermal-aura-outer"></div>
+          <div class="engine-thermal-aura engine-thermal-aura-core"></div>
+          <div class="engine-thermal-scale">
+            <span>LIVE THERMAL ENVELOPE</span>
+            <strong id="engineThermalValue">220°F CHT · 1,200°F EGT</strong>
+            <div class="engine-thermal-gradient"><i id="engineThermalMarker"></i></div>
+            <small><span>COOL</span><span>NOMINAL</span><span>HOT</span><span>CRITICAL</span></small>
+          </div>
+        </div>
+        <div class="engine-scanline" aria-hidden="true"></div>
+        <div class="engine-axis" aria-hidden="true"><span>X</span><span>Y</span><span>Z</span></div>
+        <div class="engine-hud engine-hud-left">
+          <strong id="engineHudRpm">3,000 RPM</strong>
+          <span id="engineHudCht">220°F CHT</span>
+          <span id="engineHudEgt">1,200°F EGT</span>
+        </div>
+        <div class="engine-hud engine-hud-right">
+          <strong id="engineModeLabel">NORMAL</strong>
+          <span id="engineHudOil">60 PSI OIL</span>
+          <span id="engineHudVibration">1.02 g RMS</span>
+        </div>
+        <div class="engine-help">DRAG ORBIT · WHEEL ZOOM · CLICK COMPONENT · DOUBLE-CLICK RESET</div>
+      </div>
 
-      <!-- Crankcase & Engine Block -->
-      <rect x="180" y="65" width="520" height="145" rx="12" fill="url(#engineBody)" stroke="#2b4970" stroke-width="2" />
-      <line x1="200" y1="170" x2="680" y2="170" stroke="#355887" stroke-width="6" stroke-dasharray="14 8" />
+      <aside class="engine-inspector" aria-live="polite">
+        <div class="engine-inspector-kicker">SELECTED ASSEMBLY</div>
+        <h3 id="selectedComponentName">Central crankcase</h3>
+        <div class="component-readings">
+          <div><span>Primary</span><strong id="selectedComponentPrimary">3,000 RPM</strong></div>
+          <div><span>Secondary</span><strong id="selectedComponentSecondary">1.02 g</strong></div>
+        </div>
+        <p id="selectedComponentDetail">Crankshaft and opposed-cylinder power core</p>
+        <div class="component-fault" id="selectedComponentFault">No active fault evidence</div>
+        <div class="engine-legend">
+          <span><i class="legend-normal"></i>Nominal</span>
+          <span><i class="legend-watch"></i>Watch</span>
+          <span><i class="legend-critical"></i>Critical</span>
+        </div>
+      </aside>
+    </div>
 
-      <!-- Propeller Hub -->
-      <polygon points="150,105 180,135 180,175 150,205" fill="#2d4a72" stroke="#55d7ff" stroke-width="1.5" />
-      <ellipse cx="140" cy="155" rx="10" ry="80" fill="#14263d" stroke="#55d7ff" stroke-width="2" />
-      <text x="75" y="160" fill="#55d7ff" font-size="11" font-weight="bold">PROPELLER</text>
-
-      <!-- Cylinder 1 -->
-      <g>
-        <rect id="cyl1" x="220" y="20" width="90" height="85" rx="8" fill="#1e3e60" stroke="#3d6899" stroke-width="2" />
-        <text x="240" y="46" fill="#eff6ff" font-size="11" font-weight="bold">CYL 1</text>
-        <text x="232" y="70" id="cyl1Temp" fill="#5ce59a" font-size="11">CHT: 218°F</text>
-        <text x="232" y="88" id="cyl1EGT" fill="#ffd166" font-size="10">EGT: 1205°F</text>
-      </g>
-
-      <!-- Cylinder 2 -->
-      <g>
-        <rect id="cyl2" x="330" y="20" width="90" height="85" rx="8" fill="#1e3e60" stroke="#3d6899" stroke-width="2" />
-        <text x="350" y="46" fill="#eff6ff" font-size="11" font-weight="bold">CYL 2</text>
-        <text x="342" y="70" id="cyl2Temp" fill="#5ce59a" font-size="11">CHT: 220°F</text>
-        <text x="342" y="88" id="cyl2EGT" fill="#ffd166" font-size="10">EGT: 1200°F</text>
-      </g>
-
-      <!-- Cylinder 3 -->
-      <g>
-        <rect id="cyl3" x="440" y="20" width="90" height="85" rx="8" fill="#1e3e60" stroke="#3d6899" stroke-width="2" />
-        <text x="460" y="46" fill="#eff6ff" font-size="11" font-weight="bold">CYL 3</text>
-        <text x="452" y="70" id="cyl3Temp" fill="#5ce59a" font-size="11">CHT: 219°F</text>
-        <text x="452" y="88" id="cyl3EGT" fill="#ffd166" font-size="10">EGT: 1198°F</text>
-      </g>
-
-      <!-- Cylinder 4 -->
-      <g>
-        <rect id="cyl4" x="550" y="20" width="90" height="85" rx="8" fill="#1e3e60" stroke="#3d6899" stroke-width="2" />
-        <text x="570" y="46" fill="#eff6ff" font-size="11" font-weight="bold">CYL 4</text>
-        <text x="562" y="70" id="cyl4Temp" fill="#5ce59a" font-size="11">CHT: 221°F</text>
-        <text x="562" y="88" id="cyl4EGT" fill="#ffd166" font-size="10">EGT: 1202°F</text>
-      </g>
-
-      <!-- Turbocharger -->
-      <g transform="translate(715, 60)">
-        <circle cx="45" cy="45" r="38" fill="#15263d" stroke="#55d7ff" stroke-width="2" />
-        <path d="M 45,15 A 30,30 0 0,1 75,45 L 45,45 Z" fill="#2d527c" />
-        <text x="20" y="50" fill="#55d7ff" font-size="10" font-weight="bold">TURBO</text>
-        <text x="12" y="102" id="turboMAP" fill="#5ce59a" font-size="10">MAP: 29.8 inHg</text>
-      </g>
-
-      <!-- Lubrication Sump -->
-      <rect id="oilSump" x="240" y="215" width="400" height="20" rx="5" fill="#162e22" stroke="#285b49" stroke-width="1.5" />
-      <text x="350" y="230" id="oilStatusText" fill="#5ce59a" font-size="11" font-weight="bold">OIL CIRCUIT • 60 PSI • 90°C</text>
-
-      <!-- Fuel Rail -->
-      <line x1="225" y1="12" x2="635" y2="12" stroke="#55d7ff" stroke-width="4" stroke-linecap="round" />
-      <text x="645" y="16" fill="#55d7ff" font-size="10">FUEL RAIL</text>
-    </svg>
+    <div class="engine-toolbar" aria-label="3D engine controls">
+      <button class="engine-tool active" data-engine-mode="normal">Normal</button>
+      <button class="engine-tool" data-engine-mode="thermal">Thermal</button>
+      <button class="engine-tool" data-engine-mode="vibration">Vibration</button>
+      <span class="engine-tool-separator"></span>
+      <button class="engine-tool" id="engineXray">X-ray cutaway</button>
+      <button class="engine-tool" id="engineExplode">Exploded view</button>
+      <button class="engine-tool" id="enginePause">Pause motion</button>
+      <button class="engine-tool" id="engineResetCamera">Reset camera</button>
+    </div>
 
     <!-- CAN Bus Stream -->
     <div style="margin-top:10px;">
@@ -1552,11 +1542,12 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   $('pxRisk').className = riskLevel === 'LOW' ? 'good' : riskLevel === 'MEDIUM' ? 'warn' : 'bad';
 }
 
-function updateLiveEnginePanel(telemetry, uav = null) {
+function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultName = null) {
   if (!telemetry) return;
   const rpm = Math.round(telemetry.Engine_RPM || 3000);
   const thr = uav && uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : Math.round(telemetry.Throttle || 60);
   const load = uav && uav.auto_load != null ? uav.auto_load : (telemetry.Load || 0.85);
+  hwState.throttle = thr;
 
   $('engRPM').textContent = `${rpm} RPM`;
   $('engThrottle').innerHTML = `${thr}% <small style="font-size:10px; color:#5ce59a;">AUTO</small>`;
@@ -1576,6 +1567,20 @@ function updateLiveEnginePanel(telemetry, uav = null) {
   $('pxOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI / ${fmt(telemetry.Oil_Temp, 0)}°C`;
   $('pxFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
   $('pxVib').textContent = `${fmt(telemetry.Vibration, 2)} g`;
+
+  window.AeroPulseEngine3D?.setTelemetry({
+    rpm,
+    throttle: thr,
+    cht: telemetry.CHT ?? hwState.cht,
+    egt: Math.max(telemetry.EGT1 ?? hwState.egt1, telemetry.EGT2 ?? hwState.egt2, telemetry.EGT3 ?? hwState.egt3),
+    oilPressure: telemetry.Oil_Pressure ?? hwState.oilPress,
+    oilTemp: telemetry.Oil_Temp ?? hwState.oilTemp,
+    fuelFlow: telemetry.Fuel_Flow ?? hwState.fuelFlow,
+    vibration: telemetry.Vibration ?? telemetry.Vibration_RMS ?? 1.02,
+    busVoltage: telemetry.Battery_Voltage ?? telemetry.Bus_Voltage ?? 28.2,
+    health: healthIndex,
+    fault: faultName || $('fault')?.value || 'none'
+  });
 }
 
 function toggleFollowUAV() {
@@ -1750,6 +1755,17 @@ function updateCutawayDisplay(){
       sumpText.textContent = `OIL CIRCUIT • ${hwState.oilPress} PSI • ${hwState.oilTemp}°C`;
     }
   }
+
+  window.AeroPulseEngine3D?.setTelemetry({
+    rpm: hwState.rpm,
+    throttle: hwState.throttle,
+    cht: hwState.cht,
+    egt: Math.max(hwState.egt1, hwState.egt2, hwState.egt3),
+    oilPressure: hwState.oilPress,
+    oilTemp: hwState.oilTemp,
+    fuelFlow: hwState.fuelFlow,
+    fault: $('fault')?.value || 'none'
+  });
 }
 
 function updateCANStream(){
@@ -1899,7 +1915,7 @@ function renderAnalysis(r){
     hwState.fuelFlow = +(r.telemetry.Fuel_Flow || 20).toFixed(1);
     updateCutawayDisplay();
     updateCANStream();
-    updateLiveEnginePanel(r.telemetry, r.uav);
+    updateLiveEnginePanel(r.telemetry, r.uav, r.health_index, r.fault_candidates?.[0]?.name);
   }
 
   if(r.rul && r.rul.rul_hours!=null){
@@ -2042,7 +2058,7 @@ async function startLiveStream(){
         hwState.fuelFlow = +(p.telemetry.Fuel_Flow || 20).toFixed(1);
         updateCutawayDisplay();
         updateCANStream();
-        updateLiveEnginePanel(p.telemetry, p.uav);
+        updateLiveEnginePanel(p.telemetry, p.uav, p.health_index, p.primary_fault);
       }
     }else if(m.type==='summary'){
       $('events').innerHTML+=`<div class="event"><strong>Mission Complete / Touchdown</strong>Peak risk: ${fmt(m.data.peak_risk_score,0)} • Final health: ${m.data.final_health_state}</div>`;
@@ -2068,6 +2084,8 @@ function setupHardwareListeners() {
     s.addEventListener('input', () => {
       v.textContent = `${s.value}${unit}`;
       hwState[stateKey] = +s.value;
+      updateCutawayDisplay();
+      updateCANStream();
     });
   };
 
@@ -2083,5 +2101,6 @@ setupHardwareListeners();
 checkStatus();
 loadPresetMission('border_patrol_alpha');
 </script>
+<script src="/static/engine-3d.js"></script>
 </body>
 </html>
