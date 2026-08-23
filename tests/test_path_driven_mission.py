@@ -1,5 +1,6 @@
 """Automated Unit & Integration Tests for Path-Driven UAV Mission Simulation."""
 import pytest
+from app.environment import _DEFAULT_ENV_SERVICE
 from app.navigation import (
     DEFAULT_MISSION_WAYPOINTS,
     HIGH_ALT_SURVEILLANCE_WAYPOINTS,
@@ -14,6 +15,14 @@ from app.engine_model import ReducedOrderPistonEngine
 from app.inference import AeroTwinAI
 from app.risk import mission_risk
 from app.replay import run_replay
+
+
+@pytest.fixture(autouse=True)
+def disable_live_weather_for_unit_tests():
+    orig_live = _DEFAULT_ENV_SERVICE.enable_live
+    _DEFAULT_ENV_SERVICE.enable_live = False
+    yield
+    _DEFAULT_ENV_SERVICE.enable_live = orig_live
 
 
 def test_preset_missions_structure_and_validity():

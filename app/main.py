@@ -1190,6 +1190,10 @@ async def telemetry_stream(
                     },
                 ).to_dict(),
 
+                "environment": gps.get_position(
+                    progress_ratio=step / max(1, total_steps - 1),
+                ).environment or {},
+
                 "telemetry": (
                     _round_telemetry(
                         altered

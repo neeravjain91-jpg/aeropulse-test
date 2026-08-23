@@ -1,14 +1,14 @@
 """UAV Navigation, Waypoint Routing Engine, and Path-Driven Flight Simulator.
 
 This module provides the core 3D waypoint flight dynamics, atmospheric environment model,
-automatic throttle/load scheduling, and navigation telemetry for AeroPulse-X.
+wind vector drift calculations, automatic throttle/load scheduling, and navigation telemetry for AeroPulse-X.
 
 The operator defines the 3D mission waypoints (coordinates, altitudes, objectives).
 The simulator automatically derives:
-  - Precise continuous GPS coordinates (geodesic interpolation)
-  - Heading and dynamic true ground speed
+  - Precise continuous GPS coordinates (geodesic Hermite spline interpolation)
+  - Heading, true airspeed (TAS), ground speed (GS), and track angle adjusted for wind
   - Realistic climb/descent profile (vertical speed in FPM)
-  - International Standard Atmosphere (ISA) temperature lapse rate, air density, pressure
+  - Real-time live meteorological conditions (Open-Meteo) or deterministic ISA atmosphere fallback
   - Automatic mission phase state machine
   - Automatic propulsion throttle demand and engine load
   - Real-time remaining distance, segment ETAs, and total mission duration
@@ -19,6 +19,8 @@ import abc
 import math
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional, Tuple
+
+from .environment import EnvironmentService, EnvironmentState, _DEFAULT_ENV_SERVICE
 
 
 @dataclass
@@ -64,7 +66,9 @@ class UAVPosition:
     longitude: float
     altitude_ft: float
     ground_speed_kt: float
+    airspeed_kt: float
     heading_deg: float
+    track_deg: float
     vertical_speed_fpm: float
     mission_phase: str
     mission_progress: float  # 0.0 to 1.0
@@ -78,9 +82,11 @@ class UAVPosition:
     ambient_c: float
     air_density_ratio: float
     pressure_inhg: float
+    pressure_hpa: float
     auto_throttle: float
     auto_load: float
     operating_state: str
+    environment: Optional[Dict[str, Any]] = None
     timestamp: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -247,11 +253,10 @@ class GPSSource(abc.ABC):
 
 class SimulatedGPSSource(GPSSource):
     """
-    Deterministic 3D Geodesic UAV Mission Flight Dynamics & Environment Generator.
+    Deterministic 3D Geodesic UAV Mission Flight Dynamics & Environmental Generator.
     
     Calculates exact real-world great-circle waypoints, smooth Hermite spline turns,
-    climb/descent altitude transitions, atmospheric environmental profiles,
-    and automatic throttle/load scheduling.
+    climb/descent altitude transitions, dynamic wind vector drift, and auto-propulsion scheduling.
     """
 
     def __init__(
@@ -259,6 +264,7 @@ class SimulatedGPSSource(GPSSource):
         waypoints: Optional[List[MissionWaypoint]] = None,
         ground_temp_c: float = 30.0,
         hot_weather_bias: float = 0.0,
+        env_service: Optional[EnvironmentService] = None,
     ):
         self.waypoints = [
             wp if isinstance(wp, MissionWaypoint) else MissionWaypoint.from_dict(wp)
@@ -269,6 +275,7 @@ class SimulatedGPSSource(GPSSource):
 
         self.ground_temp_c = float(ground_temp_c)
         self.hot_weather_bias = float(hot_weather_bias)
+        self.env_service = env_service or _DEFAULT_ENV_SERVICE
         
         self._cumulative_distances_km = self._calc_cumulative_distances()
         self.total_distance_km = self._cumulative_distances_km[-1]
@@ -289,10 +296,18 @@ class SimulatedGPSSource(GPSSource):
             w1 = self.waypoints[i]
             w2 = self.waypoints[i + 1]
             dist_km = self.haversine_distance(w1.latitude, w1.longitude, w2.latitude, w2.longitude)
-            avg_speed_kt = max(50.0, (w1.speed_kt + w2.speed_kt) / 2.0)
-            speed_kmh = avg_speed_kt * 1.852
+            avg_tas = max(50.0, (w1.speed_kt + w2.speed_kt) / 2.0)
+            
+            # Approximate wind effect on leg duration
+            leg_heading = self.calculate_heading(w1.latitude, w1.longitude, w2.latitude, w2.longitude)
+            env = self.env_service.get_environment(w1.latitude, w1.longitude, (w1.altitude_ft + w2.altitude_ft) / 2.0, leg_heading)
+            
+            # Ground speed = True Airspeed - Headwind component
+            avg_gs = max(35.0, avg_tas - env.headwind_kt)
+            speed_kmh = avg_gs * 1.852
             leg_time_min = (dist_km / speed_kmh) * 60.0
             total_time_min += leg_time_min + w1.loiter_time_min
+            
         total_time_min += self.waypoints[-1].loiter_time_min
         return max(5.0, total_time_min)
 
@@ -326,21 +341,17 @@ class SimulatedGPSSource(GPSSource):
 
     def get_atmospheric_state(self, altitude_ft: float) -> Tuple[float, float, float]:
         """
-        Computes International Standard Atmosphere (ISA) parameters:
+        Standard ISA properties fallback.
         Returns: (ambient_temperature_c, air_density_ratio, pressure_inhg)
         """
         h = max(0.0, float(altitude_ft))
-        
-        # Standard tropospheric temperature lapse rate: ~1.98 °C per 1,000 ft (6.5 °C / 1000m)
         lapse_c = (h / 1000.0) * 1.98
         t_amb = (self.ground_temp_c + self.hot_weather_bias) - lapse_c
         t_amb = max(-55.0, min(50.0, t_amb))
 
-        # Air density ratio sigma: rho(h) / rho_0
         density_ratio = math.exp(-h / 30000.0)
         density_ratio = max(0.55, min(1.15, density_ratio))
 
-        # Atmospheric pressure in inHg
         pressure = 29.92 * ((1.0 - 6.87558e-6 * h) ** 5.2559) if h < 36000 else 6.68
         pressure = max(5.0, min(32.0, pressure))
 
@@ -391,7 +402,7 @@ class SimulatedGPSSource(GPSSource):
             op_state = "HIGH" if h > 16000 else "CRUISE"
             throttle = 0.58 + (0.04 * (h / 20000.0))
 
-        # Add small deterministic aerodynamic fluctuation (micro-turbulence)
+        # Add small deterministic aerodynamic micro-turbulence
         turbulence = 0.015 * math.sin(progress_ratio * math.pi * 16.0)
         throttle = max(0.20, min(0.98, throttle + turbulence))
 
@@ -445,9 +456,26 @@ class SimulatedGPSSource(GPSSource):
         # Heading & Bearing
         heading = self.calculate_heading(w_start.latitude, w_start.longitude, w_end.latitude, w_end.longitude)
 
-        # Ground speed based on target waypoint speed profile
-        base_speed = w_start.speed_kt + (w_end.speed_kt - w_start.speed_kt) * u
-        ground_speed_kt = round(max(55.0, min(185.0, base_speed)), 1)
+        # Retrieve real-time dynamic environment / weather
+        env = self.env_service.get_environment(
+            latitude=curr_lat,
+            longitude=curr_lon,
+            altitude_ft=curr_alt,
+            heading_deg=heading,
+            manual_override=context if context.get("manual_override") else None,
+        )
+
+        # Target True Airspeed (TAS)
+        base_airspeed = w_start.speed_kt + (w_end.speed_kt - w_start.speed_kt) * u
+        airspeed_kt = round(max(55.0, min(185.0, base_airspeed)), 1)
+
+        # Dynamic Wind Effect: Ground Speed = True Airspeed - Headwind component
+        # (If headwind > 0, ground speed drops; if tailwind < 0, ground speed increases)
+        ground_speed_kt = round(max(35.0, min(220.0, airspeed_kt - env.headwind_kt)), 1)
+
+        # Track angle (Heading corrected for crosswind drift angle)
+        drift_rad = math.atan2(env.crosswind_kt, max(20.0, airspeed_kt - env.headwind_kt))
+        track_deg = round((heading + math.degrees(drift_rad) + 360.0) % 360.0, 1)
 
         # Vertical speed indicator (FPM)
         leg_dist_km = self.haversine_distance(w_start.latitude, w_start.longitude, w_end.latitude, w_end.longitude)
@@ -465,20 +493,23 @@ class SimulatedGPSSource(GPSSource):
         eta_next_min = round((dist_to_next / max(10.0, speed_kmh)) * 60.0, 1)
         eta_mission_min = round((dist_remaining / max(10.0, speed_kmh)) * 60.0, 1)
 
-        # Automatic Atmospheric Environment
-        amb_c, density_ratio, press_inhg = self.get_atmospheric_state(curr_alt)
-
         # Automatic Phase State Machine & Propulsion Demand
         phase, op_state, auto_thr, auto_ld = self.determine_phase_and_propulsion_state(
             w_end.type, curr_alt, vsi_fpm, ground_speed_kt, ratio
         )
+
+        # Engine load adjusted for atmospheric density and aerodynamic headwind load
+        wind_load_factor = 1.0 + max(0.0, env.headwind_kt / 250.0)
+        auto_ld = round(max(0.20, min(1.15, auto_ld * wind_load_factor)), 4)
 
         return UAVPosition(
             latitude=round(curr_lat, 6),
             longitude=round(curr_lon, 6),
             altitude_ft=round(curr_alt, 1),
             ground_speed_kt=ground_speed_kt,
+            airspeed_kt=airspeed_kt,
             heading_deg=round(heading, 1),
+            track_deg=track_deg,
             vertical_speed_fpm=vsi_fpm,
             mission_phase=phase,
             mission_progress=round(ratio, 4),
@@ -489,18 +520,40 @@ class SimulatedGPSSource(GPSSource):
             distance_remaining_km=round(dist_remaining, 2),
             eta_next_wp_min=eta_next_min,
             eta_mission_min=eta_mission_min,
-            ambient_c=amb_c,
-            air_density_ratio=density_ratio,
-            pressure_inhg=press_inhg,
+            ambient_c=env.ambient_c,
+            air_density_ratio=env.air_density_ratio,
+            pressure_inhg=env.pressure_inhg,
+            pressure_hpa=env.pressure_hpa,
             auto_throttle=auto_thr,
             auto_load=auto_ld,
             operating_state=op_state,
+            environment=env.to_dict(),
         )
 
     def get_flight_plan_summary(self) -> dict[str, Any]:
-        """Returns structured metadata for the entire flight plan."""
+        """Returns structured metadata and projected route risk for the flight plan."""
         hours = int(self.total_duration_min // 60)
         mins = int(self.total_duration_min % 60)
+        
+        # Calculate predicted route risk segments (Low / Medium / Watch)
+        route_risk_segments = []
+        for i in range(len(self.waypoints) - 1):
+            w1 = self.waypoints[i]
+            w2 = self.waypoints[i + 1]
+            max_alt = max(w1.altitude_ft, w2.altitude_ft)
+            risk_level = "LOW"
+            if max_alt >= 22000.0 or w2.type in {"ISR", "PATROL"}:
+                risk_level = "MEDIUM"
+            if max_alt >= 25000.0:
+                risk_level = "HIGH"
+            route_risk_segments.append({
+                "from_id": w1.id,
+                "to_id": w2.id,
+                "predicted_risk": risk_level,
+                "start_coord": [w1.latitude, w1.longitude],
+                "end_coord": [w2.latitude, w2.longitude],
+            })
+
         return {
             "total_waypoints": len(self.waypoints),
             "total_distance_km": round(self.total_distance_km, 2),
@@ -508,9 +561,11 @@ class SimulatedGPSSource(GPSSource):
             "formatted_duration": f"{hours}h {mins:02d}m",
             "waypoints": [wp.to_dict() for wp in self.waypoints],
             "planned_route": [[wp.latitude, wp.longitude] for wp in self.waypoints],
+            "route_risk_segments": route_risk_segments,
             "home_base": self.waypoints[0].to_dict(),
             "max_altitude_ft": max(wp.altitude_ft for wp in self.waypoints),
             "initial_ambient_c": self.ground_temp_c,
+            "environment_source": "live_open_meteo_with_isa_fallback",
         }
 
 

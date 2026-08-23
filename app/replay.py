@@ -506,6 +506,7 @@ def run_replay(
                     ),
 
                 "uav": uav_pos.to_dict(),
+                "environment": uav_pos.environment or {},
 
                 "telemetry": {
                     k: (

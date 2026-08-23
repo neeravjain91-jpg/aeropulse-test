@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AeroPulse-X • Path-Driven Automatic UAV Digital Twin & Mission Map</title>
+<title>AeroPulse-X • Path-Driven Automatic UAV Digital Twin & Live Mission Map</title>
 <!-- Leaflet OpenStreetMap Engine -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -31,7 +31,7 @@ body{
 
 .grid{display:grid;gap:14px}
 .kpis{grid-template-columns:repeat(5,minmax(140px,1fr))}
-.two{grid-template-columns:1.25fr .75fr}
+.two{grid-template-columns:1fr 1fr}
 .three{grid-template-columns:1fr 1fr 1fr}
 .card{
   background:linear-gradient(180deg,var(--panel2),var(--panel));
@@ -88,12 +88,12 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 }
 .mission-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px}
 .auto-flight-strip{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;
   background:#06101d;border:1px solid #1b3658;border-radius:10px;padding:12px 14px;margin-bottom:12px
 }
 .auto-item{display:flex;flex-direction:column}
 .auto-label{font-size:10px;text-transform:uppercase;color:#85a2c4;font-weight:700;letter-spacing:.05em}
-.auto-val{font-size:15px;font-weight:800;color:#eff6ff;margin-top:2px}
+.auto-val{font-size:14px;font-weight:800;color:#eff6ff;margin-top:2px}
 .primary-mission-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .primary-mission-actions button{width:auto;min-width:140px;margin:0}
 
@@ -117,12 +117,12 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 }
 .leaflet-popup-tip{background:#0c1a2d;border:1px solid #2b4f7a}
 .map-hud{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;
   background:#060e1a;border:1px solid #182d48;border-radius:10px;padding:10px 12px;margin-top:10px
 }
 .hud-item{display:flex;flex-direction:column}
 .hud-label{font-size:10px;text-transform:uppercase;color:#7b94b2;font-weight:700;letter-spacing:.05em}
-.hud-val{font-size:14px;font-weight:800;color:#eff6ff;margin-top:2px}
+.hud-val{font-size:13px;font-weight:800;color:#eff6ff;margin-top:2px}
 
 /* Waypoint Editor Table */
 .wp-table-box{
@@ -169,14 +169,14 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     <div class="brand">
       <h1>AeroPulse-X</h1>
       <div class="sub">
-        Path-Driven Automatic UAV Digital Twin • MALE-UAV Aero-Piston Propulsion • SIH26054
+        Path-Driven Automatic UAV Digital Twin • Live Environmental Coupling • SIH26054
       </div>
     </div>
 
     <div class="badges">
       <span id="serverBadge" class="badge">Checking system…</span>
-      <span id="gpsBadge" class="badge live">● PATH-DRIVEN 3D FLIGHT SIMULATION</span>
-      <span class="badge">GCS Decision Support</span>
+      <span id="gpsBadge" class="badge live">● 3D GEODESIC NAVIGATION</span>
+      <span id="envBadge" class="badge live">● LIVE WEATHER / METAR</span>
       <span class="badge">Research Benchmark</span>
     </div>
   </div>
@@ -191,7 +191,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
         <div>
           <div style="font-size:18px; font-weight:800; color:#fff;">MISSION CONTROL & FLIGHT PLANNER</div>
           <div style="font-size:12px; color:var(--muted);">
-            Autonomous 3D Route Simulation • ISA Atmosphere Lapse Rate • Dynamic Throttle Scheduling
+            Path-Driven Flight Simulation • Live Meteorological Coupling • Dynamic Propulsion Demand
           </div>
         </div>
       </div>
@@ -377,12 +377,12 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
         <span class="hud-val" id="hudAlt">8,000 ft</span>
       </div>
       <div class="hud-item">
-        <span class="hud-label">Ground Speed</span>
-        <span class="hud-val" id="hudSpeed">142 kt</span>
+        <span class="hud-label">Speed (GS / TAS)</span>
+        <span class="hud-val" id="hudSpeed">142 / 145 kt</span>
       </div>
       <div class="hud-item">
-        <span class="hud-label">Heading</span>
-        <span class="hud-val" id="hudHeading">084°</span>
+        <span class="hud-label">Heading / Track</span>
+        <span class="hud-val" id="hudHeading">084° / 086°</span>
       </div>
       <div class="hud-item">
         <span class="hud-label">Mission Phase</span>
@@ -430,7 +430,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
               <th>Waypoint Name</th>
               <th style="width:110px;">Type / Phase</th>
               <th style="width:100px;">Altitude (ft)</th>
-              <th style="width:90px;">Speed (kt)</th>
+              <th style="width:90px;">Airspeed (kt)</th>
               <th style="width:85px;">Loiter (min)</th>
               <th style="width:140px;">Coordinates</th>
               <th style="width:100px; text-align:center;">Actions</th>
@@ -440,6 +440,97 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
             <!-- Dynamically populated -->
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. LIVE ENVIRONMENT & LIVE ENGINE DUAL PANELS -->
+  <div class="grid two" style="margin-bottom:14px;">
+    <!-- LIVE ENVIRONMENT PANEL -->
+    <div class="card" style="border-color:#1e4875;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="margin:0; font-size:15px; color:#55d7ff; display:flex; align-items:center; gap:6px;">
+          <span>🌍</span> LIVE ENVIRONMENTAL CONDITIONS
+        </h2>
+        <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo)</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(125px,1fr)); gap:10px; font-size:12px;">
+        <div class="auto-item">
+          <span class="auto-label">Ambient Temp</span>
+          <span class="auto-val info" id="envTemp">18.4 °C</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Pressure</span>
+          <span class="auto-val" id="envPress">802 hPa <small style="font-size:10px; color:#91a5c2;">(23.7 inHg)</small></span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Density Ratio (σ)</span>
+          <span class="auto-val" id="envDensity">0.824</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Wind Speed / Dir</span>
+          <span class="auto-val" id="envWind">12.5 kt @ 240°</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Headwind / Crosswind</span>
+          <span class="auto-val" id="envHeadwind"><span style="color:#ffd166;">HW: 5.8 kt</span> • CW: 11.0 kt</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Relative Humidity</span>
+          <span class="auto-val" id="envHumidity">45%</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Visibility</span>
+          <span class="auto-val" id="envVisibility">10.0 km</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Weather Condition</span>
+          <span class="auto-val good" id="envCondition">Clear Sky</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE ENGINE STATE PANEL -->
+    <div class="card" style="border-color:#1e4875;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h2 style="margin:0; font-size:15px; color:#55d7ff; display:flex; align-items:center; gap:6px;">
+          <span>⚡</span> LIVE ENGINE STATE (DIGITAL TWIN)
+        </h2>
+        <span class="pill good" id="engineHealthBadge">● 98% HEALTHY</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(115px,1fr)); gap:10px; font-size:12px;">
+        <div class="auto-item">
+          <span class="auto-label">Engine RPM</span>
+          <span class="auto-val info" id="engRPM">3000 RPM</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Auto Throttle</span>
+          <span class="auto-val" id="engThrottle">58% <small style="font-size:10px; color:#5ce59a;">AUTO</small></span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Engine Load</span>
+          <span class="auto-val" id="engLoad">0.84 <small style="font-size:10px; color:#5ce59a;">AUTO</small></span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Cylinder Head (CHT)</span>
+          <span class="auto-val" id="engCHT">220.4 °F</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Exhaust Gas (EGT)</span>
+          <span class="auto-val" id="engEGT">1205 °F</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Oil Press / Temp</span>
+          <span class="auto-val" id="engOil">60.2 PSI • 89.6 °C</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Fuel Flow Rate</span>
+          <span class="auto-val" id="engFuel">20.4 L/h</span>
+        </div>
+        <div class="auto-item">
+          <span class="auto-label">Vibration RMS</span>
+          <span class="auto-val good" id="engVib">1.02 g</span>
+        </div>
       </div>
     </div>
   </div>
@@ -531,7 +622,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       <div class="can-box" id="canBusStream">
         [CAN 0x201] RPM: 3000 | THROTTLE: 60.0% | MAP: 29.8 inHg | TIME: 00:14:22<br>
         [CAN 0x202] CHT: 220.4 F | EGT1: 1205 F | EGT2: 1200 F | EGT3: 1198 F<br>
-        [CAN 0x203] OIL_PRESS: 60.2 PSI | OIL_TEMP: 89.6 C | COOLANT: 84.8 C<br>
+        [CAN 0x203] OIL_PRESS: 60.2 PSI | OIL_TEMP: 89.6 C | STATUS: NORMAL<br>
         [CAN 0x204] FUEL_FLOW: 20.4 L/h | RAIL_PRESS: 42.1 PSI | FUEL_TEMP: 32.1 C<br>
         [CAN 0x205] BUS_VOLT: 28.20 V | ALT_CURR: 18.2 A | ALT_TEMP: 68.4 C<br>
         [CAN 0x206] VIBRATION_RMS: 1.02 g | KNOCK_IDX: 0.02 | STATUS: HEALTHY
@@ -694,9 +785,11 @@ let uavMarker = null;
 let plannedRoutePolyline = null;
 let flightTrailPolyline = null;
 let waypointLayerGroup = null;
+let riskSegmentsLayerGroup = null;
 
 let currentWaypoints = [];
 let currentPlannedCoords = [];
+let currentRiskSegments = [];
 let flightTrailPoints = [];
 let currentUIMode = 'execution'; // 'planner' or 'execution'
 
@@ -747,6 +840,7 @@ function initUAVMap() {
   }).addTo(uavMap);
 
   waypointLayerGroup = L.layerGroup().addTo(uavMap);
+  riskSegmentsLayerGroup = L.layerGroup().addTo(uavMap);
 
   // In planner mode, map clicks add new waypoints
   uavMap.on('click', e => {
@@ -853,6 +947,7 @@ async function loadPresetMission(presetKey) {
     const data = await api(`/api/mission/waypoints?preset=${encodeURIComponent(presetKey)}`);
     currentWaypoints = data.waypoints || [];
     currentPlannedCoords = data.planned_route || [];
+    currentRiskSegments = data.route_risk_segments || [];
     
     $('autoMissionName').textContent = data.mission_name || presetKey.toUpperCase();
     $('autoRouteSummary').textContent = `${data.total_waypoints} Waypoints • ${data.total_distance_km} km`;
@@ -877,6 +972,7 @@ async function refreshFlightPlan() {
     });
 
     currentPlannedCoords = data.planned_route || [];
+    currentRiskSegments = data.route_risk_segments || [];
     $('autoRouteSummary').textContent = `${data.total_waypoints} Waypoints • ${data.total_distance_km} km`;
     $('autoEstDuration').textContent = data.formatted_duration || `${Math.round(data.estimated_duration_min)}m`;
 
@@ -891,15 +987,39 @@ function renderWaypointsAndPlannedRoute() {
   if (!uavMap) return;
 
   waypointLayerGroup.clearLayers();
+  riskSegmentsLayerGroup.clearLayers();
 
   if (currentPlannedCoords && currentPlannedCoords.length > 0) {
     if (plannedRoutePolyline) uavMap.removeLayer(plannedRoutePolyline);
     plannedRoutePolyline = L.polyline(currentPlannedCoords, {
       color: '#38bdf8',
       weight: 3,
-      opacity: 0.75,
+      opacity: 0.65,
       dashArray: '8, 8'
     }).addTo(uavMap);
+  }
+
+  // Render predicted risk color overlay on route segments
+  if (currentRiskSegments && currentRiskSegments.length > 0) {
+    currentRiskSegments.forEach(seg => {
+      let riskCol = '#5ce59a'; // green
+      if (seg.predicted_risk === 'MEDIUM') riskCol = '#ffd166'; // yellow
+      if (seg.predicted_risk === 'HIGH') riskCol = '#ff7070'; // red
+      
+      const poly = L.polyline([seg.start_coord, seg.end_coord], {
+        color: riskCol,
+        weight: 4,
+        opacity: 0.8
+      });
+      poly.bindPopup(`
+        <div style="font-size:11px;">
+          <b>Leg: ${seg.from_id} ➔ ${seg.to_id}</b><br>
+          Predicted Risk: <b style="color:${riskCol}">${seg.predicted_risk}</b><br>
+          <span style="color:#91a5c2; font-size:10px;">(Predicted Simulation Projection)</span>
+        </div>
+      `);
+      riskSegmentsLayerGroup.addLayer(poly);
+    });
   }
 
   const isDraggable = (currentUIMode === 'planner');
@@ -924,7 +1044,7 @@ function renderWaypointsAndPlannedRoute() {
         <div style="font-weight:bold; font-size:13px; color:#55d7ff;">${wp.id}: ${wp.name}</div>
         <div style="color:#91a5c2; font-size:11px; margin-top:2px;">Objective: <b style="color:#eff6ff;">${wp.type}</b></div>
         <div style="color:#91a5c2; font-size:11px;">Altitude: <b style="color:#5ce59a;">${wp.altitude_ft.toLocaleString()} ft</b></div>
-        <div style="color:#91a5c2; font-size:11px;">Speed: <b style="color:#eff6ff;">${wp.speed_kt} kt</b> • Loiter: <b style="color:#ffd166;">${wp.loiter_time_min}m</b></div>
+        <div style="color:#91a5c2; font-size:11px;">Airspeed: <b style="color:#eff6ff;">${wp.speed_kt} kt</b> • Loiter: <b style="color:#ffd166;">${wp.loiter_time_min}m</b></div>
         <div style="color:#91a5c2; font-size:11px;">GPS: ${wp.latitude.toFixed(4)}°N, ${wp.longitude.toFixed(4)}°E</div>
       </div>
     `);
@@ -1100,16 +1220,18 @@ function toggleManualOverride(enabled) {
 }
 
 // ==========================================
-// 🛰️ Telemetry & Digital Twin Synchronization
+// 🛰️ Telemetry, Environment & Twin Synchronization
 // ==========================================
-function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskScore = 0) {
+function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLevel = 'LOW', riskScore = 0) {
   if (!uav || !uavMap) return;
 
   const lat = uav.latitude;
   const lon = uav.longitude;
   const heading = uav.heading_deg || 0;
+  const track = uav.track_deg || heading;
   const alt = uav.altitude_ft || 0;
   const speed = uav.ground_speed_kt || 0;
+  const airspeed = uav.airspeed_kt || speed;
   const phase = uav.mission_phase || 'CRUISE';
   const progress = uav.mission_progress || 0;
   const throttle = uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : 60;
@@ -1132,7 +1254,7 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
         <div style="font-weight:bold; font-size:13px; color:#5ce59a;">✈️ AeroPulse-X MALE-UAV</div>
         <div style="font-size:11px; color:#91a5c2; margin-top:2px;">Phase: <b style="color:#eff6ff;">${phase}</b></div>
         <div style="font-size:11px; color:#91a5c2;">Altitude: <b style="color:#5ce59a;">${Math.round(alt).toLocaleString()} ft</b></div>
-        <div style="font-size:11px; color:#91a5c2;">Speed: <b style="color:#eff6ff;">${speed} kt</b> | Heading: <b style="color:#eff6ff;">${Math.round(heading)}°</b></div>
+        <div style="font-size:11px; color:#91a5c2;">GS: <b style="color:#eff6ff;">${speed} kt</b> | TAS: <b>${airspeed} kt</b></div>
       </div>
     `);
   } else {
@@ -1160,8 +1282,8 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
   $('hudLat').textContent = `${lat.toFixed(4)}° N`;
   $('hudLon').textContent = `${lon.toFixed(4)}° E`;
   $('hudAlt').textContent = `${Math.round(alt).toLocaleString()} ft`;
-  $('hudSpeed').textContent = `${speed} kt`;
-  $('hudHeading').textContent = `${String(Math.round(heading)).padStart(3, '0')}°`;
+  $('hudSpeed').textContent = `${speed} / ${airspeed} kt`;
+  $('hudHeading').textContent = `${String(Math.round(heading)).padStart(3, '0')}° / ${String(Math.round(track)).padStart(3, '0')}°`;
   
   $('hudPhase').textContent = phase;
   $('hudPhase').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
@@ -1184,6 +1306,37 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
   $('autoThrottle').innerHTML = `${throttle}% <small style="font-size:10px; color:#5ce59a;">AUTO</small>`;
   $('autoAmbient').innerHTML = `${amb.toFixed(1)}°C <small style="font-size:10px; color:#5ce59a;">AUTO (ISA)</small>`;
   $('autoPhasePill').textContent = phase;
+
+  // Update Live Environment Panel
+  const env = envData || uav.environment;
+  if (env) {
+    $('envSourceBadge').textContent = env.source === 'live' ? '● LIVE (Open-Meteo API)' : '● SIMULATED (ISA Model)';
+    $('envSourceBadge').className = 'pill ' + (env.source === 'live' ? 'good' : 'warn');
+    $('envTemp').textContent = `${env.ambient_c} °C`;
+    $('envPress').innerHTML = `${env.pressure_hpa} hPa <small style="font-size:10px; color:#91a5c2;">(${env.pressure_inhg} inHg)</small>`;
+    $('envDensity').textContent = `${env.air_density_ratio}`;
+    $('envWind').textContent = `${env.wind_speed_kt} kt @ ${env.wind_direction_deg}°`;
+    $('envHeadwind').innerHTML = `<span style="color:${env.headwind_kt>0?'#ffd166':'#5ce59a'}">HW: ${env.headwind_kt} kt</span> • CW: ${env.crosswind_kt} kt`;
+    $('envHumidity').textContent = `${env.humidity_pct}%`;
+    $('envVisibility').textContent = `${env.visibility_km} km`;
+    $('envCondition').textContent = env.weather_condition;
+  }
+}
+
+function updateLiveEnginePanel(telemetry, uav = null) {
+  if (!telemetry) return;
+  const rpm = Math.round(telemetry.Engine_RPM || 3000);
+  const thr = uav && uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : Math.round(telemetry.Throttle || 60);
+  const load = uav && uav.auto_load != null ? uav.auto_load : (telemetry.Load || 0.85);
+
+  $('engRPM').textContent = `${rpm} RPM`;
+  $('engThrottle').innerHTML = `${thr}% <small style="font-size:10px; color:#5ce59a;">AUTO</small>`;
+  $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:10px; color:#5ce59a;">AUTO</small>`;
+  $('engCHT').textContent = `${fmt(telemetry.CHT, 1)} °F`;
+  $('engEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
+  $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 1)} PSI • ${fmt(telemetry.Oil_Temp, 1)} °C`;
+  $('engFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
+  $('engVib').textContent = `${fmt(telemetry.Vibration, 2)} g`;
 }
 
 function toggleFollowUAV() {
@@ -1507,6 +1660,7 @@ function renderAnalysis(r){
     hwState.fuelFlow = +(r.telemetry.Fuel_Flow || 20).toFixed(1);
     updateCutawayDisplay();
     updateCANStream();
+    updateLiveEnginePanel(r.telemetry, r.uav);
   }
 
   if(r.rul && r.rul.rul_hours!=null){
@@ -1516,7 +1670,7 @@ function renderAnalysis(r){
   }
 
   if (r.uav) {
-    updateUAVPosition(r.uav, r.health_state, r.mission_risk.level, r.mission_risk.score);
+    updateUAVPosition(r.uav, r.environment, r.health_state, r.mission_risk.level, r.mission_risk.score);
   }
 }
 
@@ -1615,7 +1769,7 @@ async function startLiveStream(){
       steps:60,
       playback_interval_s: 0.20
     })));
-    $('events').innerHTML='<div class="event"><strong>Autonomous Flight Stream Active</strong>UAV navigating planned 3D coordinates. Telemetry feeding Digital Twin.</div>';
+    $('events').innerHTML='<div class="event"><strong>Autonomous Flight Stream Active</strong>UAV navigating planned 3D coordinates. Live weather & Digital Twin connected.</div>';
   };
 
   liveSocket.onmessage=e=>{
@@ -1634,7 +1788,7 @@ async function startLiveStream(){
       $('anomaly').textContent=`streaming • t=${fmt(p.time_min,0)} min • ${p.primary_fault}`;
 
       if(p.uav){
-        updateUAVPosition(p.uav, p.health_state, p.risk_level, p.risk_score);
+        updateUAVPosition(p.uav, p.environment, p.health_state, p.risk_level, p.risk_score);
       }
 
       if(p.telemetry){
@@ -1649,6 +1803,7 @@ async function startLiveStream(){
         hwState.fuelFlow = +(p.telemetry.Fuel_Flow || 20).toFixed(1);
         updateCutawayDisplay();
         updateCANStream();
+        updateLiveEnginePanel(p.telemetry, p.uav);
       }
     }else if(m.type==='summary'){
       $('events').innerHTML+=`<div class="event"><strong>Mission Complete / Touchdown</strong>Peak risk: ${fmt(m.data.peak_risk_score,0)} • Final health: ${m.data.final_health_state}</div>`;

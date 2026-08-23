@@ -1,5 +1,6 @@
 """Unit and integration tests for UAV Navigation, Waypoints, and Simulated GPS."""
 import pytest
+from app.environment import _DEFAULT_ENV_SERVICE
 from app.navigation import (
     DEFAULT_MISSION_WAYPOINTS,
     MissionWaypoint,
@@ -9,6 +10,14 @@ from app.navigation import (
 )
 from app.replay import run_replay
 from app.inference import AeroTwinAI
+
+
+@pytest.fixture(autouse=True)
+def disable_live_weather_for_unit_tests():
+    orig_live = _DEFAULT_ENV_SERVICE.enable_live
+    _DEFAULT_ENV_SERVICE.enable_live = False
+    yield
+    _DEFAULT_ENV_SERVICE.enable_live = orig_live
 
 
 def test_default_waypoints_are_valid_and_non_empty():
@@ -52,7 +61,7 @@ def test_simulated_gps_movement_is_continuous_and_bounded():
         assert 28.0 <= pos.latitude <= 30.0
         assert 76.5 <= pos.longitude <= 78.5
         assert 0.0 <= pos.heading_deg <= 360.0
-        assert 60.0 <= pos.ground_speed_kt <= 220.0
+        assert 35.0 <= pos.ground_speed_kt <= 220.0
         assert pos.mission_progress == pytest.approx(progress, abs=0.01)
 
         if prev_pos is not None:
