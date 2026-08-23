@@ -342,7 +342,11 @@
         vibration: 1.02,
         busVoltage: 28.2,
         health: 98,
-        fault: 'none'
+        fault: 'none',
+        egtZones: [1200, 1205, 1195],
+        thermalReference: null,
+        thermalRate: null,
+        thermalSample: null
       };
       this.mode = 'normal';
       this.paused = false;
@@ -408,6 +412,22 @@
         const value = Number(data[key]);
         if (Number.isFinite(value)) this.telemetry[key] = value;
       });
+      if (Array.isArray(data.egtZones)) {
+        const zones = data.egtZones.map(Number).filter(Number.isFinite);
+        if (zones.length) this.telemetry.egtZones = zones;
+      }
+      const reference = Number(data.thermalReference);
+      this.telemetry.thermalReference = Number.isFinite(reference) ? reference : null;
+      const sampleTimeMinutes = Number(data.sampleTimeMinutes);
+      if (Number.isFinite(sampleTimeMinutes)) {
+        const previous = this.telemetry.thermalSample;
+        if (previous && sampleTimeMinutes > previous.time) {
+          this.telemetry.thermalRate = (this.telemetry.egt - previous.egt) / (sampleTimeMinutes - previous.time);
+        }
+        this.telemetry.thermalSample = { time: sampleTimeMinutes, egt: this.telemetry.egt };
+      } else {
+        this.telemetry.thermalRate = null;
+      }
       if (data.fault != null) this.telemetry.fault = String(data.fault);
       this.updateHud();
       this.updateInspector();
@@ -437,6 +457,23 @@
       if (value) value.textContent = `${Math.round(t.cht)}°F CHT · ${Math.round(t.egt).toLocaleString()}°F EGT`;
       const marker = document.getElementById('engineThermalMarker');
       if (marker) marker.style.left = `${Math.round(level * 100)}%`;
+      const zones = Array.isArray(t.egtZones) && t.egtZones.length ? t.egtZones : [t.egt];
+      const hottestValue = Math.max(...zones);
+      const hottestIndex = zones.indexOf(hottestValue) + 1;
+      const zoneNode = document.getElementById('engineThermalZone');
+      if (zoneNode) zoneNode.textContent = `HOTTEST · EGT CHANNEL ${hottestIndex} · ${Math.round(hottestValue).toLocaleString()}°F`;
+      const rateNode = document.getElementById('engineThermalRate');
+      if (rateNode) {
+        rateNode.textContent = Number.isFinite(t.thermalRate)
+          ? `RATE · ${t.thermalRate >= 0 ? '+' : ''}${t.thermalRate.toFixed(1)}°F/min`
+          : 'RATE · NOT AVAILABLE';
+      }
+      const referenceNode = document.getElementById('engineThermalReference');
+      if (referenceNode) {
+        referenceNode.textContent = Number.isFinite(t.thermalReference)
+          ? `TWIN DEVIATION · ${(hottestValue - t.thermalReference) >= 0 ? '+' : ''}${(hottestValue - t.thermalReference).toFixed(1)}°F`
+          : 'REFERENCE · NOT REPORTED';
+      }
       const field = document.getElementById('engineThermalField');
       if (field) {
         const state = level >= 0.86 ? 'critical' : level >= 0.7 ? 'hot' : level >= 0.34 ? 'nominal' : 'cool';
@@ -546,6 +583,24 @@
         this.camera.distance = clamp(this.camera.distance + event.deltaY * 0.012, 7, 20);
       }, { passive: false });
       this.canvas.addEventListener('dblclick', () => this.resetCamera());
+      this.canvas.addEventListener('keydown', event => {
+        const components = ['crankcase', 'cylinders', 'crankshaft', 'propeller', 'turbo', 'lubrication', 'fuel', 'electrical', 'sensors'];
+        let handled = true;
+        if (event.key === 'ArrowLeft') this.camera.yaw += 0.12;
+        else if (event.key === 'ArrowRight') this.camera.yaw -= 0.12;
+        else if (event.key === 'ArrowUp') this.camera.pitch = clamp(this.camera.pitch + 0.08, -1.15, 1.15);
+        else if (event.key === 'ArrowDown') this.camera.pitch = clamp(this.camera.pitch - 0.08, -1.15, 1.15);
+        else if (event.key === '+' || event.key === '=') this.camera.distance = clamp(this.camera.distance - 0.7, 7, 20);
+        else if (event.key === '-' || event.key === '_') this.camera.distance = clamp(this.camera.distance + 0.7, 7, 20);
+        else if (event.key === 'Home') this.resetCamera();
+        else if (event.key === 'PageUp' || event.key === 'PageDown') {
+          const current = Math.max(0, components.indexOf(this.selected));
+          const direction = event.key === 'PageDown' ? 1 : -1;
+          this.selected = components[(current + direction + components.length) % components.length];
+          this.updateInspector();
+        } else handled = false;
+        if (handled) event.preventDefault();
+      });
     }
 
     pick(event) {
@@ -726,6 +781,11 @@
     }
 
     frame(time) {
+      if (document.hidden) {
+        this.lastTime = time;
+        requestAnimationFrame(next => this.frame(next));
+        return;
+      }
       const delta = Math.min(0.05, (time - this.lastTime) / 1000);
       this.lastTime = time;
       this.resize();

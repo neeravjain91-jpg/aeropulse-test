@@ -4,9 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>AeroPulse-X • Interactive UAV Mission Map & Digital Twin GCS</title>
-<!-- Leaflet Interactive Geographic Map Engine -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet is bundled locally so the command interface starts without a CDN. -->
+<link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css" />
+<script src="/static/vendor/leaflet/leaflet.js"></script>
 <link rel="stylesheet" href="/static/engine-3d.css" />
 
 <style>
@@ -188,34 +188,89 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   .proximity-hud-box{display:none!important;}
 }
 </style>
+<link rel="stylesheet" href="/static/aeropulse-command.css" />
 </head>
 
 <body>
 <div class="shell">
 
-  <div class="top">
-    <div class="brand">
-      <h1>AeroPulse-X</h1>
-      <div class="sub">
-        Real Geographic UAV Mission Map • Close Proximity Tracking • Multi-Layer GIS • SIH26054
+  <header class="apx-command-bar" aria-label="AeroPulse-X command status">
+    <div class="apx-brand">
+      <div class="apx-brand-mark" aria-hidden="true">A</div>
+      <div class="apx-brand-copy">
+        <h1>AeroPulse<span>-X</span></h1>
+        <p>MALE-UAV propulsion intelligence · SIH26054</p>
       </div>
     </div>
 
-    <div class="badges">
-      <span id="serverBadge" class="badge">Checking system…</span>
-      <span id="gpsBadge" class="badge live">● OPENSTREETMAP GIS</span>
-      <span id="envBadge" class="badge live">● LIVE WEATHER / METAR</span>
-      <span class="badge">Research Benchmark</span>
+    <div class="apx-command-metrics" aria-label="Mission status summary">
+      <div class="apx-command-metric"><small>Aircraft / Mode</small><strong id="apxAircraftId">APX-MALE-01 · SIMULATION</strong></div>
+      <div class="apx-command-metric"><small>Phase</small><strong id="apxMissionPhase">PREFLIGHT</strong></div>
+      <div class="apx-command-metric"><small>UTC</small><strong id="apxUtcClock">--:--:--Z</strong></div>
+      <div class="apx-command-metric"><small>Mission Elapsed</small><strong id="apxMissionElapsed">T+00:00:00</strong></div>
+      <div class="apx-command-metric"><small>Data Link</small><strong id="apxConnection" data-state="warning">CHECKING</strong></div>
+      <div class="apx-command-metric"><small>Freshness</small><strong id="apxFreshness">NO SAMPLE</strong></div>
+      <div class="apx-command-metric"><small>Active Alerts</small><strong id="apxAlertCount">0</strong></div>
     </div>
+
+    <div class="apx-command-actions">
+      <div class="apx-view-switch" aria-label="Interface detail level">
+        <button type="button" class="apx-view-button active" data-apx-view-option="operator" aria-pressed="true">Operator</button>
+        <button type="button" class="apx-view-button" data-apx-view-option="engineer" aria-pressed="false">Engineer</button>
+      </div>
+      <div class="apx-command-decision" id="apxCommandDecision" data-state="warning">
+        <small>Mission Decision</small>
+        <strong id="apxDecisionNow">AWAITING ANALYSIS</strong>
+      </div>
+    </div>
+
+    <div class="apx-source-strip" aria-label="Runtime data sources">
+      <div class="apx-source-item"><small>Backend</small><span id="serverBadge" class="badge">CHECKING</span></div>
+      <div class="apx-source-item"><small>Position</small><span id="gpsBadge" class="badge live">SIMULATED FLIGHT PATH</span></div>
+      <div class="apx-source-item"><small>Environment</small><span id="envBadge" class="badge">SOURCE PENDING</span></div>
+      <div class="apx-source-item"><small>Engine</small><span class="badge live">SIMULATED ECU / FADEC SCHEMA</span></div>
+      <div class="apx-source-item"><small>AI</small><span class="badge">PROTOTYPE INFERENCE</span></div>
+    </div>
+  </header>
+
+  <div class="apx-mission-ribbon" aria-label="Mission phase ribbon">
+    <div class="apx-ribbon-label">Mission Sequence</div>
+    <div class="apx-phase active" data-apx-phase="PREFLIGHT">Preflight</div>
+    <div class="apx-phase" data-apx-phase="TAXI">Taxi</div>
+    <div class="apx-phase" data-apx-phase="TAKEOFF">Takeoff</div>
+    <div class="apx-phase" data-apx-phase="CLIMB">Climb</div>
+    <div class="apx-phase" data-apx-phase="CRUISE">Cruise</div>
+    <div class="apx-phase" data-apx-phase="LOITER">Loiter</div>
+    <div class="apx-phase" data-apx-phase="RECOVERY">Recovery</div>
   </div>
+
+  <nav class="apx-workspace-nav" aria-label="Dashboard workspaces">
+    <button type="button" class="apx-workspace-button active" data-apx-workspace-option="overview" aria-current="page">Overview</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="twin">Engine Twin</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="thermal">Thermal</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="mission">Mission</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="diagnostics">Diagnostics</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="rul">RUL / What-If</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="replay">Replay</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="maintenance">Maintenance</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="reports">Reports</button>
+  </nav>
+
+  <section class="apx-decision-strip" aria-label="Current propulsion decision evidence">
+    <div class="apx-decision-cell"><small>Health Index</small><strong id="apxHealthNow">—</strong></div>
+    <div class="apx-decision-cell"><small>Mission Risk</small><strong id="apxRiskNow">—</strong></div>
+    <div class="apx-decision-cell"><small>RUL Estimate</small><strong id="apxRulNow" data-source="predicted">—</strong></div>
+    <div class="apx-decision-cell"><small>Recommendation</small><strong id="apxRecommendation" data-state="warning">AWAITING ANALYSIS</strong></div>
+    <div class="apx-decision-cell apx-decision-reason"><small>Decision Evidence</small><strong id="apxEvidenceTitle">No inference result received</strong><p id="apxEvidenceText">Run a snapshot analysis or start the simulated mission stream to populate model-derived evidence.</p></div>
+  </section>
 
   <div id="setupNotice" class="notice hidden"></div>
 
   <!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
-  <div class="card mission-control-card">
+  <div class="card mission-control-card" data-apx-workspace="overview mission">
     <div class="mission-header">
       <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:24px;">🛰️</span>
+        <span class="apx-provenance-tag" data-source="simulated">MISSION SIMULATOR</span>
         <div>
           <div style="font-size:18px; font-weight:800; color:#fff;">MISSION CONTROL & FLIGHT PLANNER</div>
           <div style="font-size:12px; color:var(--muted);">
@@ -228,8 +283,8 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
         <span class="pill good" id="simModeBadge" style="font-size:12px; padding:6px 14px;">
           SIMULATION MODE: ● AUTOMATIC
         </span>
-        <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">🛠️ MISSION DESIGN</button>
-        <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">🚀 MISSION EXECUTION</button>
+        <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">MISSION DESIGN</button>
+        <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">MISSION EXECUTION</button>
       </div>
     </div>
 
@@ -271,11 +326,11 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 
     <!-- PRIMARY MISSION ACTIONS -->
     <div class="primary-mission-actions">
-      <button id="btnStartMission" class="success" onclick="startAutomaticMission()">🚀 START MISSION SIMULATION</button>
-      <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
-      <button id="btnResumeMission" style="display:none; background:#225bd8;" onclick="toggleMissionPause()">▶ Resume</button>
-      <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
-      <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
+      <button id="btnStartMission" class="success" onclick="startAutomaticMission()">START MISSION SIMULATION</button>
+      <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">Pause</button>
+      <button id="btnResumeMission" style="display:none; background:#225bd8;" onclick="toggleMissionPause()">Resume</button>
+      <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">Restart</button>
+      <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">Abort / Reset</button>
       
       <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
         <span style="font-size:11px; color:#91a5c2; font-weight:600;">Mission Preset:</span>
@@ -291,10 +346,10 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
     <details style="margin-top:14px; background:#081322; border:1px solid #1c3350; border-radius:8px; padding:10px 14px;">
       <summary style="font-size:12px; font-weight:700; color:#91a5c2; cursor:pointer;">
-        ⚙️ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
+        ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
       </summary>
       <div style="font-size:11px; color:#ffd166; margin:8px 0;">
-        ⚠️ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
+        CAUTION — SIMULATION OVERRIDE, NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
       </div>
       <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
         <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
@@ -324,7 +379,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   </div>
 
   <!-- 2. 6-SUBSYSTEM HEALTH STATUS CARDS -->
-  <div class="subsystem-grid">
+  <div class="subsystem-grid" data-apx-workspace="overview diagnostics">
     <div class="subsystem-card">
       <div class="s-name">Thermal Subsys</div>
       <div class="s-score good" id="subScoreThermal">98%</div>
@@ -358,11 +413,12 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   </div>
 
   <!-- 3. REAL GEOGRAPHIC UAV MISSION MAP & CLOSE TRACKING -->
-  <div class="map-card">
+  <div class="map-card" data-apx-workspace="mission">
     <div class="map-header">
       <div>
         <div style="font-size:16px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:8px;">
-          <span>🗺️</span> REAL GEOGRAPHIC UAV MISSION MAP & CLOSE TRACKING
+          GEOGRAPHIC UAV MISSION MAP & CLOSE TRACKING
+          <span class="apx-provenance-tag" id="mapDataBadge" data-source="simulated">ONLINE BASEMAP · LOCAL VECTOR OVERLAY</span>
         </div>
         <div style="font-size:12px; color:#91a5c2; margin-top:2px;" id="mapModeSubtitle">
           Real Geographic Coordinates • Multi-Layer GIS • Close UAV Proximity View
@@ -373,18 +429,18 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       <div class="map-toolbar">
         <!-- BASE MAP LAYER SWITCHER -->
         <div style="display:flex; background:#071220; border:1px solid #203f68; border-radius:6px; padding:2px;">
-          <button id="btnLayerStandard" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('standard')">🗺️ Standard</button>
-          <button id="btnLayerDark" class="map-btn active" style="border:none; padding:4px 8px;" onclick="setMapLayer('dark')">🌌 Dark</button>
-          <button id="btnLayerSatellite" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('satellite')">🛰️ Satellite</button>
-          <button id="btnLayerTerrain" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('terrain')">⛰️ Terrain</button>
+          <button id="btnLayerStandard" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('standard')">Standard</button>
+          <button id="btnLayerDark" class="map-btn active" style="border:none; padding:4px 8px;" onclick="setMapLayer('dark')">Dark</button>
+          <button id="btnLayerSatellite" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('satellite')">Satellite</button>
+          <button id="btnLayerTerrain" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('terrain')">Terrain</button>
         </div>
 
-        <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">🎯 Follow UAV: ON</button>
-        <button class="map-btn" onclick="centerOnUAV()">📍 Center UAV</button>
-        <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit Route</button>
-        <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">🔍 Proximity HUD</button>
-        <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">👁️ Route</button>
-        <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">🚩 Waypoints</button>
+        <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">Follow UAV: ON</button>
+        <button class="map-btn" onclick="centerOnUAV()">Center UAV</button>
+        <button class="map-btn" onclick="fitMissionRoute()">Fit Route</button>
+        <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">Proximity HUD</button>
+        <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">Route</button>
+        <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">Waypoints</button>
         
         <div style="display:flex; align-items:center; gap:4px; margin-left:4px;">
           <span style="font-size:11px; color:#91a5c2;">Speed:</span>
@@ -406,14 +462,14 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       <div id="uavProximityOverlay" class="proximity-hud-box">
         <div class="prox-header">
           <span style="font-weight:800; color:#55d7ff; font-size:11px; display:flex; align-items:center; gap:4px;">
-            <span>🔍</span> UAV CLOSE PROXIMITY VIEW
+            UAV CLOSE PROXIMITY VIEW
           </span>
           <span class="pill good" id="pxHealthBadge" style="font-size:9px; padding:2px 6px;">NORMAL</span>
         </div>
 
         <!-- 1. UAV LIVE FLIGHT STATE -->
         <div class="prox-section">
-          <div class="prox-sec-title">✈️ UAV LIVE TELEMETRY</div>
+          <div class="prox-sec-title">UAV TELEMETRY · SIMULATED</div>
           <div class="prox-grid">
             <div><span class="prox-lbl">LAT:</span> <b id="pxLat">28.4520° N</b></div>
             <div><span class="prox-lbl">LON:</span> <b id="pxLon">77.0250° E</b></div>
@@ -428,7 +484,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 
         <!-- 2. ENVIRONMENT -->
         <div class="prox-section">
-          <div class="prox-sec-title">🌍 LIVE ENVIRONMENT</div>
+          <div class="prox-sec-title">ENVIRONMENT</div>
           <div class="prox-grid">
             <div><span class="prox-lbl">TEMP:</span> <b id="pxTemp">18.4 °C</b></div>
             <div><span class="prox-lbl">PRESS:</span> <b id="pxPress">802 hPa</b></div>
@@ -441,7 +497,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 
         <!-- 3. ENGINE STATE -->
         <div class="prox-section">
-          <div class="prox-sec-title">⚡ ENGINE OPERATING STATE</div>
+          <div class="prox-sec-title">ENGINE OPERATING STATE</div>
           <div class="prox-grid">
             <div><span class="prox-lbl">RPM:</span> <b id="pxRPM">3000 RPM</b></div>
             <div><span class="prox-lbl">THROTTLE:</span> <b id="pxThr">58% AUTO</b></div>
@@ -471,7 +527,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 
     <!-- MAP STATUS & CURSOR COORDINATES BAR -->
     <div class="map-status-bar">
-      <div id="mapCursorCoords">📍 Cursor: 28.4520° N, 77.0250° E | Zoom: 9</div>
+      <div id="mapCursorCoords">CURSOR · 28.4520° N, 77.0250° E · ZOOM 9</div>
       <div>Geodetic Datum: WGS-84 • OpenStreetMap / ESRI GIS Engine</div>
     </div>
 
@@ -523,15 +579,15 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     <div id="waypointPlannerBox" class="wp-table-box">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <div style="font-size:13px; font-weight:700; color:#55d7ff;">
-          🛠️ Interactive 3D Waypoint Flight Plan Editor
+          Interactive 3D Waypoint Flight Plan Editor
           <span style="font-size:11px; color:#91a5c2; font-weight:normal; margin-left:8px;">
             (Click on map to add waypoints, drag markers to reposition)
           </span>
         </div>
         <div style="display:flex; gap:6px;">
           <button class="map-btn" style="background:#198754;" onclick="addNewWaypoint()">+ Add Waypoint</button>
-          <button class="map-btn" onclick="closeRouteToBase()">↺ Close / Return to Base</button>
-          <button class="map-btn" style="background:#3d1818; color:#ff7070;" onclick="resetWaypointsToPreset()">↺ Reset Route</button>
+          <button class="map-btn" onclick="closeRouteToBase()">Close / Return to Base</button>
+          <button class="map-btn" style="background:#3d1818; color:#ff7070;" onclick="resetWaypointsToPreset()">Reset Route</button>
         </div>
       </div>
 
@@ -558,14 +614,14 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   </div>
 
   <!-- 4. LIVE ENVIRONMENT & LIVE ENGINE DUAL PANELS -->
-  <div class="grid two" style="margin-bottom:14px;">
+  <div class="grid two" style="margin-bottom:14px;" data-apx-workspace="overview">
     <!-- LIVE ENVIRONMENT PANEL -->
     <div class="card" style="border-color:#1e4875;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h2 style="margin:0; font-size:15px; color:#55d7ff; display:flex; align-items:center; gap:6px;">
-          <span>🌍</span> LIVE ENVIRONMENTAL CONDITIONS
+          ENVIRONMENTAL CONDITIONS <span class="apx-provenance-tag" data-source="simulated">SOURCE DECLARED AT RUNTIME</span>
         </h2>
-        <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo)</span>
+        <span class="pill warn" id="envSourceBadge">SOURCE PENDING</span>
       </div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(125px,1fr)); gap:10px; font-size:12px;">
         <div class="auto-item">
@@ -607,9 +663,9 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     <div class="card" style="border-color:#1e4875;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h2 style="margin:0; font-size:15px; color:#55d7ff; display:flex; align-items:center; gap:6px;">
-          <span>⚡</span> LIVE ENGINE STATE (DIGITAL TWIN)
+          ENGINE TELEMETRY / DIGITAL TWIN <span class="apx-provenance-tag" data-source="simulated">SIMULATED</span>
         </h2>
-        <span class="pill good" id="engineHealthBadge">● 98% HEALTHY</span>
+        <span class="pill" id="engineHealthBadge">AWAITING ANALYSIS</span>
       </div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(115px,1fr)); gap:10px; font-size:12px;">
         <div class="auto-item">
@@ -649,7 +705,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   </div>
 
   <!-- 5. INTERACTIVE WEBGL ENGINE TWIN & RAW CAN BUS MONITOR -->
-  <div class="cutaway-card">
+  <div class="cutaway-card" data-apx-workspace="overview twin thermal">
     <div class="engine-card-heading">
       <div style="font-size:15px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:8px;">
         <span>◈</span> Interactive MALE-UAV Aero-Piston Digital Twin
@@ -661,15 +717,21 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 
     <div class="engine-digital-twin">
       <div class="engine-viewport">
-        <canvas id="engineCanvas" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine"></canvas>
+        <canvas id="engineCanvas" tabindex="0" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine" aria-describedby="engineInteractionHelp" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home PageUp PageDown + -"></canvas>
         <div class="engine-thermal-field" id="engineThermalField" aria-hidden="true">
           <div class="engine-thermal-aura engine-thermal-aura-outer"></div>
           <div class="engine-thermal-aura engine-thermal-aura-core"></div>
           <div class="engine-thermal-scale">
-            <span>LIVE THERMAL ENVELOPE</span>
+            <span>TELEMETRY THERMAL ENVELOPE</span>
             <strong id="engineThermalValue">220°F CHT · 1,200°F EGT</strong>
             <div class="engine-thermal-gradient"><i id="engineThermalMarker"></i></div>
             <small><span>COOL</span><span>NOMINAL</span><span>HOT</span><span>CRITICAL</span></small>
+            <div class="engine-thermal-meta">
+              <span id="engineThermalZone">HOTTEST · EGT CHANNEL 1</span>
+              <span id="engineThermalRate">RATE · NOT AVAILABLE</span>
+              <span id="engineThermalReference">REFERENCE · NOT REPORTED</span>
+              <span>LIMIT · NOT CONFIGURED</span>
+            </div>
           </div>
         </div>
         <div class="engine-scanline" aria-hidden="true"></div>
@@ -684,7 +746,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
           <span id="engineHudOil">60 PSI OIL</span>
           <span id="engineHudVibration">1.02 g RMS</span>
         </div>
-        <div class="engine-help">DRAG ORBIT · WHEEL ZOOM · CLICK COMPONENT · DOUBLE-CLICK RESET</div>
+        <div class="engine-help" id="engineInteractionHelp">DRAG OR ARROW KEYS · WHEEL OR +/- ZOOM · CLICK OR PAGE KEYS SELECT · DOUBLE-CLICK OR HOME RESET</div>
       </div>
 
       <aside class="engine-inspector" aria-live="polite">
@@ -716,10 +778,10 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
 
     <!-- CAN Bus Stream -->
-    <div style="margin-top:10px;">
+    <div style="margin-top:10px;" class="apx-engineer-only">
       <div style="display:flex; justify-content:space-between; font-size:11px; color:#91a5c2; margin-bottom:4px;">
         <span>RAW ECU CAN BUS / FADEC TELEMETRY STREAM (10 Hz)</span>
-        <span style="color:#5ce59a;">● SocketCAN / FADEC Synchronized</span>
+        <span style="color:#eab95c;">SIMULATED ECU / FADEC SCHEMA</span>
       </div>
       <div class="can-box" id="canBusStream">
         [CAN 0x201] RPM: 3000 | THROTTLE: 60.0% | MAP: 29.8 inHg | TIME: 00:14:22<br>
@@ -733,7 +795,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   </div>
 
   <!-- 6. EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE -->
-  <div class="card">
+  <div class="card apx-engineer-only" data-apx-workspace="diagnostics">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <h2 style="margin:0;">Experimental Fault Injection & Health Diagnostics</h2>
       <span class="pill" style="color:#ffd166; border-color:#614917; background:#241909;">
@@ -766,13 +828,13 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       </label>
 
       <div style="display:flex; align-items:flex-end;">
-        <button onclick="analyzeSnapshot()" style="width:100%;">⚡ Single-Point Analyze</button>
+        <button onclick="analyzeSnapshot()" style="width:100%;">Analyze Snapshot</button>
       </div>
     </div>
   </div>
 
   <!-- 7. DIGITAL TWIN KPIS & RESIDUALS -->
-  <div class="grid kpis" style="margin-top:14px;">
+  <div class="grid kpis" style="margin-top:14px;" data-apx-workspace="overview diagnostics rul">
     <div class="card">
       <div class="kpi-label">Health State</div>
       <div id="health" class="kpi">—</div>
@@ -804,9 +866,13 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
   </div>
 
-  <div class="grid two" style="margin-top:14px;">
+  <div class="grid two" style="margin-top:14px;" data-apx-workspace="replay maintenance">
     <div class="card">
       <h2>Mission Replay & Anomaly Health Timeline</h2>
+      <div class="apx-inline-actions">
+        <button type="button" id="apxRunReplay">Run Replay Analysis</button>
+        <span class="apx-provenance-tag" data-source="simulated">REPLAY · SIMULATED MISSION</span>
+      </div>
       <canvas id="timeline" width="800" height="250"></canvas>
       <div id="events"></div>
     </div>
@@ -819,7 +885,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
   </div>
 
-  <div class="grid three" style="margin-top:14px;">
+  <div class="grid three" style="margin-top:14px;" data-apx-workspace="diagnostics">
     <div class="card">
       <h2>Sensor Health & Trust</h2>
       <div id="sensorSummary" style="margin-bottom:10px;font-size:13px"></div>
@@ -847,7 +913,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
   </div>
 
-  <div class="grid two" style="margin-top:14px;">
+  <div class="grid two apx-engineer-only" style="margin-top:14px;" data-apx-workspace="diagnostics">
     <div class="card">
       <h2>Digital Twin Expected vs Observed Telemetry</h2>
       <div class="scroll">
@@ -868,6 +934,62 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       </div>
     </div>
   </div>
+
+  <section class="card apx-focus-workspace" data-apx-workspace="rul">
+    <div class="apx-workspace-heading">
+      <div>
+        <h2>Mission What-If / RUL Comparison</h2>
+        <p>Prototype trend-based estimate · not an operational airworthiness determination</p>
+      </div>
+      <span class="apx-provenance-tag" data-source="predicted">PREDICTED</span>
+    </div>
+    <div class="apx-whatif-layout">
+      <fieldset>
+        <legend>Baseline profile</legend>
+        <label>Altitude (ft)<input id="apxBaseAltitude" type="number" min="0" max="60000" value="8000"></label>
+        <label>Ambient (°C)<input id="apxBaseAmbient" type="number" min="-60" max="80" value="25"></label>
+        <label>Duration (h)<input id="apxBaseDuration" type="number" min="0.1" max="48" step="0.5" value="6"></label>
+        <label class="apx-check"><input id="apxBaseRapid" type="checkbox">Rapid throttle cycles</label>
+      </fieldset>
+      <fieldset>
+        <legend>Alternative profile</legend>
+        <label>Altitude (ft)<input id="apxAltAltitude" type="number" min="0" max="60000" value="18000"></label>
+        <label>Ambient (°C)<input id="apxAltAmbient" type="number" min="-60" max="80" value="35"></label>
+        <label>Duration (h)<input id="apxAltDuration" type="number" min="0.1" max="48" step="0.5" value="8"></label>
+        <label class="apx-check"><input id="apxAltRapid" type="checkbox" checked>Rapid throttle cycles</label>
+      </fieldset>
+      <div class="apx-whatif-command">
+        <button type="button" id="apxRunWhatIf">Compare Mission Profiles</button>
+        <p>Uses <code>POST /api/mission-whatif-rul</code> and the currently trained prototype model.</p>
+      </div>
+    </div>
+    <div class="apx-whatif-results" aria-live="polite">
+      <div><small>Baseline RUL</small><strong id="apxBaseRul">—</strong></div>
+      <div><small>Alternative RUL</small><strong id="apxAltRul">—</strong></div>
+      <div><small>RUL Delta</small><strong id="apxDeltaRul">—</strong></div>
+      <div><small>Health Delta</small><strong id="apxDeltaHealth">—</strong></div>
+      <div class="apx-result-reason"><small>Model Comparison</small><strong id="apxWhatIfRecommendation">No comparison has been run.</strong></div>
+    </div>
+  </section>
+
+  <section class="card apx-focus-workspace" data-apx-workspace="maintenance reports">
+    <div class="apx-workspace-heading">
+      <div>
+        <h2>Model, Evidence & System Status</h2>
+        <p>Declared model provenance and validation scope from the backend manifest</p>
+      </div>
+      <div class="apx-inline-actions">
+        <button type="button" id="apxLoadModelStatus">Refresh Status</button>
+        <button type="button" id="apxPrintReport">Print View</button>
+      </div>
+    </div>
+    <div class="apx-model-status" id="apxModelStatus" aria-live="polite">
+      <div><small>Model Version</small><strong>NOT LOADED</strong></div>
+      <div><small>Primary Dataset</small><strong>NOT LOADED</strong></div>
+      <div><small>Held-Out Evaluation</small><strong>NOT LOADED</strong></div>
+      <div><small>RUL Validation Scope</small><strong>NOT LOADED</strong></div>
+    </div>
+  </section>
 
   <div class="footer">
     AeroPulse-X / AeroTwin-MALE • SIH26054 UAV Digital Twin Prototype •
@@ -963,6 +1085,23 @@ function initUAVMap() {
     attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'
   });
 
+  Object.values(tileLayers).forEach(layer => {
+    layer.on('tileerror', () => {
+      const badge = $('mapDataBadge');
+      if (badge) {
+        badge.textContent = 'BASEMAP OFFLINE · LOCAL VECTOR OVERLAY ACTIVE';
+        badge.dataset.source = 'simulated';
+      }
+    });
+    layer.on('load', () => {
+      const badge = $('mapDataBadge');
+      if (badge) {
+        badge.textContent = 'ONLINE BASEMAP · LOCAL VECTOR OVERLAY';
+        badge.dataset.source = 'live';
+      }
+    });
+  });
+
   // Add default layer
   tileLayers[activeBaseLayer].addTo(uavMap);
 
@@ -976,7 +1115,7 @@ function initUAVMap() {
     const z = uavMap.getZoom();
     const bar = $('mapCursorCoords');
     if (bar) {
-      bar.textContent = `📍 Cursor: ${latStr}° N, ${lonStr}° E | Zoom: ${z} | Layer: ${activeBaseLayer.toUpperCase()}`;
+      bar.textContent = `CURSOR · ${latStr}° N, ${lonStr}° E · ZOOM ${z} · ${activeBaseLayer.toUpperCase()}`;
     }
   });
 
@@ -1045,13 +1184,13 @@ function toggleProximityHUD() {
   if (proximityHUDEnabled) {
     if (btn) {
       btn.classList.add('active');
-      btn.textContent = '🔍 Proximity HUD: ON';
+      btn.textContent = 'Proximity HUD: ON';
     }
     if (overlay) overlay.style.display = 'block';
   } else {
     if (btn) {
       btn.classList.remove('active');
-      btn.textContent = '🔍 Proximity HUD: OFF';
+      btn.textContent = 'Proximity HUD: OFF';
     }
     if (overlay) overlay.style.display = 'none';
   }
@@ -1114,12 +1253,12 @@ function setUIMode(mode) {
     $('btnModePlanner').classList.add('active');
     $('btnModeExecution').classList.remove('active');
     $('waypointPlannerBox').style.display = 'block';
-    $('mapModeSubtitle').textContent = '🛠️ Mission Design Mode • Click on map to add waypoints, drag markers to reposition';
+    $('mapModeSubtitle').textContent = 'Mission Design Mode • Click on map to add waypoints, drag markers to reposition';
   } else {
     $('btnModeExecution').classList.add('active');
     $('btnModePlanner').classList.remove('active');
     $('waypointPlannerBox').style.display = 'none';
-    $('mapModeSubtitle').textContent = '🚀 Mission Execution Mode • Live Geodesic Tracking • Autonomous Digital Twin';
+    $('mapModeSubtitle').textContent = 'Mission Execution Mode • Simulated Geodesic Tracking • Digital Twin Analysis';
   }
   renderWaypointsAndPlannedRoute();
 }
@@ -1398,7 +1537,7 @@ function toggleManualOverride(enabled) {
   if (enabled) {
     ctrls.style.opacity = '1.0';
     ctrls.style.pointerEvents = 'auto';
-    badge.textContent = 'SIMULATION MODE: ⚠️ MANUAL OVERRIDE ACTIVE';
+    badge.textContent = 'SIMULATION MODE: MANUAL OVERRIDE ACTIVE';
     badge.className = 'pill warn';
   } else {
     ctrls.style.opacity = '0.5';
@@ -1411,7 +1550,7 @@ function toggleManualOverride(enabled) {
 // ==========================================
 // 🛰️ Telemetry, Environment & Twin Synchronization
 // ==========================================
-function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLevel = 'LOW', riskScore = 0) {
+function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLevel = 'LOW', riskScore = 0, healthIndex = null) {
   if (!uav || !uavMap) return;
 
   const lat = uav.latitude;
@@ -1442,7 +1581,7 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
 
     uavMarker.bindPopup(`
       <div style="font-family:Inter,sans-serif;">
-        <div style="font-weight:bold; font-size:13px; color:#5ce59a;">✈️ AeroPulse-X MALE-UAV</div>
+        <div style="font-weight:bold; font-size:13px; color:#5ce59a;">AeroPulse-X MALE-UAV</div>
         <div style="font-size:11px; color:#91a5c2; margin-top:2px;">Phase: <b style="color:#eff6ff;">${phase}</b></div>
         <div style="font-size:11px; color:#91a5c2;">Altitude: <b style="color:#5ce59a;">${Math.round(alt).toLocaleString()} ft</b></div>
         <div style="font-size:11px; color:#91a5c2;">GS: <b style="color:#eff6ff;">${speed} kt</b> | TAS: <b>${airspeed} kt</b></div>
@@ -1501,8 +1640,18 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   // Update Live Environment Panel
   const env = envData || uav.environment;
   if (env) {
-    $('envSourceBadge').textContent = env.source === 'live' ? '● LIVE (Open-Meteo API)' : '● SIMULATED (ISA Model)';
-    $('envSourceBadge').className = 'pill ' + (env.source === 'live' ? 'good' : 'warn');
+    const envSource = String(env.source || 'unknown').toLowerCase();
+    const envSourceLabel = envSource === 'live'
+      ? 'LIVE · OPEN-METEO'
+      : envSource === 'manual_override'
+        ? 'MANUAL SIMULATION OVERRIDE'
+        : envSource === 'simulated'
+          ? 'SIMULATED · ISA MODEL'
+          : 'SOURCE UNKNOWN';
+    $('envSourceBadge').textContent = envSourceLabel;
+    $('envSourceBadge').className = 'pill ' + (envSource === 'live' ? 'good' : 'warn');
+    $('envBadge').textContent = envSourceLabel;
+    $('envBadge').className = 'badge ' + (envSource === 'live' ? 'live' : 'warn');
     $('envTemp').textContent = `${env.ambient_c} °C`;
     $('envPress').innerHTML = `${env.pressure_hpa} hPa <small style="font-size:10px; color:#91a5c2;">(${env.pressure_inhg} inHg)</small>`;
     $('envDensity').textContent = `${env.air_density_ratio}`;
@@ -1536,13 +1685,14 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   $('pxHealthBadge').textContent = healthState.toUpperCase();
   $('pxHealthBadge').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
 
-  $('pxHealth').textContent = `${(healthState === 'Normal' ? 98 : healthState === 'Watch' ? 76 : 42)}%`;
+  const displayedHealth = Number.isFinite(Number(healthIndex)) ? `${Number(healthIndex).toFixed(1)}%` : '—';
+  $('pxHealth').textContent = displayedHealth;
   $('pxHealth').className = healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad';
   $('pxRisk').textContent = `${riskLevel} (${Math.round(riskScore)})`;
   $('pxRisk').className = riskLevel === 'LOW' ? 'good' : riskLevel === 'MEDIUM' ? 'warn' : 'bad';
 }
 
-function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultName = null) {
+function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultName = null, thermalContext = {}) {
   if (!telemetry) return;
   const rpm = Math.round(telemetry.Engine_RPM || 3000);
   const thr = uav && uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : Math.round(telemetry.Throttle || 60);
@@ -1557,6 +1707,12 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
   $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 1)} PSI • ${fmt(telemetry.Oil_Temp, 1)} °C`;
   $('engFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
   $('engVib').textContent = `${fmt(telemetry.Vibration, 2)} g`;
+
+  const healthValue = Number(healthIndex);
+  if (Number.isFinite(healthValue)) {
+    $('engineHealthBadge').textContent = `${healthValue.toFixed(1)}% HEALTH INDEX`;
+    $('engineHealthBadge').className = 'pill ' + (healthValue >= 75 ? 'good' : healthValue >= 50 ? 'warn' : 'bad');
+  }
 
   // Update Proximity HUD Engine Fields
   $('pxRPM').textContent = `${rpm} RPM`;
@@ -1579,7 +1735,12 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
     vibration: telemetry.Vibration ?? telemetry.Vibration_RMS ?? 1.02,
     busVoltage: telemetry.Battery_Voltage ?? telemetry.Bus_Voltage ?? 28.2,
     health: healthIndex,
-    fault: faultName || $('fault')?.value || 'none'
+    fault: faultName || $('fault')?.value || 'none',
+    egtZones: [telemetry.EGT1, telemetry.EGT2, telemetry.EGT3],
+    sampleTimeMinutes: thermalContext.sampleTimeMinutes,
+    thermalReference: thermalContext.expected
+      ? Math.max(thermalContext.expected.EGT1 ?? -Infinity, thermalContext.expected.EGT2 ?? -Infinity, thermalContext.expected.EGT3 ?? -Infinity)
+      : null
   });
 }
 
@@ -1588,11 +1749,11 @@ function toggleFollowUAV() {
   const btn = $('btnFollow');
   if (followUAV) {
     btn.classList.add('active');
-    btn.textContent = '🎯 Follow UAV: ON';
+    btn.textContent = 'Follow UAV: ON';
     centerOnUAV();
   } else {
     btn.classList.remove('active');
-    btn.textContent = '🎯 Follow UAV: OFF';
+    btn.textContent = 'Follow UAV: OFF';
   }
 }
 
@@ -1915,7 +2076,7 @@ function renderAnalysis(r){
     hwState.fuelFlow = +(r.telemetry.Fuel_Flow || 20).toFixed(1);
     updateCutawayDisplay();
     updateCANStream();
-    updateLiveEnginePanel(r.telemetry, r.uav, r.health_index, r.fault_candidates?.[0]?.name);
+    updateLiveEnginePanel(r.telemetry, r.uav, r.health_index, r.fault_candidates?.[0]?.name, { expected: r.twin?.expected });
   }
 
   if(r.rul && r.rul.rul_hours!=null){
@@ -1925,8 +2086,10 @@ function renderAnalysis(r){
   }
 
   if (r.uav) {
-    updateUAVPosition(r.uav, r.environment, r.health_state, r.mission_risk.level, r.mission_risk.score);
+    updateUAVPosition(r.uav, r.environment, r.health_state, r.mission_risk.level, r.mission_risk.score, r.health_index);
   }
+
+  window.AeroPulseCommandUI?.updateFromAnalysis(r);
 }
 
 function renderRisk(r){
@@ -2024,7 +2187,8 @@ async function startLiveStream(){
       steps:60,
       playback_interval_s: 0.20
     })));
-    $('events').innerHTML='<div class="event"><strong>Autonomous Flight Stream Active</strong>UAV navigating planned 3D coordinates. Live weather & Digital Twin connected.</div>';
+    $('events').innerHTML='<div class="event"><strong>Autonomous Flight Stream Active</strong>UAV navigating simulated 3D coordinates. Environment source and Digital Twin are synchronized.</div>';
+    window.AeroPulseCommandUI?.setConnection('STREAM CONNECTED', 'online');
   };
 
   liveSocket.onmessage=e=>{
@@ -2043,7 +2207,7 @@ async function startLiveStream(){
       $('anomaly').textContent=`streaming • t=${fmt(p.time_min,0)} min • ${p.primary_fault}`;
 
       if(p.uav){
-        updateUAVPosition(p.uav, p.environment, p.health_state, p.risk_level, p.risk_score);
+        updateUAVPosition(p.uav, p.environment, p.health_state, p.risk_level, p.risk_score, p.health_index);
       }
 
       if(p.telemetry){
@@ -2058,21 +2222,28 @@ async function startLiveStream(){
         hwState.fuelFlow = +(p.telemetry.Fuel_Flow || 20).toFixed(1);
         updateCutawayDisplay();
         updateCANStream();
-        updateLiveEnginePanel(p.telemetry, p.uav, p.health_index, p.primary_fault);
+        updateLiveEnginePanel(p.telemetry, p.uav, p.health_index, p.primary_fault, { sampleTimeMinutes: p.time_min });
       }
+      window.AeroPulseCommandUI?.updateFromStream(p);
     }else if(m.type==='summary'){
       $('events').innerHTML+=`<div class="event"><strong>Mission Complete / Touchdown</strong>Peak risk: ${fmt(m.data.peak_risk_score,0)} • Final health: ${m.data.final_health_state}</div>`;
       $('autoPhasePill').textContent = 'COMPLETE';
       $('btnStartMission').style.display = 'inline-block';
       $('btnPauseMission').style.display = 'none';
       $('btnResumeMission').style.display = 'none';
+      window.AeroPulseCommandUI?.markMissionComplete(m.data);
     }else if(m.type==='error'){
       alert('Stream error: ' + m.message);
     }
   };
 
   liveSocket.onerror=()=>{
+    window.AeroPulseCommandUI?.setConnection('STREAM ERROR', 'offline');
     alert('WebSocket connection failed. Verify FastAPI server.');
+  };
+
+  liveSocket.onclose=()=>{
+    window.AeroPulseCommandUI?.setConnection('STREAM CLOSED', 'warning');
   };
 }
 
@@ -2102,5 +2273,6 @@ checkStatus();
 loadPresetMission('border_patrol_alpha');
 </script>
 <script src="/static/engine-3d.js"></script>
+<script src="/static/aeropulse-command.js"></script>
 </body>
 </html>
