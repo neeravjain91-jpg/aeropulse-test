@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AeroPulse-X • Path-Driven Automatic UAV Digital Twin & Live Mission Map</title>
-<!-- Leaflet OpenStreetMap Engine -->
+<title>AeroPulse-X • Interactive UAV Mission Map & Digital Twin GCS</title>
+<!-- Leaflet Interactive Geographic Map Engine -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -100,7 +100,8 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 /* UAV Live Mission Map & HUD Styles */
 .map-card{
   background:linear-gradient(180deg,#0e1d32,#091424);border:1px solid #244369;
-  border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 12px 35px #0006
+  border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 12px 35px #0006;
+  position:relative;
 }
 .map-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}
 .map-toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -110,12 +111,36 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 }
 .map-btn:hover{background:#1c3c69;border-color:#3f77bd}
 .map-btn.active{background:#23579e;border-color:#55d7ff;color:#55d7ff}
-#uavMap{height:390px;width:100%;border-radius:10px;background:#050d18;border:1px solid #1a314f;z-index:1}
+
+.map-wrapper{position:relative;width:100%;height:440px;border-radius:10px;overflow:hidden;border:1px solid #1a314f;}
+#uavMap{height:100%;width:100%;background:#050d18;z-index:1}
 .leaflet-container{background:#060e1a!important;font-family:inherit}
 .leaflet-popup-content-wrapper{
   background:#0c1a2d;color:#eff6ff;border:1px solid #2b4f7a;border-radius:8px;font-size:12px;box-shadow:0 6px 20px #0008
 }
 .leaflet-popup-tip{background:#0c1a2d;border:1px solid #2b4f7a}
+
+/* Floating UAV Close Proximity HUD Box */
+.proximity-hud-box{
+  position:absolute;top:12px;right:12px;z-index:1000;width:320px;
+  background:rgba(6,16,29,0.92);border:1px solid #275282;border-radius:10px;
+  padding:12px;backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,0.85);
+  font-size:11px;display:none;pointer-events:auto;
+}
+.prox-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1c395e}
+.prox-section{padding:6px 0;border-bottom:1px solid #152b47}
+.prox-sec-title{font-size:10px;text-transform:uppercase;color:#55d7ff;font-weight:700;letter-spacing:.06em;margin-bottom:4px}
+.prox-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}
+.prox-lbl{color:#8aa4c4;font-size:10px}
+.prox-grid b{color:#eff6ff;font-size:11px}
+
+/* Map Status Bar */
+.map-status-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  background:#040a14;padding:4px 10px;font-size:11px;color:#7893b4;
+  border-top:1px solid #14253b;
+}
+
 .map-hud{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;
   background:#060e1a;border:1px solid #182d48;border-radius:10px;padding:10px 12px;margin-top:10px
@@ -151,6 +176,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   .kpis{grid-template-columns:repeat(2,1fr)}
   .two,.three{grid-template-columns:1fr}
   .controls{grid-template-columns:repeat(2,1fr)}
+  .proximity-hud-box{width:260px;}
 }
 @media(max-width:600px){
   .shell{padding:12px}
@@ -158,6 +184,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   .kpis,.controls{grid-template-columns:1fr}
   .actions{flex-direction:column}
   .actions button{max-width:none}
+  .proximity-hud-box{display:none!important;}
 }
 </style>
 </head>
@@ -169,13 +196,13 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     <div class="brand">
       <h1>AeroPulse-X</h1>
       <div class="sub">
-        Path-Driven Automatic UAV Digital Twin • Live Environmental Coupling • SIH26054
+        Real Geographic UAV Mission Map • Close Proximity Tracking • Multi-Layer GIS • SIH26054
       </div>
     </div>
 
     <div class="badges">
       <span id="serverBadge" class="badge">Checking system…</span>
-      <span id="gpsBadge" class="badge live">● 3D GEODESIC NAVIGATION</span>
+      <span id="gpsBadge" class="badge live">● OPENSTREETMAP GIS</span>
       <span id="envBadge" class="badge live">● LIVE WEATHER / METAR</span>
       <span class="badge">Research Benchmark</span>
     </div>
@@ -191,7 +218,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
         <div>
           <div style="font-size:18px; font-weight:800; color:#fff;">MISSION CONTROL & FLIGHT PLANNER</div>
           <div style="font-size:12px; color:var(--muted);">
-            Path-Driven Flight Simulation • Live Meteorological Coupling • Dynamic Propulsion Demand
+            Path-Driven Flight Simulation • Real Geographic Map • Dynamic Propulsion Demand
           </div>
         </div>
       </div>
@@ -329,25 +356,36 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
   </div>
 
-  <!-- 3. UAV LIVE MISSION TRACKING (MAP + HUD + WAYPOINT PLANNER) -->
+  <!-- 3. REAL GEOGRAPHIC UAV MISSION MAP & CLOSE TRACKING -->
   <div class="map-card">
     <div class="map-header">
       <div>
         <div style="font-size:16px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:8px;">
-          <span>🗺️</span> UAV MISSION MAP & REAL-TIME 3D TRACKING
+          <span>🗺️</span> REAL GEOGRAPHIC UAV MISSION MAP & CLOSE TRACKING
         </div>
         <div style="font-size:12px; color:#91a5c2; margin-top:2px;" id="mapModeSubtitle">
-          Mission Execution Mode • Live Geodesic Tracking • Health-Aware Flight Trail
+          Real Geographic Coordinates • Multi-Layer GIS • Close UAV Proximity View
         </div>
       </div>
 
+      <!-- MAP TOOLBAR: BASE LAYERS & FOLLOW CONTROLS -->
       <div class="map-toolbar">
+        <!-- BASE MAP LAYER SWITCHER -->
+        <div style="display:flex; background:#071220; border:1px solid #203f68; border-radius:6px; padding:2px;">
+          <button id="btnLayerStandard" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('standard')">🗺️ Standard</button>
+          <button id="btnLayerDark" class="map-btn active" style="border:none; padding:4px 8px;" onclick="setMapLayer('dark')">🌌 Dark</button>
+          <button id="btnLayerSatellite" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('satellite')">🛰️ Satellite</button>
+          <button id="btnLayerTerrain" class="map-btn" style="border:none; padding:4px 8px;" onclick="setMapLayer('terrain')">⛰️ Terrain</button>
+        </div>
+
         <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">🎯 Follow UAV: ON</button>
         <button class="map-btn" onclick="centerOnUAV()">📍 Center UAV</button>
         <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit Route</button>
+        <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">🔍 Proximity HUD</button>
         <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">👁️ Route</button>
         <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">🚩 Waypoints</button>
-        <div style="display:flex; align-items:center; gap:4px; margin-left:6px;">
+        
+        <div style="display:flex; align-items:center; gap:4px; margin-left:4px;">
           <span style="font-size:11px; color:#91a5c2;">Speed:</span>
           <select id="replaySpeed" style="width:auto; padding:4px 6px; font-size:11px; margin:0;" onchange="updateReplaySpeed(this.value)">
             <option value="0.5">0.5x</option>
@@ -359,8 +397,82 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       </div>
     </div>
 
-    <!-- Leaflet Map Container -->
-    <div id="uavMap"></div>
+    <!-- Leaflet Map Container Wrapper -->
+    <div class="map-wrapper">
+      <div id="uavMap"></div>
+
+      <!-- CLOSE UAV PROXIMITY VIEW GLASS OVERLAY -->
+      <div id="uavProximityOverlay" class="proximity-hud-box">
+        <div class="prox-header">
+          <span style="font-weight:800; color:#55d7ff; font-size:11px; display:flex; align-items:center; gap:4px;">
+            <span>🔍</span> UAV CLOSE PROXIMITY VIEW
+          </span>
+          <span class="pill good" id="pxHealthBadge" style="font-size:9px; padding:2px 6px;">NORMAL</span>
+        </div>
+
+        <!-- 1. UAV LIVE FLIGHT STATE -->
+        <div class="prox-section">
+          <div class="prox-sec-title">✈️ UAV LIVE TELEMETRY</div>
+          <div class="prox-grid">
+            <div><span class="prox-lbl">LAT:</span> <b id="pxLat">28.4520° N</b></div>
+            <div><span class="prox-lbl">LON:</span> <b id="pxLon">77.0250° E</b></div>
+            <div><span class="prox-lbl">ALT:</span> <b id="pxAlt">8,000 ft</b></div>
+            <div><span class="prox-lbl">GS / TAS:</span> <b id="pxSpeed">142 / 145 kt</b></div>
+            <div><span class="prox-lbl">HEADING:</span> <b id="pxHdg">084°</b></div>
+            <div><span class="prox-lbl">VSI:</span> <b id="pxVSI">+850 fpm</b></div>
+            <div><span class="prox-lbl">PHASE:</span> <b id="pxPhase" style="color:#5ce59a;">CLIMB</b></div>
+            <div><span class="prox-lbl">ETA NEXT:</span> <b id="pxETA">4.2 min</b></div>
+          </div>
+        </div>
+
+        <!-- 2. ENVIRONMENT -->
+        <div class="prox-section">
+          <div class="prox-sec-title">🌍 LIVE ENVIRONMENT</div>
+          <div class="prox-grid">
+            <div><span class="prox-lbl">TEMP:</span> <b id="pxTemp">18.4 °C</b></div>
+            <div><span class="prox-lbl">PRESS:</span> <b id="pxPress">802 hPa</b></div>
+            <div><span class="prox-lbl">AIR DENSITY:</span> <b id="pxDensity">0.824 σ</b></div>
+            <div><span class="prox-lbl">WIND:</span> <b id="pxWind">12.5 kt @ 240°</b></div>
+            <div><span class="prox-lbl">HEADWIND:</span> <b id="pxHW">5.8 kt</b></div>
+            <div><span class="prox-lbl">SOURCE:</span> <b id="pxEnvSrc" class="good">LIVE</b></div>
+          </div>
+        </div>
+
+        <!-- 3. ENGINE STATE -->
+        <div class="prox-section">
+          <div class="prox-sec-title">⚡ ENGINE OPERATING STATE</div>
+          <div class="prox-grid">
+            <div><span class="prox-lbl">RPM:</span> <b id="pxRPM">3000 RPM</b></div>
+            <div><span class="prox-lbl">THROTTLE:</span> <b id="pxThr">58% AUTO</b></div>
+            <div><span class="prox-lbl">LOAD:</span> <b id="pxLoad">0.84 AUTO</b></div>
+            <div><span class="prox-lbl">CHT:</span> <b id="pxCHT">220.4 °F</b></div>
+            <div><span class="prox-lbl">EGT:</span> <b id="pxEGT">1205 °F</b></div>
+            <div><span class="prox-lbl">OIL P/T:</span> <b id="pxOil">60 PSI / 90°C</b></div>
+            <div><span class="prox-lbl">FUEL FLOW:</span> <b id="pxFuel">20.4 L/h</b></div>
+            <div><span class="prox-lbl">VIBRATION:</span> <b id="pxVib">1.02 g</b></div>
+          </div>
+        </div>
+
+        <!-- 4. DIGITAL TWIN -->
+        <div class="prox-section" style="border-bottom:none;">
+          <div class="prox-sec-title">🧠 DIGITAL TWIN & RISK</div>
+          <div class="prox-grid">
+            <div><span class="prox-lbl">HEALTH:</span> <b id="pxHealth" class="good">98.2%</b></div>
+            <div><span class="prox-lbl">ANOMALY:</span> <b id="pxAnomaly" class="good">0.012</b></div>
+            <div><span class="prox-lbl">DEGRAD:</span> <b id="pxDegrad">0.00%</b></div>
+            <div><span class="prox-lbl">RUL:</span> <b id="pxRUL" class="good">48.5 h</b></div>
+            <div><span class="prox-lbl">RISK:</span> <b id="pxRisk" class="good">LOW (12)</b></div>
+            <div><span class="prox-lbl">RELIABILITY:</span> <b id="pxRel">88.0%</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP STATUS & CURSOR COORDINATES BAR -->
+    <div class="map-status-bar">
+      <div id="mapCursorCoords">📍 Cursor: 28.4520° N, 77.0250° E | Zoom: 9</div>
+      <div>Geodetic Datum: WGS-84 • OpenStreetMap / ESRI GIS Engine</div>
+    </div>
 
     <!-- Live Telemetry Strip Below Map -->
     <div class="map-hud">
@@ -794,8 +906,11 @@ let flightTrailPoints = [];
 let currentUIMode = 'execution'; // 'planner' or 'execution'
 
 let followUAV = true;
+let proximityHUDEnabled = true;
 let isRouteVisible = true;
 let isWaypointsVisible = true;
+let activeBaseLayer = 'dark';
+let tileLayers = {};
 
 let liveSocket = null;
 let replayTimeline = [];
@@ -823,24 +938,62 @@ const hwState = {
 };
 
 // ==========================================
-// 🗺️ Leaflet Map Initialization
+// 🗺️ Leaflet Map Initialization & Multi-Layer GIS
 // ==========================================
 function initUAVMap() {
   if (uavMap) return;
 
   uavMap = L.map('uavMap', {
     zoomControl: true,
-    attributionControl: false
+    attributionControl: true
   }).setView([28.65, 77.40], 9);
 
-  // High-contrast Dark Matter cartography
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
-    subdomains: 'abcd'
-  }).addTo(uavMap);
+  // 1. Standard OpenStreetMap Tile Layer
+  tileLayers.standard = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+  });
+
+  // 2. High-Contrast Dark CartoDB Layer
+  tileLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/" target="_blank">CARTO</a>'
+  });
+
+  // 3. Real High-Resolution Satellite Imagery (ESRI World Imagery)
+  tileLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  });
+
+  // 4. Real Topographic & Terrain Layer (ESRI World Topo)
+  tileLayers.terrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'
+  });
+
+  // Add default layer
+  tileLayers[activeBaseLayer].addTo(uavMap);
 
   waypointLayerGroup = L.layerGroup().addTo(uavMap);
   riskSegmentsLayerGroup = L.layerGroup().addTo(uavMap);
+
+  // Mouse coordinate tracker for GCS cursor readout
+  uavMap.on('mousemove', e => {
+    const latStr = e.latlng.lat.toFixed(4);
+    const lonStr = e.latlng.lng.toFixed(4);
+    const z = uavMap.getZoom();
+    const bar = $('mapCursorCoords');
+    if (bar) {
+      bar.textContent = `📍 Cursor: ${latStr}° N, ${lonStr}° E | Zoom: ${z} | Layer: ${activeBaseLayer.toUpperCase()}`;
+    }
+  });
+
+  // Auto proximity HUD display when zooming in close
+  uavMap.on('zoomend', () => {
+    checkProximityHUDDisplay();
+  });
 
   // In planner mode, map clicks add new waypoints
   uavMap.on('click', e => {
@@ -868,11 +1021,57 @@ function initUAVMap() {
   });
 }
 
+function setMapLayer(layerName) {
+  if (!uavMap || !tileLayers[layerName]) return;
+  if (activeBaseLayer === layerName) return;
+
+  uavMap.removeLayer(tileLayers[activeBaseLayer]);
+  tileLayers[layerName].addTo(uavMap);
+  activeBaseLayer = layerName;
+
+  ['btnLayerStandard', 'btnLayerDark', 'btnLayerSatellite', 'btnLayerTerrain'].forEach(id => {
+    const btn = $(id);
+    if (btn) btn.classList.remove('active');
+  });
+
+  const activeBtnId = 'btnLayer' + layerName.charAt(0).toUpperCase() + layerName.slice(1);
+  if ($(activeBtnId)) $(activeBtnId).classList.add('active');
+}
+
+function checkProximityHUDDisplay() {
+  const overlay = $('uavProximityOverlay');
+  if (!overlay) return;
+  if (proximityHUDEnabled && uavMap && uavMap.getZoom() >= 10) {
+    overlay.style.display = 'block';
+  } else if (!proximityHUDEnabled) {
+    overlay.style.display = 'none';
+  }
+}
+
+function toggleProximityHUD() {
+  proximityHUDEnabled = !proximityHUDEnabled;
+  const btn = $('btnProxToggle');
+  const overlay = $('uavProximityOverlay');
+  if (proximityHUDEnabled) {
+    if (btn) {
+      btn.classList.add('active');
+      btn.textContent = '🔍 Proximity HUD: ON';
+    }
+    if (overlay) overlay.style.display = 'block';
+  } else {
+    if (btn) {
+      btn.classList.remove('active');
+      btn.textContent = '🔍 Proximity HUD: OFF';
+    }
+    if (overlay) overlay.style.display = 'none';
+  }
+}
+
 function createUAVIcon(headingDeg, healthColor = '#5ce59a') {
   const rotation = Math.round(headingDeg || 0);
   const svgHtml = `
     <div style="transform: rotate(${rotation}deg); transform-origin: center center; display: flex; justify-content: center; align-items: center;">
-      <svg width="34" height="34" viewBox="0 0 48 48" style="filter: drop-shadow(0 0 8px ${healthColor});">
+      <svg width="36" height="36" viewBox="0 0 48 48" style="filter: drop-shadow(0 0 10px ${healthColor});">
         <!-- Aircraft Fuselage -->
         <polygon points="24,2 29,20 29,38 24,42 19,38 19,20" fill="${healthColor}" stroke="#ffffff" stroke-width="1.5" />
         <!-- Main Wings -->
@@ -887,8 +1086,8 @@ function createUAVIcon(headingDeg, healthColor = '#5ce59a') {
   return L.divIcon({
     html: svgHtml,
     className: 'uav-aircraft-icon',
-    iconSize: [34, 34],
-    iconAnchor: [17, 17]
+    iconSize: [36, 36],
+    iconAnchor: [18, 18]
   });
 }
 
@@ -994,7 +1193,7 @@ function renderWaypointsAndPlannedRoute() {
     plannedRoutePolyline = L.polyline(currentPlannedCoords, {
       color: '#38bdf8',
       weight: 3,
-      opacity: 0.65,
+      opacity: 0.75,
       dashArray: '8, 8'
     }).addTo(uavMap);
   }
@@ -1232,9 +1431,11 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   const alt = uav.altitude_ft || 0;
   const speed = uav.ground_speed_kt || 0;
   const airspeed = uav.airspeed_kt || speed;
+  const vsi = uav.vertical_speed_fpm || 0;
   const phase = uav.mission_phase || 'CRUISE';
   const progress = uav.mission_progress || 0;
   const throttle = uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : 60;
+  const load = uav.auto_load != null ? uav.auto_load : 0.85;
   const amb = uav.ambient_c != null ? uav.ambient_c : 20.0;
 
   // Determine health color
@@ -1321,6 +1522,34 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
     $('envVisibility').textContent = `${env.visibility_km} km`;
     $('envCondition').textContent = env.weather_condition;
   }
+
+  // Update Floating Close Proximity HUD
+  $('pxLat').textContent = `${lat.toFixed(4)}° N`;
+  $('pxLon').textContent = `${lon.toFixed(4)}° E`;
+  $('pxAlt').textContent = `${Math.round(alt).toLocaleString()} ft`;
+  $('pxSpeed').textContent = `${speed} / ${airspeed} kt`;
+  $('pxHdg').textContent = `${String(Math.round(heading)).padStart(3, '0')}°`;
+  $('pxVSI').textContent = `${vsi >= 0 ? '+' : ''}${vsi} fpm`;
+  $('pxPhase').textContent = phase;
+  $('pxETA').textContent = `${uav.eta_next_wp_min || 0} min`;
+  
+  if (env) {
+    $('pxTemp').textContent = `${env.ambient_c} °C`;
+    $('pxPress').textContent = `${env.pressure_hpa} hPa`;
+    $('pxDensity').textContent = `${env.air_density_ratio} σ`;
+    $('pxWind').textContent = `${env.wind_speed_kt} kt @ ${env.wind_direction_deg}°`;
+    $('pxHW').textContent = `${env.headwind_kt} kt`;
+    $('pxEnvSrc').textContent = env.source.toUpperCase();
+    $('pxEnvSrc').className = env.source === 'live' ? 'good' : 'warn';
+  }
+
+  $('pxHealthBadge').textContent = healthState.toUpperCase();
+  $('pxHealthBadge').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
+
+  $('pxHealth').textContent = `${(healthState === 'Normal' ? 98 : healthState === 'Watch' ? 76 : 42)}%`;
+  $('pxHealth').className = healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad';
+  $('pxRisk').textContent = `${riskLevel} (${Math.round(riskScore)})`;
+  $('pxRisk').className = riskLevel === 'LOW' ? 'good' : riskLevel === 'MEDIUM' ? 'warn' : 'bad';
 }
 
 function updateLiveEnginePanel(telemetry, uav = null) {
@@ -1337,6 +1566,16 @@ function updateLiveEnginePanel(telemetry, uav = null) {
   $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 1)} PSI • ${fmt(telemetry.Oil_Temp, 1)} °C`;
   $('engFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
   $('engVib').textContent = `${fmt(telemetry.Vibration, 2)} g`;
+
+  // Update Proximity HUD Engine Fields
+  $('pxRPM').textContent = `${rpm} RPM`;
+  $('pxThr').textContent = `${thr}% AUTO`;
+  $('pxLoad').textContent = `${typeof load === 'number' ? load.toFixed(2) : load} AUTO`;
+  $('pxCHT').textContent = `${fmt(telemetry.CHT, 1)} °F`;
+  $('pxEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
+  $('pxOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI / ${fmt(telemetry.Oil_Temp, 0)}°C`;
+  $('pxFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
+  $('pxVib').textContent = `${fmt(telemetry.Vibration, 2)} g`;
 }
 
 function toggleFollowUAV() {
@@ -1354,7 +1593,7 @@ function toggleFollowUAV() {
 
 function centerOnUAV() {
   if (uavMarker && uavMap) {
-    uavMap.setView(uavMarker.getLatLng(), Math.max(uavMap.getZoom(), 10), { animate: true });
+    uavMap.setView(uavMarker.getLatLng(), Math.max(uavMap.getZoom(), 11), { animate: true });
   }
 }
 
