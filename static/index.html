@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AeroPulse-X • MALE-UAV Aero-Piston Digital Twin & Live Mission Map</title>
+<title>AeroPulse-X • Path-Driven Automatic UAV Digital Twin & Mission Map</title>
 <!-- Leaflet OpenStreetMap Engine -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -54,6 +54,8 @@ select,input,button{
 }
 button{cursor:pointer;font-weight:700;background:linear-gradient(90deg,#225bd8,#2d81e8);border-color:#477fe0;transition:filter .2s}
 button.secondary{background:#111f35;border-color:#2a4468}
+button.success{background:linear-gradient(90deg,#198754,#20c997);border-color:#20c997}
+button.danger{background:#441414;border-color:#842525;color:#ff7070}
 button:hover{filter:brightness(1.15)}
 .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .actions button{max-width:210px}
@@ -79,52 +81,36 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 .hidden{display:none}
 .footer{color:var(--muted);font-size:12px;padding:18px 2px 5px}
 
-/* Hardware Simulation & Engine Cutaway Styles */
-.hw-banner{
-  background:linear-gradient(90deg,#102a45,#0d1e34);border:1px solid #2a4c70;
-  border-radius:14px;padding:14px 16px;margin-bottom:14px
+/* Mission Control Banner & Auto Readout Strip */
+.mission-control-card{
+  background:linear-gradient(180deg,#12253f,#0a1628);border:1px solid #295382;
+  border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 10px 30px #0007
 }
-.hw-title{font-size:15px;font-weight:700;color:#55d7ff;display:flex;align-items:center;gap:8px}
-.hw-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:10px}
-.hw-group{background:#091426;border:1px solid #1f3552;border-radius:8px;padding:8px 10px}
-.hw-group label{display:flex;justify-content:space-between;font-size:11px;color:#91a5c2;font-weight:600}
-.hw-group input[type="range"]{width:100%;margin-top:4px;accent-color:#55d7ff}
-
-.subsystem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
-.subsystem-card{background:#0c182b;border:1px solid #203756;border-radius:12px;padding:10px;text-align:center}
-.subsystem-card .s-name{font-size:11px;color:#91a5c2;font-weight:600;text-transform:uppercase}
-.subsystem-card .s-score{font-size:20px;font-weight:800;margin:3px 0}
-
-.cutaway-card{background:#060e1a;border:1px solid #1d334e;border-radius:14px;padding:14px;margin-bottom:14px}
-.cutaway-svg{width:100%;max-height:260px;display:block;margin:auto}
-.can-box{
-  background:#050b14;border:1px solid #1a2f48;border-radius:8px;
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
-  color:#7ce38b;padding:8px 12px;max-height:120px;overflow-y:auto;line-height:1.45
+.mission-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.auto-flight-strip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px;
+  background:#06101d;border:1px solid #1b3658;border-radius:10px;padding:12px 14px;margin-bottom:12px
 }
-.whatif-box{background:#0a1628;border:1px solid #1f3757;border-radius:14px;padding:14px;margin-bottom:14px}
-.dispatch-card{background:#091322;border-left:4px solid #5ce59a;border-radius:8px;padding:12px 14px;margin-top:10px;font-size:13px}
-.dispatch-card.caution{border-color:#ffd166}
-.dispatch-card.nogo{border-color:#ff7070}
+.auto-item{display:flex;flex-direction:column}
+.auto-label{font-size:10px;text-transform:uppercase;color:#85a2c4;font-weight:700;letter-spacing:.05em}
+.auto-val{font-size:15px;font-weight:800;color:#eff6ff;margin-top:2px}
+.primary-mission-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.primary-mission-actions button{width:auto;min-width:140px;margin:0}
 
 /* UAV Live Mission Map & HUD Styles */
 .map-card{
   background:linear-gradient(180deg,#0e1d32,#091424);border:1px solid #244369;
   border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 12px 35px #0006
 }
-.map-header{
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px
-}
+.map-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}
 .map-toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .map-btn{
-  background:#132845;border:1px solid #254b79;color:#eff6ff;padding:5px 10px;
+  background:#132845;border:1px solid #254b79;color:#eff6ff;padding:6px 12px;
   border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;width:auto;margin:0
 }
 .map-btn:hover{background:#1c3c69;border-color:#3f77bd}
 .map-btn.active{background:#23579e;border-color:#55d7ff;color:#55d7ff}
-#uavMap{
-  height:380px;width:100%;border-radius:10px;background:#050d18;border:1px solid #1a314f;z-index:1
-}
+#uavMap{height:390px;width:100%;border-radius:10px;background:#050d18;border:1px solid #1a314f;z-index:1}
 .leaflet-container{background:#060e1a!important;font-family:inherit}
 .leaflet-popup-content-wrapper{
   background:#0c1a2d;color:#eff6ff;border:1px solid #2b4f7a;border-radius:8px;font-size:12px;box-shadow:0 6px 20px #0008
@@ -137,6 +123,29 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 .hud-item{display:flex;flex-direction:column}
 .hud-label{font-size:10px;text-transform:uppercase;color:#7b94b2;font-weight:700;letter-spacing:.05em}
 .hud-val{font-size:14px;font-weight:800;color:#eff6ff;margin-top:2px}
+
+/* Waypoint Editor Table */
+.wp-table-box{
+  background:#081322;border:1px solid #1f3756;border-radius:10px;padding:12px;margin-top:12px
+}
+.wp-input{padding:4px 6px;font-size:11px;margin:0;background:#060e1a;border-color:#203754}
+
+/* Subsystem & Cutaway Styles */
+.subsystem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.subsystem-card{background:#0c182b;border:1px solid #203756;border-radius:12px;padding:10px;text-align:center}
+.subsystem-card .s-name{font-size:11px;color:#91a5c2;font-weight:600;text-transform:uppercase}
+.subsystem-card .s-score{font-size:20px;font-weight:800;margin:3px 0}
+.cutaway-card{background:#060e1a;border:1px solid #1d334e;border-radius:14px;padding:14px;margin-bottom:14px}
+.cutaway-svg{width:100%;max-height:260px;display:block;margin:auto}
+.can-box{
+  background:#050b14;border:1px solid #1a2f48;border-radius:8px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+  color:#7ce38b;padding:8px 12px;max-height:120px;overflow-y:auto;line-height:1.45
+}
+.hw-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:10px}
+.hw-group{background:#091426;border:1px solid #1f3552;border-radius:8px;padding:8px 10px}
+.hw-group label{display:flex;justify-content:space-between;font-size:11px;color:#91a5c2;font-weight:600}
+.hw-group input[type="range"]{width:100%;margin-top:4px;accent-color:#55d7ff}
 
 @media(max-width:1000px){
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -160,55 +169,133 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     <div class="brand">
       <h1>AeroPulse-X</h1>
       <div class="sub">
-        Mission-Aware AI Digital Twin • MALE-UAV Aero-Piston Propulsion • SIH26054
+        Path-Driven Automatic UAV Digital Twin • MALE-UAV Aero-Piston Propulsion • SIH26054
       </div>
     </div>
 
     <div class="badges">
       <span id="serverBadge" class="badge">Checking system…</span>
-      <span id="gpsBadge" class="badge live">● SIMULATED GPS / INS</span>
-      <span class="badge">Research Prototype</span>
+      <span id="gpsBadge" class="badge live">● PATH-DRIVEN 3D FLIGHT SIMULATION</span>
       <span class="badge">GCS Decision Support</span>
+      <span class="badge">Research Benchmark</span>
     </div>
   </div>
 
   <div id="setupNotice" class="notice hidden"></div>
 
-  <!-- UAV Hardware & Flight Envelope Simulation Console -->
-  <div class="hw-banner">
-    <div style="width:100%;">
-      <div class="hw-title">
-        <span>⚙️</span> Localhost UAV Flight Envelope & Engine Controls
-      </div>
-      <div style="font-size:12px; color:#91a5c2; margin-top:2px;">
-        Controls dynamically feed the ISA atmospheric model, UAV navigation waypoint progression, and Digital Twin.
+  <!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
+  <div class="card mission-control-card">
+    <div class="mission-header">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:24px;">🛰️</span>
+        <div>
+          <div style="font-size:18px; font-weight:800; color:#fff;">MISSION CONTROL & FLIGHT PLANNER</div>
+          <div style="font-size:12px; color:var(--muted);">
+            Autonomous 3D Route Simulation • ISA Atmosphere Lapse Rate • Dynamic Throttle Scheduling
+          </div>
+        </div>
       </div>
 
-      <div class="hw-controls">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <span class="pill good" id="simModeBadge" style="font-size:12px; padding:6px 14px;">
+          SIMULATION MODE: ● AUTOMATIC
+        </span>
+        <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">🛠️ MISSION DESIGN</button>
+        <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">🚀 MISSION EXECUTION</button>
+      </div>
+    </div>
+
+    <!-- AUTOMATIC PARAMETER READOUT STRIP -->
+    <div class="auto-flight-strip">
+      <div class="auto-item">
+        <span class="auto-label">Active Mission</span>
+        <span class="auto-val info" id="autoMissionName">ISR Border Patrol Alpha</span>
+      </div>
+      <div class="auto-item">
+        <span class="auto-label">Route Envelope</span>
+        <span class="auto-val" id="autoRouteSummary">9 Waypoints • 215.1 km</span>
+      </div>
+      <div class="auto-item">
+        <span class="auto-label">Est. Flight Duration</span>
+        <span class="auto-val" id="autoEstDuration">1h 45m</span>
+      </div>
+      <div class="auto-item">
+        <span class="auto-label">Mission Phase</span>
+        <span class="auto-val"><span id="autoPhasePill" class="pill good">READY</span></span>
+      </div>
+      <div class="auto-item">
+        <span class="auto-label">Current Altitude</span>
+        <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:10px; color:#5ce59a;">AUTO</small></span>
+      </div>
+      <div class="auto-item">
+        <span class="auto-label">Ground Speed</span>
+        <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:10px; color:#5ce59a;">AUTO</small></span>
+      </div>
+      <div class="auto-item">
+        <span class="auto-label">Auto Throttle</span>
+        <span class="auto-val" id="autoThrottle">58% <small style="font-size:10px; color:#5ce59a;">AUTO</small></span>
+      </div>
+      <div class="auto-item">
+        <span class="auto-label">Ambient Temp</span>
+        <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:10px; color:#5ce59a;">AUTO (ISA)</small></span>
+      </div>
+    </div>
+
+    <!-- PRIMARY MISSION ACTIONS -->
+    <div class="primary-mission-actions">
+      <button id="btnStartMission" class="success" onclick="startAutomaticMission()">🚀 START MISSION SIMULATION</button>
+      <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
+      <button id="btnResumeMission" style="display:none; background:#225bd8;" onclick="toggleMissionPause()">▶ Resume</button>
+      <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
+      <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
+      
+      <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:11px; color:#91a5c2; font-weight:600;">Mission Preset:</span>
+        <select id="selMissionPreset" style="width:auto; margin:0; padding:6px 10px;" onchange="loadPresetMission(this.value)">
+          <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
+          <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
+          <option value="coastal_maritime">Coastal & Maritime Patrol Charlie (7 WPs)</option>
+          <option value="custom">Custom Interactive Route</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
+    <details style="margin-top:14px; background:#081322; border:1px solid #1c3350; border-radius:8px; padding:10px 14px;">
+      <summary style="font-size:12px; font-weight:700; color:#91a5c2; cursor:pointer;">
+        ⚙️ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
+      </summary>
+      <div style="font-size:11px; color:#ffd166; margin:8px 0;">
+        ⚠️ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
+          <span style="color:#eff6ff; font-weight:bold;">Enable Manual Parameter Override</span>
+        </label>
+      </div>
+      <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
         <div class="hw-group">
-          <label><span>Throttle Lever</span><span id="hwValThrottle">60%</span></label>
+          <label><span>Manual Throttle Lever</span><span id="hwValThrottle">60%</span></label>
           <input type="range" id="hwSliderThrottle" min="10" max="100" value="60">
         </div>
-
         <div class="hw-group">
-          <label><span>Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
+          <label><span>Manual Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
           <input type="range" id="hwSliderAltitude" min="0" max="30000" step="500" value="8000">
         </div>
-
         <div class="hw-group">
-          <label><span>Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
+          <label><span>Manual Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
           <input type="range" id="hwSliderAmbient" min="-20" max="50" value="35">
         </div>
-
         <div class="hw-group">
-          <label><span>Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
+          <label><span>Manual Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
           <input type="range" id="hwSliderDuration" min="1" max="24" step="0.5" value="6">
         </div>
       </div>
-    </div>
+    </details>
   </div>
 
-  <!-- 6-Subsystem Health Status Cards -->
+  <!-- 2. 6-SUBSYSTEM HEALTH STATUS CARDS -->
   <div class="subsystem-grid">
     <div class="subsystem-card">
       <div class="s-name">Thermal Subsys</div>
@@ -242,22 +329,22 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
   </div>
 
-  <!-- UAV LIVE MISSION TRACKING (MAP + HUD) -->
+  <!-- 3. UAV LIVE MISSION TRACKING (MAP + HUD + WAYPOINT PLANNER) -->
   <div class="map-card">
     <div class="map-header">
       <div>
-        <div class="hw-title">
-          <span>🗺️</span> UAV LIVE MISSION TRACKING & WAYPOINT NAVIGATION
+        <div style="font-size:16px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:8px;">
+          <span>🗺️</span> UAV MISSION MAP & REAL-TIME 3D TRACKING
         </div>
-        <div style="font-size:12px; color:#91a5c2; margin-top:2px;">
-          Deterministic 3D Waypoint Navigation • Health-Aware Flight Trail • Simulated GPS/INS Stream
+        <div style="font-size:12px; color:#91a5c2; margin-top:2px;" id="mapModeSubtitle">
+          Mission Execution Mode • Live Geodesic Tracking • Health-Aware Flight Trail
         </div>
       </div>
 
       <div class="map-toolbar">
         <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">🎯 Follow UAV: ON</button>
         <button class="map-btn" onclick="centerOnUAV()">📍 Center UAV</button>
-        <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit Mission</button>
+        <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit Route</button>
         <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">👁️ Route</button>
         <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">🚩 Waypoints</button>
         <div style="display:flex; align-items:center; gap:4px; margin-left:6px;">
@@ -269,8 +356,6 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
             <option value="5.0">5.0x</option>
           </select>
         </div>
-        <button id="btnPlayPause" class="map-btn" style="background:#225bd8; color:#fff;" onclick="toggleReplayPlayPause()">⏸ Pause</button>
-        <button class="map-btn" style="background:#111f35;" onclick="restartMissionReplay()">↺ Restart</button>
       </div>
     </div>
 
@@ -301,7 +386,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
       </div>
       <div class="hud-item">
         <span class="hud-label">Mission Phase</span>
-        <span class="hud-val"><span id="hudPhase" class="pill good">CRUISE</span></span>
+        <span class="hud-val"><span id="hudPhase" class="pill good">READY</span></span>
       </div>
       <div class="hud-item">
         <span class="hud-label">Progress</span>
@@ -320,12 +405,49 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
         <span class="hud-val" id="hudWaypoint" style="font-size:12px; color:#55d7ff;">WP01 • Departure (4.2 min)</span>
       </div>
     </div>
+
+    <!-- 4. INTERACTIVE WAYPOINT LIST & FLIGHT PLANNER (VISIBLE IN DESIGN MODE) -->
+    <div id="waypointPlannerBox" class="wp-table-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <div style="font-size:13px; font-weight:700; color:#55d7ff;">
+          🛠️ Interactive 3D Waypoint Flight Plan Editor
+          <span style="font-size:11px; color:#91a5c2; font-weight:normal; margin-left:8px;">
+            (Click on map to add waypoints, drag markers to reposition)
+          </span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="map-btn" style="background:#198754;" onclick="addNewWaypoint()">+ Add Waypoint</button>
+          <button class="map-btn" onclick="closeRouteToBase()">↺ Close / Return to Base</button>
+          <button class="map-btn" style="background:#3d1818; color:#ff7070;" onclick="resetWaypointsToPreset()">↺ Reset Route</button>
+        </div>
+      </div>
+
+      <div style="max-height:220px; overflow-y:auto;">
+        <table class="tbl" id="waypointsTable">
+          <thead>
+            <tr>
+              <th style="width:60px;">ID</th>
+              <th>Waypoint Name</th>
+              <th style="width:110px;">Type / Phase</th>
+              <th style="width:100px;">Altitude (ft)</th>
+              <th style="width:90px;">Speed (kt)</th>
+              <th style="width:85px;">Loiter (min)</th>
+              <th style="width:140px;">Coordinates</th>
+              <th style="width:100px; text-align:center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="waypointsTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
-  <!-- Dynamic Interactive Aero-Piston Engine Cutaway & CAN Monitor -->
+  <!-- 5. REAL-TIME ENGINE CUTAWAY & RAW CAN BUS MONITOR -->
   <div class="cutaway-card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <div class="hw-title">
+      <div style="font-size:15px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:8px;">
         <span>⚡</span> Real-Time UAV Aero-Piston Engine Cutaway & Thermal Heatmap
       </div>
       <div style="font-size:12px; color:#91a5c2;">
@@ -417,410 +539,362 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
     </div>
   </div>
 
-  <!-- Mission & Fault Test Console -->
+  <!-- 6. EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE -->
   <div class="card">
-    <h2>Mission & Fault Test Console</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <h2 style="margin:0;">Experimental Fault Injection & Health Diagnostics</h2>
+      <span class="pill" style="color:#ffd166; border-color:#614917; background:#241909;">
+        Testing Subsystem • Injects anomalies into simulated flight
+      </span>
+    </div>
 
     <div class="grid controls">
       <label>
-        Operating state
-        <select id="operating">
-          <option>CRUISE</option>
-          <option>CRUISE_LOW</option>
-          <option>HIGH</option>
-        </select>
-      </label>
-
-      <label>
-        Fault injection
+        Inject Engine Fault
         <select id="fault">
-          <option value="none">None / healthy</option>
+          <option value="none">None / Healthy Baseline</option>
           <option value="overheating">Overheating</option>
-          <option value="lubrication">Lubrication degradation</option>
-          <option value="misfire">Misfire-like</option>
-          <option value="injector">Injector abnormality</option>
-          <option value="sensor_drift">Sensor drift</option>
-          <option value="electrical">Battery / alternator</option>
+          <option value="lubrication">Lubrication Degradation</option>
+          <option value="misfire">Misfire-Like Combustion</option>
+          <option value="injector">Injector Abnormality</option>
+          <option value="sensor_drift">Sensor Drift</option>
+          <option value="electrical">Battery / Alternator</option>
         </select>
       </label>
 
       <label>
-        Fault severity (0–1)
+        Fault Severity (0.0 – 1.0)
         <input id="severity" type="number" min="0" max="1" step="0.1" value="0.6">
       </label>
 
       <label>
-        Fault onset in replay
+        Fault Onset Point (% of mission)
         <input id="onset" type="number" min="0" max="0.95" step="0.05" value="0.35">
       </label>
 
-      <label>
-        Altitude (ft)
-        <input id="altitude" type="number" value="8000">
-      </label>
-
-      <label>
-        Ambient temp (°C)
-        <input id="ambient" type="number" value="35">
-      </label>
-
-      <label>
-        Mission duration (h)
-        <input id="duration" type="number" value="6">
-      </label>
-
-      <label>
-        Rapid throttle transitions
-        <select id="throttle">
-          <option value="false">No</option>
-          <option value="true">Yes</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="actions">
-      <button onclick="analyzeSnapshot()">Analyze Snapshot</button>
-      <button class="secondary" onclick="runReplay()">Run Mission Replay</button>
-      <button class="secondary" onclick="startLiveStream()">Start Live Stream</button>
-      <button class="secondary" onclick="loadMetrics()">Model Validation</button>
+      <div style="display:flex; align-items:flex-end;">
+        <button onclick="analyzeSnapshot()" style="width:100%;">⚡ Single-Point Analyze</button>
+      </div>
     </div>
   </div>
 
-  <!-- KPI Summary Cards -->
-  <div class="grid kpis">
+  <!-- 7. DIGITAL TWIN KPIS & RESIDUALS -->
+  <div class="grid kpis" style="margin-top:14px;">
     <div class="card">
-      <div class="kpi-label">Engine Health</div>
+      <div class="kpi-label">Health State</div>
       <div id="health" class="kpi">—</div>
-      <div id="healthSub" class="tiny">waiting</div>
+      <div id="healthSub" class="tiny">ML status</div>
     </div>
 
     <div class="card">
       <div class="kpi-label">Health Index</div>
       <div id="healthIndex" class="kpi">—</div>
-      <div class="tiny">0–100 composite index</div>
+      <div class="tiny">0–100 scale</div>
     </div>
 
     <div class="card">
       <div class="kpi-label">Mission Risk</div>
       <div id="missionRisk" class="kpi">—</div>
-      <div id="reliability" class="tiny">reliability index —</div>
+      <div id="reliability" class="tiny">reliability index</div>
+    </div>
+
+    <div class="card">
+      <div class="kpi-label">Remaining Useful Life (RUL)</div>
+      <div id="rul" class="kpi">—</div>
+      <div id="rulSub" class="tiny">Predicted flight endurance remaining</div>
     </div>
 
     <div class="card">
       <div class="kpi-label">Twin Residual RMS</div>
       <div id="residual" class="kpi">—</div>
-      <div id="anomaly" class="tiny">anomaly —</div>
-    </div>
-
-    <div class="card">
-      <div class="kpi-label">RUL Prognostics</div>
-      <div id="rul" class="kpi">—</div>
-      <div id="rulSub" class="tiny">requires replay trend</div>
+      <div id="anomaly" class="tiny">anomaly flag</div>
     </div>
   </div>
 
-  <!-- Replay Timeline & Risk Breakdown -->
-  <div class="grid two">
+  <div class="grid two" style="margin-top:14px;">
     <div class="card">
-      <h2>Mission Replay Timeline</h2>
-      <canvas id="timeline" width="900" height="280"></canvas>
-
-      <div id="events" class="tiny" style="margin-top:10px">
-        Run Mission Replay or Start Live Stream to view degradation and early-warning timing.
-      </div>
+      <h2>Mission Replay & Anomaly Health Timeline</h2>
+      <canvas id="timeline" width="800" height="250"></canvas>
+      <div id="events"></div>
     </div>
 
     <div class="card">
-      <h2>Explainable Mission Risk</h2>
-
-      <div id="riskBreakdown">
-        <div class="tiny">Run a scenario.</div>
-      </div>
-
-      <h3 style="margin-top:16px">Maintenance Advisory & Flight Dispatch</h3>
-
-      <div id="advice" class="event">
-        No analysis yet.
-      </div>
+      <h2>Actionable Maintenance Advisory</h2>
+      <div id="advice" class="event">—</div>
+      <h3 style="margin-top:14px;">Probable Fault Candidates</h3>
+      <div id="faults" class="scroll"></div>
     </div>
   </div>
 
-  <!-- What-If Mission Profile Comparator -->
-  <div class="whatif-box">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-      <div class="hw-title">
-        <span>🎯</span> What-If Mission Profile Comparator & RUL Impact
-      </div>
-      <button onclick="runWhatIfComparison()" style="max-width:200px; padding:6px 12px; font-size:12px;">Compare What-If Plan</button>
-    </div>
-
-    <div class="grid two">
-      <div style="background:#06101e; border:1px solid #1a2f48; border-radius:8px; padding:10px;">
-        <h4 style="margin:0 0 6px; color:#5ce59a; font-size:13px;">Baseline Mission Plan</h4>
-        <div style="font-size:12px; color:#91a5c2;" id="whatifBaseInfo">
-          Altitude: 8,000 ft • Ambient: 35°C • Duration: 6.0h • Nominal Cruise
-        </div>
-        <div style="margin-top:8px; font-size:12px;" id="whatifBaseResults">
-          Projected RUL: <b>1850.0 h</b> • Projected Fuel: <b>122.4 L</b>
-        </div>
-      </div>
-
-      <div style="background:#06101e; border:1px solid #1a2f48; border-radius:8px; padding:10px;">
-        <h4 style="margin:0 0 6px; color:#55d7ff; font-size:13px;">Alternative Flight Profile</h4>
-        <div style="font-size:12px; color:#91a5c2;" id="whatifAltInfo">
-          Altitude: 22,000 ft (High Loiter) • Hot & High (42°C) • Rapid Maneuvers
-        </div>
-        <div style="margin-top:8px; font-size:12px;" id="whatifAltResults">
-          Projected RUL: <b>1420.0 h</b> (Δ: -430h) • Projected Fuel: <b>148.0 L</b> (+20.9%)
-        </div>
-      </div>
-    </div>
-
-    <div class="dispatch-card" id="dispatchCard">
-      <div style="font-weight:bold; color:#5ce59a;" id="dispatchStatusText">● [DISPATCH CLEARED] - GO MISSION READY</div>
-      <div style="font-size:12px; margin-top:4px; color:#cbd5e1;" id="dispatchDirectiveText">
-        All propulsion and thermodynamic parameters within 1.5-sigma healthy baseline. Engine synchronized with Digital Twin.
-      </div>
-      <div style="font-size:11px; margin-top:4px; color:#91a5c2;" id="dispatchEchelonText">
-        Echelon: O-Level (Flight Line) • SOP: TO-UAV-ENG-ROUTINE-01 • Urgency: ROUTINE
-      </div>
-    </div>
-  </div>
-
-  <!-- Diagnostics, Sensor Trust & Dominant Deviations -->
-  <div class="grid three">
+  <div class="grid three" style="margin-top:14px;">
     <div class="card">
-      <h2>AI Diagnostics</h2>
-      <div id="faults">Run a scenario.</div>
-    </div>
-
-    <div class="card">
-      <h2>Sensor Trust</h2>
-
-      <div id="sensorSummary" class="tiny">
-        Run a scenario.
-      </div>
-
+      <h2>Sensor Health & Trust</h2>
+      <div id="sensorSummary" style="margin-bottom:10px;font-size:13px"></div>
       <div class="scroll">
         <table class="tbl">
+          <thead><tr><th>Channel</th><th>Trust</th></tr></thead>
           <tbody id="sensorTable"></tbody>
         </table>
       </div>
     </div>
 
     <div class="card">
-      <h2>Dominant Twin Deviations</h2>
-
+      <h2>Physics-Informed Deviations</h2>
       <div class="scroll">
         <table class="tbl">
-          <thead>
-            <tr>
-              <th>Signal</th>
-              <th>z</th>
-              <th>Δ%</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Parameter</th><th>Z-Score</th><th>Dev %</th></tr></thead>
           <tbody id="deviationTable"></tbody>
         </table>
       </div>
     </div>
+
+    <div class="card">
+      <h2>Mission Risk Breakdown</h2>
+      <div id="riskBreakdown"></div>
+    </div>
   </div>
 
-  <!-- Telemetry & Expected Comparison -->
-  <div class="grid two">
+  <div class="grid two" style="margin-top:14px;">
     <div class="card">
-      <h2>Observed Telemetry</h2>
-
+      <h2>Digital Twin Expected vs Observed Telemetry</h2>
       <div class="scroll">
         <table class="tbl">
-          <tbody id="telemetry"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Expected vs Observed</h2>
-
-      <div class="scroll">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Expected</th>
-              <th>Observed</th>
-              <th>z</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Parameter</th><th>Expected</th><th>Observed</th><th>Z-Score</th></tr></thead>
           <tbody id="compare"></tbody>
         </table>
       </div>
     </div>
-  </div>
 
-  <!-- Model Validation Panel -->
-  <div id="metricsCard" class="card hidden">
-    <h2>Model Validation</h2>
-    <div id="metrics"></div>
-  </div>
-
-  <div class="card">
-    <h2>System Architecture</h2>
-    <pre style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:#b8d5ff; background:#081424; border:1px solid #1e334f; border-radius:10px; padding:12px; font-size:12px; line-height:1.5; overflow-x:auto;">
-UAV Mission Waypoints & Flight Plan
-         ↓
-Simulated / Real GPS & INS Navigation Stream
-         ↓
-Context-Aware UAV Mission Simulator & ISA Atmospheric Model
-         ↓
-Reduced-Order Thermodynamic Piston Engine Twin
-         ↓
-Multi-Channel Sensor Observations & Real-Time CAN Bus Stream
-         ↓
-Digital Twin Residuals & Isolation Forest Anomaly Detection
-         ↓
-Hybrid 4-State Health Assessment & RUL Prognostics
-         ↓
-Explainable Mission Risk & Military Flight Dispatch Advisory
-    </pre>
+    <div class="card">
+      <h2>Raw Parameter Telemetry</h2>
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Sensor</th><th>Value</th></tr></thead>
+          <tbody id="telemetry"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
-    AeroPulse-X is an indigenous Digital Twin framework for MALE UAV aero-piston engines. SIH26054 research prototype.
+    AeroPulse-X / AeroTwin-MALE • SIH26054 UAV Digital Twin Prototype •
+    Deterministic Geodesic Simulation & Reduced-Order Physics Model calibrated for MALE-UAV propulsion.
   </div>
 
 </div>
 
 <script>
-const $=id=>document.getElementById(id);
-
-const hwState = {
-  throttle: 60,
-  altitude: 8000,
-  ambient: 35,
-  rpm: 3000,
-  cht: 220,
-  egt1: 1200,
-  egt2: 1205,
-  egt3: 1195,
-  oilTemp: 90,
-  oilPress: 60,
-  fuelFlow: 20,
-  map: 30
-};
-
 // ==========================================
-// 🗺️ Leaflet UAV Mission Map Subsystem
+// 🛰️ Global State & Navigation Core
 // ==========================================
+const $ = id => document.getElementById(id);
+
 let uavMap = null;
 let uavMarker = null;
 let plannedRoutePolyline = null;
 let flightTrailPolyline = null;
 let waypointLayerGroup = null;
+
+let currentWaypoints = [];
+let currentPlannedCoords = [];
+let flightTrailPoints = [];
+let currentUIMode = 'execution'; // 'planner' or 'execution'
+
 let followUAV = true;
 let isRouteVisible = true;
 let isWaypointsVisible = true;
-let flightTrailPoints = [];
-let currentWaypoints = [];
+
+let liveSocket = null;
 let replayTimeline = [];
 let replayIndex = 0;
 let replayTimer = null;
-let replaySpeedMultiplier = 1.0;
 let isReplayPaused = false;
-let liveSocket = null;
+let replaySpeedMultiplier = 1.0;
 
+let manualOverrideEnabled = false;
+
+const hwState = {
+  throttle: 60,
+  altitude: 8000,
+  ambient: 35,
+  duration: 6,
+  cht: 220,
+  egt1: 1200,
+  egt2: 1205,
+  egt3: 1195,
+  oilPress: 60,
+  oilTemp: 90,
+  map: 29.8,
+  rpm: 3000,
+  fuelFlow: 20.4
+};
+
+// ==========================================
+// 🗺️ Leaflet Map Initialization
+// ==========================================
 function initUAVMap() {
   if (uavMap) return;
 
-  const defaultCenter = [28.65, 77.45];
   uavMap = L.map('uavMap', {
-    center: defaultCenter,
-    zoom: 9,
     zoomControl: true,
     attributionControl: false
-  });
+  }).setView([28.65, 77.40], 9);
 
-  // Dark Matter CartoDB Basemap (Free, open, military GCS theme)
+  // High-contrast Dark Matter cartography
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    subdomains: 'abcd',
+    maxZoom: 18,
+    subdomains: 'abcd'
   }).addTo(uavMap);
 
   waypointLayerGroup = L.layerGroup().addTo(uavMap);
 
-  // User drag disables auto-follow until re-enabled
-  uavMap.on('dragstart', () => {
-    followUAV = false;
-    $('btnFollow').classList.remove('active');
-    $('btnFollow').textContent = '🎯 Follow UAV: OFF';
+  // In planner mode, map clicks add new waypoints
+  uavMap.on('click', e => {
+    if (currentUIMode === 'planner') {
+      const newId = `WP${String(currentWaypoints.length).padStart(2, '0')}`;
+      const lastWp = currentWaypoints[currentWaypoints.length - 1];
+      const alt = lastWp ? lastWp.altitude_ft : 10000;
+      const speed = lastWp ? lastWp.speed_kt : 135;
+      
+      const newWp = {
+        id: newId,
+        name: `Recon Point ${newId}`,
+        latitude: parseFloat(e.latlng.lat.toFixed(4)),
+        longitude: parseFloat(e.latlng.lng.toFixed(4)),
+        altitude_ft: alt,
+        type: 'ISR',
+        speed_kt: speed,
+        loiter_time_min: 10,
+        description: 'Operator Added Waypoint'
+      };
+      
+      currentWaypoints.push(newWp);
+      refreshFlightPlan();
+    }
   });
-
-  loadMissionWaypoints();
 }
 
-function createUAVIcon(heading = 0, healthColor = '#5ce59a') {
-  const svg = `
-    <div style="transform: rotate(${heading}deg); transition: transform 0.25s linear; display:flex; align-items:center; justify-content:center; width:44px; height:44px;">
-      <svg width="40" height="40" viewBox="0 0 48 48" style="filter: drop-shadow(0 0 10px ${healthColor});">
-        <!-- Aircraft Wings & Fuselage -->
-        <path d="M24,3 L29,19 L46,26 L46,30 L29,26 L29,38 L35,42 L35,45 L24,42 L13,45 L13,42 L19,38 L19,26 L2,30 L2,26 L19,19 Z" 
-              fill="${healthColor}" stroke="#ffffff" stroke-width="1.8" />
-        <!-- Center Core Glow -->
-        <circle cx="24" cy="24" r="3" fill="#ffffff" />
+function createUAVIcon(headingDeg, healthColor = '#5ce59a') {
+  const rotation = Math.round(headingDeg || 0);
+  const svgHtml = `
+    <div style="transform: rotate(${rotation}deg); transform-origin: center center; display: flex; justify-content: center; align-items: center;">
+      <svg width="34" height="34" viewBox="0 0 48 48" style="filter: drop-shadow(0 0 8px ${healthColor});">
+        <!-- Aircraft Fuselage -->
+        <polygon points="24,2 29,20 29,38 24,42 19,38 19,20" fill="${healthColor}" stroke="#ffffff" stroke-width="1.5" />
+        <!-- Main Wings -->
+        <polygon points="24,18 46,28 46,32 26,26 22,26 2,32 2,28" fill="${healthColor}" stroke="#ffffff" stroke-width="1.2" />
+        <!-- Tail Wing -->
+        <polygon points="24,35 34,42 34,45 24,43 14,45 14,42" fill="${healthColor}" stroke="#ffffff" stroke-width="1.2" />
+        <!-- Heading Indicator -->
+        <circle cx="24" cy="6" r="3" fill="#ffffff" />
       </svg>
     </div>
   `;
   return L.divIcon({
-    html: svg,
+    html: svgHtml,
     className: 'uav-aircraft-icon',
-    iconSize: [44, 44],
-    iconAnchor: [22, 22]
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
   });
 }
 
-function createWaypointIcon(type = 'CRUISE', wpId = 'WP') {
-  let color = '#55d7ff';
-  let iconSymbol = '📍';
-  if (type === 'BASE' || type === 'RECOVERY') { color = '#5ce59a'; iconSymbol = '🏠'; }
-  else if (type === 'ISR') { color = '#d946ef'; iconSymbol = '🎯'; }
-  else if (type === 'PATROL') { color = '#ffd166'; iconSymbol = '🛡️'; }
-  else if (type === 'CLIMB' || type === 'RETURN') { color = '#38bdf8'; iconSymbol = '↗️'; }
+function createWaypointIcon(type, id, isDraggable = false) {
+  let color = '#38bdf8'; // cyan for cruise
+  if (type === 'BASE' || type === 'RECOVERY') color = '#5ce59a'; // green
+  if (type === 'CLIMB') color = '#818cf8'; // indigo
+  if (type === 'ISR' || type === 'PATROL') color = '#fbbf24'; // amber
+  if (type === 'DESCENT' || type === 'RETURN') color = '#f87171'; // red
 
   const html = `
-    <div style="display:flex; flex-direction:column; align-items:center; transform: translate(-50%, -50%); cursor:pointer;">
-      <div style="background:#091526; border:2px solid ${color}; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:12px; box-shadow:0 0 8px ${color};">
-        ${iconSymbol}
+    <div style="text-align: center;">
+      <div style="background: #091526; border: 2px solid ${color}; color: #ffffff; font-weight: 800; font-size: 10px; padding: 2px 6px; border-radius: 999px; box-shadow: 0 4px 10px #0009; white-space: nowrap;">
+        ${id}
       </div>
-      <div style="background:#091526ee; border:1px solid ${color}; border-radius:4px; padding:1px 4px; font-size:9px; font-weight:bold; color:${color}; margin-top:2px; white-space:nowrap;">
-        ${wpId}
-      </div>
+      <div style="width: 2px; height: 8px; background: ${color}; margin: auto;"></div>
     </div>
   `;
+
   return L.divIcon({
     html: html,
     className: 'wp-map-pin',
-    iconSize: [30, 40],
-    iconAnchor: [15, 20]
+    iconSize: [30, 36],
+    iconAnchor: [15, 18]
   });
 }
 
-async function loadMissionWaypoints() {
+// ==========================================
+// 🚀 UI Mode Switcher (Planner vs Execution)
+// ==========================================
+function setUIMode(mode) {
+  currentUIMode = mode;
+  if (mode === 'planner') {
+    $('btnModePlanner').classList.add('active');
+    $('btnModeExecution').classList.remove('active');
+    $('waypointPlannerBox').style.display = 'block';
+    $('mapModeSubtitle').textContent = '🛠️ Mission Design Mode • Click on map to add waypoints, drag markers to reposition';
+  } else {
+    $('btnModeExecution').classList.add('active');
+    $('btnModePlanner').classList.remove('active');
+    $('waypointPlannerBox').style.display = 'none';
+    $('mapModeSubtitle').textContent = '🚀 Mission Execution Mode • Live Geodesic Tracking • Autonomous Digital Twin';
+  }
+  renderWaypointsAndPlannedRoute();
+}
+
+// ==========================================
+// 🛰️ Presets & Waypoint Route Management
+// ==========================================
+async function loadPresetMission(presetKey) {
   try {
-    const data = await api('/api/mission/waypoints');
+    if (presetKey === 'custom') {
+      setUIMode('planner');
+      return;
+    }
+    const data = await api(`/api/mission/waypoints?preset=${encodeURIComponent(presetKey)}`);
     currentWaypoints = data.waypoints || [];
-    renderWaypointsAndPlannedRoute(currentWaypoints, data.planned_route);
+    currentPlannedCoords = data.planned_route || [];
+    
+    $('autoMissionName').textContent = data.mission_name || presetKey.toUpperCase();
+    $('autoRouteSummary').textContent = `${data.total_waypoints} Waypoints • ${data.total_distance_km} km`;
+    $('autoEstDuration').textContent = data.formatted_duration || `${Math.round(data.estimated_duration_min)}m`;
+    
+    renderWaypointsAndPlannedRoute();
+    renderWaypointsTable();
   } catch (e) {
-    console.warn('Waypoint load warning:', e.message);
+    console.warn('Preset load warning:', e.message);
   }
 }
 
-function renderWaypointsAndPlannedRoute(waypoints, plannedCoords) {
+async function refreshFlightPlan() {
+  try {
+    const data = await api('/api/mission/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        waypoints: currentWaypoints,
+        ground_temp_c: 30.0
+      })
+    });
+
+    currentPlannedCoords = data.planned_route || [];
+    $('autoRouteSummary').textContent = `${data.total_waypoints} Waypoints • ${data.total_distance_km} km`;
+    $('autoEstDuration').textContent = data.formatted_duration || `${Math.round(data.estimated_duration_min)}m`;
+
+    renderWaypointsAndPlannedRoute();
+    renderWaypointsTable();
+  } catch (e) {
+    console.warn('Flight plan refresh warning:', e.message);
+  }
+}
+
+function renderWaypointsAndPlannedRoute() {
   if (!uavMap) return;
 
   waypointLayerGroup.clearLayers();
 
-  if (plannedCoords && plannedCoords.length > 0) {
+  if (currentPlannedCoords && currentPlannedCoords.length > 0) {
     if (plannedRoutePolyline) uavMap.removeLayer(plannedRoutePolyline);
-    plannedRoutePolyline = L.polyline(plannedCoords, {
+    plannedRoutePolyline = L.polyline(currentPlannedCoords, {
       color: '#38bdf8',
       weight: 3,
       opacity: 0.75,
@@ -828,30 +902,206 @@ function renderWaypointsAndPlannedRoute(waypoints, plannedCoords) {
     }).addTo(uavMap);
   }
 
-  waypoints.forEach(wp => {
+  const isDraggable = (currentUIMode === 'planner');
+
+  currentWaypoints.forEach((wp, index) => {
     const marker = L.marker([wp.latitude, wp.longitude], {
-      icon: createWaypointIcon(wp.type, wp.id)
+      icon: createWaypointIcon(wp.type, wp.id, isDraggable),
+      draggable: isDraggable
     });
+
+    if (isDraggable) {
+      marker.on('dragend', e => {
+        const newPos = e.target.getLatLng();
+        wp.latitude = parseFloat(newPos.lat.toFixed(4));
+        wp.longitude = parseFloat(newPos.lng.toFixed(4));
+        refreshFlightPlan();
+      });
+    }
+
     marker.bindPopup(`
       <div style="font-family:Inter,sans-serif;">
         <div style="font-weight:bold; font-size:13px; color:#55d7ff;">${wp.id}: ${wp.name}</div>
-        <div style="color:#91a5c2; font-size:11px; margin-top:2px;">Type: <b style="color:#eff6ff;">${wp.type}</b></div>
-        <div style="color:#91a5c2; font-size:11px;">Target Altitude: <b style="color:#5ce59a;">${wp.altitude_ft.toLocaleString()} ft</b></div>
-        <div style="color:#91a5c2; font-size:11px;">Coordinates: ${wp.latitude.toFixed(4)}°N, ${wp.longitude.toFixed(4)}°E</div>
-        <div style="margin-top:6px; font-size:11px; color:#cbd5e1; border-top:1px solid #244369; padding-top:4px;">
-          ${wp.description}
-        </div>
+        <div style="color:#91a5c2; font-size:11px; margin-top:2px;">Objective: <b style="color:#eff6ff;">${wp.type}</b></div>
+        <div style="color:#91a5c2; font-size:11px;">Altitude: <b style="color:#5ce59a;">${wp.altitude_ft.toLocaleString()} ft</b></div>
+        <div style="color:#91a5c2; font-size:11px;">Speed: <b style="color:#eff6ff;">${wp.speed_kt} kt</b> • Loiter: <b style="color:#ffd166;">${wp.loiter_time_min}m</b></div>
+        <div style="color:#91a5c2; font-size:11px;">GPS: ${wp.latitude.toFixed(4)}°N, ${wp.longitude.toFixed(4)}°E</div>
       </div>
     `);
     waypointLayerGroup.addLayer(marker);
   });
 
-  // Fit view on initial waypoint load
-  if (plannedCoords && plannedCoords.length > 0) {
-    uavMap.fitBounds(L.latLngBounds(plannedCoords), { padding: [40, 40] });
+  if (currentPlannedCoords && currentPlannedCoords.length > 0) {
+    uavMap.fitBounds(L.latLngBounds(currentPlannedCoords), { padding: [40, 40] });
   }
 }
 
+function renderWaypointsTable() {
+  const tbody = $('waypointsTableBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = currentWaypoints.map((wp, i) => `
+    <tr>
+      <td><b>${wp.id}</b></td>
+      <td><input class="wp-input" type="text" value="${wp.name}" onchange="updateWpField(${i}, 'name', this.value)"></td>
+      <td>
+        <select class="wp-input" onchange="updateWpField(${i}, 'type', this.value)">
+          ${['BASE','TAKEOFF','CLIMB','CRUISE','ISR','PATROL','DESCENT','RETURN','LANDING','RECOVERY'].map(t => 
+            `<option value="${t}" ${wp.type === t ? 'selected' : ''}>${t}</option>`
+          ).join('')}
+        </select>
+      </td>
+      <td><input class="wp-input" type="number" step="500" value="${wp.altitude_ft}" onchange="updateWpField(${i}, 'altitude_ft', +this.value)"></td>
+      <td><input class="wp-input" type="number" step="5" value="${wp.speed_kt || 135}" onchange="updateWpField(${i}, 'speed_kt', +this.value)"></td>
+      <td><input class="wp-input" type="number" step="5" value="${wp.loiter_time_min || 0}" onchange="updateWpField(${i}, 'loiter_time_min', +this.value)"></td>
+      <td style="font-size:11px; color:#91a5c2;">${wp.latitude.toFixed(3)}°, ${wp.longitude.toFixed(3)}°</td>
+      <td style="text-align:center;">
+        <button class="map-btn" style="padding:2px 6px; font-size:10px;" onclick="moveWp(${i}, -1)">▲</button>
+        <button class="map-btn" style="padding:2px 6px; font-size:10px;" onclick="moveWp(${i}, 1)">▼</button>
+        <button class="map-btn" style="padding:2px 6px; font-size:10px; background:#441414; color:#ff7070;" onclick="deleteWp(${i})">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateWpField(index, field, value) {
+  if (currentWaypoints[index]) {
+    currentWaypoints[index][field] = value;
+    refreshFlightPlan();
+  }
+}
+
+function addNewWaypoint() {
+  const newId = `WP${String(currentWaypoints.length).padStart(2, '0')}`;
+  const lastWp = currentWaypoints[currentWaypoints.length - 1];
+  const lat = lastWp ? lastWp.latitude + 0.12 : 28.5;
+  const lon = lastWp ? lastWp.longitude + 0.15 : 77.2;
+  const alt = lastWp ? lastWp.altitude_ft : 12000;
+
+  currentWaypoints.push({
+    id: newId,
+    name: `Waypoint ${newId}`,
+    latitude: parseFloat(lat.toFixed(4)),
+    longitude: parseFloat(lon.toFixed(4)),
+    altitude_ft: alt,
+    type: 'CRUISE',
+    speed_kt: 140,
+    loiter_time_min: 0,
+    description: 'Custom Route Point'
+  });
+  refreshFlightPlan();
+}
+
+function closeRouteToBase() {
+  if (currentWaypoints.length === 0) return;
+  const base = currentWaypoints[0];
+  currentWaypoints.push({
+    id: 'RECOVERY',
+    name: `${base.name} (Recovery)`,
+    latitude: base.latitude,
+    longitude: base.longitude,
+    altitude_ft: base.altitude_ft,
+    type: 'RECOVERY',
+    speed_kt: 65,
+    loiter_time_min: 0,
+    description: 'Approach and Touchdown'
+  });
+  refreshFlightPlan();
+}
+
+function resetWaypointsToPreset() {
+  loadPresetMission($('selMissionPreset').value);
+}
+
+function moveWp(index, direction) {
+  const target = index + direction;
+  if (target >= 0 && target < currentWaypoints.length) {
+    const temp = currentWaypoints[index];
+    currentWaypoints[index] = currentWaypoints[target];
+    currentWaypoints[target] = temp;
+    refreshFlightPlan();
+  }
+}
+
+function deleteWp(index) {
+  if (currentWaypoints.length <= 2) {
+    alert('Mission route must have at least 2 waypoints.');
+    return;
+  }
+  currentWaypoints.splice(index, 1);
+  refreshFlightPlan();
+}
+
+// ==========================================
+// 🚀 Automatic Flight Simulation Controls
+// ==========================================
+async function startAutomaticMission() {
+  setUIMode('execution');
+  $('btnStartMission').style.display = 'none';
+  $('btnPauseMission').style.display = 'inline-block';
+  $('btnResumeMission').style.display = 'none';
+  $('btnAbortMission').style.display = 'inline-block';
+  $('btnRestartMission').style.display = 'inline-block';
+  $('autoPhasePill').textContent = 'SIMULATING';
+
+  await startLiveStream();
+}
+
+function toggleMissionPause() {
+  isReplayPaused = !isReplayPaused;
+  if (isReplayPaused) {
+    $('btnPauseMission').style.display = 'none';
+    $('btnResumeMission').style.display = 'inline-block';
+    $('autoPhasePill').textContent = 'PAUSED';
+  } else {
+    $('btnPauseMission').style.display = 'inline-block';
+    $('btnResumeMission').style.display = 'none';
+    $('autoPhasePill').textContent = 'SIMULATING';
+  }
+}
+
+function abortMissionSimulation() {
+  if (liveSocket) {
+    try { liveSocket.close(); } catch {}
+    liveSocket = null;
+  }
+  if (replayTimer) clearInterval(replayTimer);
+  flightTrailPoints = [];
+
+  $('btnStartMission').style.display = 'inline-block';
+  $('btnPauseMission').style.display = 'none';
+  $('btnResumeMission').style.display = 'none';
+  $('btnAbortMission').style.display = 'none';
+  $('btnRestartMission').style.display = 'none';
+  $('autoPhasePill').textContent = 'READY';
+  $('events').innerHTML = '<div class="event"><strong>Simulation Reset</strong>UAV mission reset to base fix.</div>';
+}
+
+function restartMissionSimulation() {
+  abortMissionSimulation();
+  startAutomaticMission();
+}
+
+function toggleManualOverride(enabled) {
+  manualOverrideEnabled = enabled;
+  const ctrls = $('manualOverrideControls');
+  const badge = $('simModeBadge');
+  if (enabled) {
+    ctrls.style.opacity = '1.0';
+    ctrls.style.pointerEvents = 'auto';
+    badge.textContent = 'SIMULATION MODE: ⚠️ MANUAL OVERRIDE ACTIVE';
+    badge.className = 'pill warn';
+  } else {
+    ctrls.style.opacity = '0.5';
+    ctrls.style.pointerEvents = 'none';
+    badge.textContent = 'SIMULATION MODE: ● AUTOMATIC';
+    badge.className = 'pill good';
+  }
+}
+
+// ==========================================
+// 🛰️ Telemetry & Digital Twin Synchronization
+// ==========================================
 function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskScore = 0) {
   if (!uav || !uavMap) return;
 
@@ -862,6 +1112,8 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
   const speed = uav.ground_speed_kt || 0;
   const phase = uav.mission_phase || 'CRUISE';
   const progress = uav.mission_progress || 0;
+  const throttle = uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : 60;
+  const amb = uav.ambient_c != null ? uav.ambient_c : 20.0;
 
   // Determine health color
   let healthColor = '#5ce59a'; // green
@@ -878,9 +1130,9 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
     uavMarker.bindPopup(`
       <div style="font-family:Inter,sans-serif;">
         <div style="font-weight:bold; font-size:13px; color:#5ce59a;">✈️ AeroPulse-X MALE-UAV</div>
-        <div style="font-size:11px; color:#91a5c2; margin-top:2px;">Status: <b id="popupHealth">${healthState}</b></div>
-        <div style="font-size:11px; color:#91a5c2;">Altitude: <b id="popupAlt">${Math.round(alt).toLocaleString()} ft</b></div>
-        <div style="font-size:11px; color:#91a5c2;">Speed: <b id="popupSpeed">${speed} kt</b> | Heading: <b id="popupHeading">${Math.round(heading)}°</b></div>
+        <div style="font-size:11px; color:#91a5c2; margin-top:2px;">Phase: <b style="color:#eff6ff;">${phase}</b></div>
+        <div style="font-size:11px; color:#91a5c2;">Altitude: <b style="color:#5ce59a;">${Math.round(alt).toLocaleString()} ft</b></div>
+        <div style="font-size:11px; color:#91a5c2;">Speed: <b style="color:#eff6ff;">${speed} kt</b> | Heading: <b style="color:#eff6ff;">${Math.round(heading)}°</b></div>
       </div>
     `);
   } else {
@@ -890,7 +1142,7 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
 
   // Update flight trail
   flightTrailPoints.push({ lat, lon, color: healthColor });
-  if (flightTrailPoints.length > 500) flightTrailPoints.shift(); // Bound memory
+  if (flightTrailPoints.length > 500) flightTrailPoints.shift();
 
   if (flightTrailPolyline) uavMap.removeLayer(flightTrailPolyline);
   flightTrailPolyline = L.polyline(flightTrailPoints.map(p => [p.lat, p.lon]), {
@@ -899,7 +1151,7 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
     opacity: 0.9
   }).addTo(uavMap);
 
-  // Auto-follow UAV if enabled
+  // Auto-follow UAV
   if (followUAV) {
     uavMap.panTo([lat, lon], { animate: true, duration: 0.25 });
   }
@@ -925,6 +1177,13 @@ function updateUAVPosition(uav, healthState = 'Normal', riskLevel = 'LOW', riskS
   if (uav.active_waypoint_name) {
     $('hudWaypoint').textContent = `${uav.active_waypoint_id} • ${uav.active_waypoint_name} (${uav.eta_next_wp_min} min)`;
   }
+
+  // Update Top Mission Control Automatic Readouts
+  $('autoAltitude').innerHTML = `${Math.round(alt).toLocaleString()} ft <small style="font-size:10px; color:#5ce59a;">AUTO</small>`;
+  $('autoSpeed').innerHTML = `${speed} kt <small style="font-size:10px; color:#5ce59a;">AUTO</small>`;
+  $('autoThrottle').innerHTML = `${throttle}% <small style="font-size:10px; color:#5ce59a;">AUTO</small>`;
+  $('autoAmbient').innerHTML = `${amb.toFixed(1)}°C <small style="font-size:10px; color:#5ce59a;">AUTO (ISA)</small>`;
+  $('autoPhasePill').textContent = phase;
 }
 
 function toggleFollowUAV() {
@@ -980,39 +1239,21 @@ function updateReplaySpeed(val) {
   replaySpeedMultiplier = parseFloat(val) || 1.0;
 }
 
-function toggleReplayPlayPause() {
-  isReplayPaused = !isReplayPaused;
-  const btn = $('btnPlayPause');
-  if (isReplayPaused) {
-    btn.textContent = '▶ Play';
-    btn.style.background = '#112e20';
-  } else {
-    btn.textContent = '⏸ Pause';
-    btn.style.background = '#225bd8';
-  }
-}
-
-function restartMissionReplay() {
-  if (replayTimeline.length > 0) {
-    replayIndex = 0;
-    flightTrailPoints = [];
-    isReplayPaused = false;
-    $('btnPlayPause').textContent = '⏸ Pause';
-  }
-}
-
 // ==========================================
-// ⚙️ Existing Dashboard & Digital Twin Logic
+// ⚙️ Backend API & Scenario Helpers
 // ==========================================
-function scenario(extra={}){
+function getScenarioPayload(extra = {}) {
+  const isOverride = manualOverrideEnabled && $('chkManualOverride').checked;
   return {
-    fault:$('fault').value,
-    severity:+$('severity').value,
-    altitude_ft:+$('altitude').value,
-    ambient_c:+$('ambient').value,
-    duration_h:+$('duration').value,
-    rapid_throttle:$('throttle').value==='true',
-    operating_state:$('operating').value,
+    fault: $('fault').value,
+    severity: +$('severity').value,
+    simulation_mode: isOverride ? 'manual_override' : 'automatic',
+    altitude_ft: isOverride ? +$('hwSliderAltitude').value : 8000,
+    ambient_c: isOverride ? +$('hwSliderAmbient').value : 35,
+    duration_h: isOverride ? +$('hwSliderDuration').value : 6,
+    rapid_throttle: isOverride ? +$('hwSliderThrottle').value > 80 : false,
+    operating_state: 'CRUISE',
+    waypoints: currentWaypoints,
     ...extra
   };
 }
@@ -1062,13 +1303,6 @@ async function checkStatus(){
     $('serverBadge').className=
       'badge '+(s.models_ready&&s.demo_ready?'live':'err');
 
-    if(s.operating_states?.length){
-      $('operating').innerHTML=
-        s.operating_states
-          .map(x=>`<option>${x}</option>`)
-          .join('');
-    }
-
     if(!s.models_ready||!s.demo_ready){
       $('setupNotice').classList.remove('hidden');
       $('setupNotice').textContent=
@@ -1108,94 +1342,55 @@ function updateCutawayDisplay(){
   if($('cyl4EGT')) $('cyl4EGT').textContent = `EGT: ${hwState.egt1}°F`;
 
   if($('turboMAP')) $('turboMAP').textContent = `MAP: ${hwState.map} inHg`;
-  if($('oilStatusText')) {
-    $('oilStatusText').textContent = `OIL CIRCUIT • ${hwState.oilPress} PSI • ${hwState.oilTemp}°C`;
-    $('oilStatusText').setAttribute('fill', hwState.oilPress < 30 || hwState.oilTemp > 115 ? '#ff7070' : '#5ce59a');
+
+  const sump = $('oilSump');
+  const sumpText = $('oilStatusText');
+  if(sump && sumpText){
+    if (hwState.oilPress < 45 || hwState.oilTemp > 105) {
+      sump.setAttribute('fill', '#4a1b1b');
+      sump.setAttribute('stroke', '#ff7070');
+      sumpText.setAttribute('fill', '#ff7070');
+      sumpText.textContent = `OIL CIRCUIT WARNING • ${hwState.oilPress} PSI • ${hwState.oilTemp}°C`;
+    } else {
+      sump.setAttribute('fill', '#162e22');
+      sump.setAttribute('stroke', '#285b49');
+      sumpText.setAttribute('fill', '#5ce59a');
+      sumpText.textContent = `OIL CIRCUIT • ${hwState.oilPress} PSI • ${hwState.oilTemp}°C`;
+    }
   }
 }
 
 function updateCANStream(){
-  const canBox = $('canBusStream');
-  if(!canBox) return;
-  const now = new Date().toTimeString().split(' ')[0];
-  canBox.innerHTML = `
-    [CAN 0x201] RPM: ${hwState.rpm} | THROTTLE: ${hwState.throttle}% | MAP: ${hwState.map} inHg | TIME: ${now}<br>
+  const can = $('canBusStream');
+  if(!can) return;
+  const timeStr = new Date().toTimeString().split(' ')[0];
+  can.innerHTML = `
+    [CAN 0x201] RPM: ${hwState.rpm} | THROTTLE: ${hwState.throttle.toFixed(1)}% | MAP: ${hwState.map} inHg | TIME: ${timeStr}<br>
     [CAN 0x202] CHT: ${hwState.cht} F | EGT1: ${hwState.egt1} F | EGT2: ${hwState.egt2} F | EGT3: ${hwState.egt3} F<br>
-    [CAN 0x203] OIL_PRESS: ${hwState.oilPress} PSI | OIL_TEMP: ${hwState.oilTemp} C | COOLANT: ${Math.round(hwState.oilTemp*0.92)} C<br>
-    [CAN 0x204] FUEL_FLOW: ${hwState.fuelFlow} L/h | RAIL_PRESS: 42.1 PSI | FUEL_TEMP: 32.0 C<br>
-    [CAN 0x205] BUS_VOLT: 28.20 V | ALT_CURR: 18.2 A | ALT_TEMP: 68.0 C<br>
-    [CAN 0x206] VIBRATION_RMS: 1.02 g | DYNAMIC_UNBALANCE: LOW | STATUS: SYNCHRONIZED
+    [CAN 0x203] OIL_PRESS: ${hwState.oilPress} PSI | OIL_TEMP: ${hwState.oilTemp} C | STATUS: ${hwState.oilPress<45?'ALERT':'NORMAL'}<br>
+    [CAN 0x204] FUEL_FLOW: ${hwState.fuelFlow} L/h | RAIL_PRESS: 42.4 PSI | TIME: ${timeStr}<br>
+    [CAN 0x205] BUS_VOLT: 28.20 V | ALT_CURR: 18.2 A | ALT_TEMP: 68.4 C<br>
+    [CAN 0x206] VIBRATION_RMS: 1.02 g | KNOCK_IDX: 0.02 | STATE: RUNNING
   `;
 }
 
-function triggerLivePhysicsUpdate(){
-  const throttleNorm = hwState.throttle / 100.0;
-  const altNorm = hwState.altitude / 10000.0;
+function updateSubsystemBadges(zScores = {}, faultCandidates = [], telemetry = {}){
+  let thermH = 98, lubH = 99, fuelH = 97, combH = 99, elecH = 98, mechH = 99;
 
-  hwState.rpm = Math.round(1800 + 3800 * throttleNorm);
-  hwState.cht = Math.round(195 + 110 * throttleNorm + 0.9 * hwState.ambient + 8 * altNorm);
-  const baseEGT = Math.round(1180 + 220 * throttleNorm + 40 * altNorm + 1.2 * hwState.ambient);
-  hwState.egt1 = baseEGT + 5;
-  hwState.egt2 = baseEGT - 4;
-  hwState.egt3 = baseEGT + 2;
-  hwState.oilTemp = Math.round(82 + 20 * throttleNorm + 0.38 * (hwState.ambient - 25));
-  hwState.oilPress = Math.round((32 + 38 * (hwState.rpm / 3000.0)) * Math.max(0.7, 1.0 - 0.004 * (hwState.oilTemp - 85)));
-  hwState.map = +(28.0 + 10.0 * throttleNorm - 4.0 * altNorm).toFixed(1);
-  hwState.fuelFlow = +(12.0 + 22.0 * throttleNorm).toFixed(1);
+  if (Math.abs(zScores.CHT || 0) > 2.0 || Math.abs(zScores.EGT1 || 0) > 2.0) thermH = 48;
+  if (Math.abs(zScores.Oil_Pressure || 0) > 2.0 || Math.abs(zScores.Oil_Temp || 0) > 2.0) lubH = 42;
+  if (Math.abs(zScores.Fuel_Flow || 0) > 2.0 || Math.abs(zScores.MAP_Injector || 0) > 2.0) fuelH = 52;
+  if (Math.abs(zScores.Battery_Voltage || 0) > 2.0 || Math.abs(zScores.Battery_Current || 0) > 2.0) elecH = 50;
 
-  updateCutawayDisplay();
-  updateCANStream();
-}
-
-function setupHardwareListeners(){
-  const sThrottle = $('hwSliderThrottle');
-  const sAltitude = $('hwSliderAltitude');
-  const sAmbient = $('hwSliderAmbient');
-  const sDuration = $('hwSliderDuration');
-
-  if(sThrottle){
-    sThrottle.addEventListener('input', e=>{
-      $('hwValThrottle').textContent = `${e.target.value}%`;
-      hwState.throttle = +e.target.value;
-      triggerLivePhysicsUpdate();
-    });
-  }
-  if(sAltitude){
-    sAltitude.addEventListener('input', e=>{
-      $('hwValAltitude').textContent = `${(+e.target.value).toLocaleString()} ft`;
-      hwState.altitude = +e.target.value;
-      if($('altitude')) $('altitude').value = e.target.value;
-      triggerLivePhysicsUpdate();
-    });
-  }
-  if(sAmbient){
-    sAmbient.addEventListener('input', e=>{
-      $('hwValAmbient').textContent = `${e.target.value}°C`;
-      hwState.ambient = +e.target.value;
-      if($('ambient')) $('ambient').value = e.target.value;
-      triggerLivePhysicsUpdate();
-    });
-  }
-  if(sDuration){
-    sDuration.addEventListener('input', e=>{
-      $('hwValDuration').textContent = `${(+e.target.value).toFixed(1)} hrs`;
-      if($('duration')) $('duration').value = e.target.value;
-    });
-  }
-}
-
-function updateSubsystemBadges(z, faultCandidates, telemetry){
-  const calcSubHealth = (keys) => {
-    const maxZ = Math.max(...keys.map(k => Math.abs(z[k] || 0)));
-    return Math.max(20, Math.round(100 - maxZ * 16));
-  };
-
-  const thermH = calcSubHealth(['EGT1', 'EGT2', 'EGT3', 'CHT', 'EFI_Water_Temp']);
-  const lubH = calcSubHealth(['Oil_Pressure', 'Oil_Temp']);
-  const fuelH = calcSubHealth(['MAP_Injector', 'Fuel_Flow']);
-  const elecH = calcSubHealth(['Battery_Voltage', 'Battery_Current', 'Alternator_Temp']);
-  const combH = faultCandidates && faultCandidates.some(f => f.name.includes('Combustion') || f.name.includes('Misfire')) ? 45 : 99;
-  const mechH = telemetry && telemetry.Vibration > 2.0 ? 55 : 98;
+  faultCandidates.forEach(f => {
+    const fn = (f.name || '').toLowerCase();
+    if (fn.includes('overheat') || fn.includes('thermal')) thermH = Math.min(thermH, 35);
+    if (fn.includes('lubrication') || fn.includes('oil')) lubH = Math.min(lubH, 30);
+    if (fn.includes('injector') || fn.includes('fuel')) fuelH = Math.min(fuelH, 40);
+    if (fn.includes('misfire') || fn.includes('combustion')) combH = Math.min(combH, 38);
+    if (fn.includes('electrical') || fn.includes('alternator') || fn.includes('battery')) elecH = Math.min(elecH, 32);
+    if (fn.includes('vibration') || fn.includes('mechanical') || fn.includes('bearing')) mechH = Math.min(mechH, 35);
+  });
 
   const setBadge = (id, pillId, val) => {
     const el = $(id);
@@ -1320,7 +1515,6 @@ function renderAnalysis(r){
     $('rulSub').textContent = `90% CI: [${r.rul.rul_lower_hours}h - ${r.rul.rul_upper_hours}h] • ${r.rul.failure_mode_risk||r.rul.status}`;
   }
 
-  // Update Live UAV Map Position
   if (r.uav) {
     updateUAVPosition(r.uav, r.health_state, r.mission_risk.level, r.mission_risk.score);
   }
@@ -1350,7 +1544,7 @@ async function analyzeSnapshot(){
     const r=await api('/api/analyze',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(scenario())
+      body:JSON.stringify(getScenarioPayload())
     });
     renderAnalysis(r);
   }catch(e){
@@ -1401,96 +1595,9 @@ function drawTimeline(items){
   ctx.fillText('Risk',W-80,18);
 }
 
-async function runReplay(){
-  try{
-    if (replayTimer) clearInterval(replayTimer);
-    flightTrailPoints = [];
-
-    const r=await api('/api/replay',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(scenario({
-        steps:48,
-        step_minutes:5,
-        fault_onset_ratio:+$('onset').value
-      }))
-    });
-
-    replayTimeline = r.timeline || [];
-    drawTimeline(replayTimeline);
-
-    const s=r.summary;
-    const rr=s.rul_method_demonstrator;
-
-    if(rr.available && rr.rul_hours!=null){
-      $('rul').textContent=fmt(rr.rul_hours,1)+' h';
-      $('rul').className='kpi '+(rr.rul_hours<5?'bad':rr.rul_hours<20?'warn':'good');
-      $('rulSub').textContent=`${rr.status} • conf ${fmt(100*rr.confidence,0)}%`;
-    }else{
-      $('rul').textContent='Stable';
-      $('rul').className='kpi good';
-      $('rulSub').textContent=rr.note||rr.status;
-    }
-
-    let eventHtml=`
-      <div class="event"><strong>Fault onset</strong>${s.fault_onset_min==null?'No fault':fmt(s.fault_onset_min,0)+' min'}</div>
-      <div class="event"><strong>Hybrid warning</strong>${s.ai_warning_min==null?'No warning':fmt(s.ai_warning_min,0)+' min'}</div>
-      <div class="event"><strong>3-sigma reference alarm</strong>${s.reference_alarm_min==null?'Not crossed':fmt(s.reference_alarm_min,0)+' min'}</div>
-    `;
-    if(s.early_warning_gain_min!=null){
-      eventHtml+=`<div class="event"><strong>Early-warning gain</strong>${fmt(s.early_warning_gain_min,0)} min ahead of reference</div>`;
-    }
-    $('events').innerHTML=eventHtml;
-
-    // Start animated sequential map and telemetry playback
-    replayIndex = 0;
-    isReplayPaused = false;
-    $('btnPlayPause').textContent = '⏸ Pause';
-
-    replayTimer = setInterval(() => {
-      if (isReplayPaused) return;
-
-      if (replayIndex >= replayTimeline.length) {
-        clearInterval(replayTimer);
-        replayTimer = null;
-        return;
-      }
-
-      const p = replayTimeline[replayIndex];
-      if (p) {
-        $('health').textContent=p.health_state;
-        $('health').className='kpi '+stateClass(p.health_state);
-        $('healthIndex').textContent=fmt(p.health_index,1);
-        $('missionRisk').textContent=`${p.risk_level} ${fmt(p.risk_score,0)}`;
-        $('missionRisk').className='kpi '+stateClass(p.risk_level);
-        $('residual').textContent=fmt(p.residual_rms,2);
-
-        if (p.uav) {
-          updateUAVPosition(p.uav, p.health_state, p.risk_level, p.risk_score);
-        }
-
-        if (p.telemetry) {
-          hwState.cht = Math.round(p.telemetry.CHT || 220);
-          hwState.egt1 = Math.round(p.telemetry.EGT1 || 1200);
-          hwState.egt2 = Math.round(p.telemetry.EGT2 || 1205);
-          hwState.egt3 = Math.round(p.telemetry.EGT3 || 1195);
-          hwState.oilPress = Math.round(p.telemetry.Oil_Pressure || 60);
-          hwState.oilTemp = Math.round(p.telemetry.Oil_Temp || 90);
-          hwState.map = +(p.telemetry.MAP_Injector || 30).toFixed(1);
-          hwState.rpm = Math.round(p.telemetry.Engine_RPM || 3000);
-          hwState.fuelFlow = +(p.telemetry.Fuel_Flow || 20).toFixed(1);
-          updateCutawayDisplay();
-          updateCANStream();
-        }
-      }
-      replayIndex++;
-    }, Math.round(200 / replaySpeedMultiplier));
-
-  }catch(e){
-    alert('Replay error: ' + e.message);
-  }
-}
-
+// ==========================================
+// 🚀 Live WebSocket Streaming (Path-Driven)
+// ==========================================
 async function startLiveStream(){
   if(liveSocket){
     try{ liveSocket.close(); }catch{}
@@ -1504,13 +1611,11 @@ async function startLiveStream(){
   const points=[];
 
   liveSocket.onopen=()=>{
-    liveSocket.send(JSON.stringify(scenario({
-      steps:48,
-      step_minutes:5,
-      fault_onset_ratio:+$('onset').value,
-      playback_interval_s:0.18
+    liveSocket.send(JSON.stringify(getScenarioPayload({
+      steps:60,
+      playback_interval_s: 0.20
     })));
-    $('events').innerHTML='<div class="event"><strong>Live stream active</strong>Telemetry packet stream processing via Digital Twin & Live Map.</div>';
+    $('events').innerHTML='<div class="event"><strong>Autonomous Flight Stream Active</strong>UAV navigating planned 3D coordinates. Telemetry feeding Digital Twin.</div>';
   };
 
   liveSocket.onmessage=e=>{
@@ -1519,6 +1624,7 @@ async function startLiveStream(){
       const p=m.data;
       points.push(p);
       drawTimeline(points);
+      
       $('health').textContent=p.health_state;
       $('health').className='kpi '+stateClass(p.health_state);
       $('healthIndex').textContent=fmt(p.health_index,1);
@@ -1545,7 +1651,11 @@ async function startLiveStream(){
         updateCANStream();
       }
     }else if(m.type==='summary'){
-      $('events').innerHTML+=`<div class="event"><strong>Mission Complete</strong>Peak risk ${fmt(m.data.peak_risk_score,0)} • final health ${m.data.final_health_state}</div>`;
+      $('events').innerHTML+=`<div class="event"><strong>Mission Complete / Touchdown</strong>Peak risk: ${fmt(m.data.peak_risk_score,0)} • Final health: ${m.data.final_health_state}</div>`;
+      $('autoPhasePill').textContent = 'COMPLETE';
+      $('btnStartMission').style.display = 'inline-block';
+      $('btnPauseMission').style.display = 'none';
+      $('btnResumeMission').style.display = 'none';
     }else if(m.type==='error'){
       alert('Stream error: ' + m.message);
     }
@@ -1556,92 +1666,28 @@ async function startLiveStream(){
   };
 }
 
-async function runWhatIfComparison(){
-  try{
-    const baseline = {
-      altitude_ft: 8000,
-      ambient_c: 35,
-      duration_h: 6,
-      rapid_throttle: false,
-      fault: "none",
-      severity: 0.0,
-      operating_state: "CRUISE"
-    };
-
-    const alternative = {
-      altitude_ft: hwState.altitude,
-      ambient_c: hwState.ambient,
-      duration_h: 6,
-      rapid_throttle: hwState.throttle > 80,
-      fault: $('fault') ? $('fault').value : "none",
-      severity: $('severity') ? +$('severity').value : 0.0,
-      operating_state: "CRUISE"
-    };
-
-    const data = await api('/api/mission-whatif-rul', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ baseline, alternative })
+// Setup Manual Slider Listeners (only for advanced overrides)
+function setupHardwareListeners() {
+  const sync = (sliderId, valId, unit, stateKey) => {
+    const s = $(sliderId), v = $(valId);
+    if (!s || !v) return;
+    s.addEventListener('input', () => {
+      v.textContent = `${s.value}${unit}`;
+      hwState[stateKey] = +s.value;
     });
+  };
 
-    const b = data.baseline;
-    const a = data.alternative;
-    const c = data.comparison;
-
-    if($('whatifBaseInfo')) $('whatifBaseInfo').textContent = `Altitude: ${b.scenario.altitude_ft} ft • Ambient: ${b.scenario.ambient_c}°C • Duration: ${b.scenario.duration_h}h • Stress: ${b.stress_multiplier}x`;
-    if($('whatifBaseResults')) $('whatifBaseResults').innerHTML = `Projected RUL: <b>${b.rul_hours} h</b> • Projected Fuel: <b>${b.total_fuel_burn_l} L</b> • End Health: <b>${b.projected_final_health_index}%</b>`;
-
-    if($('whatifAltInfo')) $('whatifAltInfo').textContent = `Altitude: ${a.scenario.altitude_ft} ft • Ambient: ${a.scenario.ambient_c}°C • Duration: ${a.scenario.duration_h}h • Stress: ${a.stress_multiplier}x`;
-    if($('whatifAltResults')) $('whatifAltResults').innerHTML = `Projected RUL: <b>${a.rul_hours} h</b> (Δ: ${c.rul_delta_hours >= 0 ? '+' : ''}${c.rul_delta_hours}h) • Fuel: <b>${a.total_fuel_burn_l} L</b> (${c.fuel_delta_percent >= 0 ? '+' : ''}${c.fuel_delta_percent}%)`;
-
-    const dCard = $('dispatchCard');
-    const dStatus = $('dispatchStatusText');
-    const dDir = $('dispatchDirectiveText');
-
-    if(dCard && dStatus && dDir){
-      if(c.risk_assessment.includes('PENALTY') || a.projected_final_health_index < 60){
-        dCard.className = 'dispatch-card caution';
-        dStatus.innerHTML = '● [CAUTION ADVISORY] - RESTRICTED OPERATIONAL ENVELOPE';
-        dStatus.style.color = '#ffd166';
-        dDir.textContent = c.recommendation;
-      }else{
-        dCard.className = 'dispatch-card';
-        dStatus.innerHTML = '● [DISPATCH CLEARED] - GO MISSION READY';
-        dStatus.style.color = '#5ce59a';
-        dDir.textContent = c.recommendation;
-      }
-    }
-  }catch(e){
-    console.warn('What-If note:', e.message);
-  }
+  sync('hwSliderThrottle', 'hwValThrottle', '%', 'throttle');
+  sync('hwSliderAltitude', 'hwValAltitude', ' ft', 'altitude');
+  sync('hwSliderAmbient', 'hwValAmbient', '°C', 'ambient');
+  sync('hwSliderDuration', 'hwValDuration', ' hrs', 'duration');
 }
 
-async function loadMetrics(){
-  try{
-    const m=await api('/api/metrics');
-    $('metricsCard').classList.remove('hidden');
-    $('metrics').innerHTML=
-      Object.entries(m).map(([name,x])=>`
-        <div class="diag">
-          <b>${name}</b>
-          <div class="evidence">
-            Accuracy ${x.accuracy==null?'—':(100*x.accuracy).toFixed(1)+'%'}
-            • Balanced ${x.balanced_accuracy==null?'—':(100*x.balanced_accuracy).toFixed(1)+'%'}
-            ${x.split_strategy?' • '+x.split_strategy:''}
-          </div>
-        </div>
-      `).join('');
-    $('metricsCard').scrollIntoView({behavior:'smooth'});
-  }catch(e){
-    alert('Metrics error: ' + e.message);
-  }
-}
-
-// Initialization sequence
+// Initialization Sequence
 initUAVMap();
 setupHardwareListeners();
 checkStatus();
-analyzeSnapshot();
+loadPresetMission('border_patrol_alpha');
 </script>
 </body>
 </html>

@@ -233,6 +233,15 @@ def run_replay(
 
     reference_alarm_step = None
 
+    custom_wps = scenario.get("waypoints")
+    if custom_wps and len(custom_wps) >= 2:
+        gps = SimulatedGPSSource(
+            waypoints=custom_wps,
+            ground_temp_c=float(scenario.get("ambient_c", 30.0)),
+        )
+    else:
+        gps = _GPS
+
     for i in range(steps):
 
         point = _dynamic_step(
@@ -241,26 +250,23 @@ def run_replay(
             steps,
         )
 
+        ratio = i / max(1, steps - 1)
+        uav_pos = gps.get_position(ratio)
+
+        if scenario.get("simulation_mode") != "manual_override":
+            step_alt = uav_pos.altitude_ft
+            step_amb = uav_pos.ambient_c
+            step_dur = max(0.5, gps.total_duration_min / 60.0)
+        else:
+            step_alt = float(scenario.get("altitude_ft", 3000))
+            step_amb = float(scenario.get("ambient_c", 25))
+            step_dur = float(scenario.get("duration_h", 4))
+
         point = mission_adjust(
             point,
-            float(
-                scenario.get(
-                    "altitude_ft",
-                    3000,
-                )
-            ),
-            float(
-                scenario.get(
-                    "ambient_c",
-                    25,
-                )
-            ),
-            float(
-                scenario.get(
-                    "duration_h",
-                    4,
-                )
-            ),
+            step_alt,
+            step_amb,
+            step_dur,
             bool(
                 scenario.get(
                     "rapid_throttle",
@@ -499,14 +505,7 @@ def run_replay(
                         4,
                     ),
 
-                "uav": _GPS.get_position(
-                    progress_ratio=i / max(1, steps - 1),
-                    mission_context={
-                        "altitude_ft": float(point.get("Altitude_ft", scenario.get("altitude_ft", 8000.0))),
-                        "throttle": float(point.get("Throttle", 0.60)),
-                        "mission_phase": str(point.get("Mission_Phase", "CRUISE")),
-                    },
-                ).to_dict(),
+                "uav": uav_pos.to_dict(),
 
                 "telemetry": {
                     k: (
@@ -688,7 +687,8 @@ def run_replay(
                 ),
         },
 
-        "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
-        "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
-        "home_base": _GPS.waypoints[0].to_dict(),
+        "waypoints": [wp.to_dict() for wp in gps.waypoints],
+        "planned_route": [[wp.latitude, wp.longitude] for wp in gps.waypoints],
+        "home_base": gps.waypoints[0].to_dict(),
+        "flight_plan_summary": gps.get_flight_plan_summary(),
     }

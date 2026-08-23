@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import json
 
+from typing import Any, Dict, List, Optional
+
 import pandas as pd
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
@@ -21,7 +23,12 @@ from .engine_model import ReducedOrderPistonEngine
 from .inference import AeroTwinAI
 from .mission_whatif import MissionScenario
 from .mission_whatif_rul import MissionWhatIfRUL
-from .navigation import DEFAULT_MISSION_WAYPOINTS, SimulatedGPSSource
+from .navigation import (
+    DEFAULT_MISSION_WAYPOINTS,
+    PRESET_MISSIONS,
+    MissionWaypoint,
+    SimulatedGPSSource,
+)
 from .replay import run_replay
 from .risk import mission_risk
 from .simulator import FAULTS, inject_fault, mission_adjust
@@ -49,33 +56,24 @@ app.mount(
 )
 
 
-_ai: AeroTwinAI | None = None
-_ai_error: str | None = None
-_demo: pd.DataFrame | None = None
-_vibration_ai: VibrationAI | None = None
-_vibration_demo: pd.DataFrame | None = None
+_ai = None
+_ai_error = None
+_vibration_ai = None
+_vibration_demo = None
+_demo = None
 
 _ENGINE = ReducedOrderPistonEngine()
 
 
 def _load_assets() -> None:
-    global _ai
-    global _ai_error
-    global _demo
-    global _vibration_ai
-    global _vibration_demo
+    global _ai, _ai_error, _vibration_ai, _vibration_demo, _demo
 
-    health_model_file = MODEL_DIR / "aces_health.joblib"
-    anomaly_model_file = MODEL_DIR / "aces_anomaly.joblib"
-    healthy_ref_file = MODEL_DIR / "healthy_reference.json"
-    demo_file = DATA_SAMPLE_DIR / "aces_demo.csv"
-
-    if not (health_model_file.exists() and anomaly_model_file.exists() and healthy_ref_file.exists() and demo_file.exists()):
-        try:
-            from scripts.train_models import train_all
-            train_all()
-        except Exception as e:
-            print(f"Auto-train note: {e}")
+    # Auto-bootstrap model assets if missing
+    try:
+        from scripts.train_models import main as train_models_main
+        train_models_main()
+    except Exception as exc:
+        pass
 
     try:
         _ai = AeroTwinAI()
@@ -110,6 +108,15 @@ class Scenario(BaseModel):
     duration_h: float = Field(6, gt=0, le=48)
     rapid_throttle: bool = False
     operating_state: str = "CRUISE"
+    simulation_mode: str = "automatic"
+    waypoints: Optional[List[Dict[str, Any]]] = None
+    preset: Optional[str] = None
+
+
+class FlightPlanRequest(BaseModel):
+    waypoints: List[Dict[str, Any]] = Field(default_factory=list)
+    ground_temp_c: float = 30.0
+    hot_weather_bias: float = 0.0
 
 
 class ReplayScenario(Scenario):
@@ -142,6 +149,13 @@ class LiveMissionConfig(Scenario):
 
     hot_weather: bool = False
     mission_mode: str = "standard"
+
+
+Scenario.model_rebuild()
+FlightPlanRequest.model_rebuild()
+ReplayScenario.model_rebuild()
+WhatIfRequest.model_rebuild()
+LiveMissionConfig.model_rebuild()
 
 
 def _require_ai() -> AeroTwinAI:
@@ -519,7 +533,15 @@ def analyze(
         context,
     )
 
-    uav_pos = _GPS.get_position(
+    if scenario.waypoints and len(scenario.waypoints) >= 2:
+        gps = SimulatedGPSSource(
+            waypoints=scenario.waypoints,
+            ground_temp_c=float(scenario.ambient_c),
+        )
+    else:
+        gps = _GPS
+
+    uav_pos = gps.get_position(
         progress_ratio=0.15,
         mission_context={
             "altitude_ft": float(scenario.altitude_ft),
@@ -537,26 +559,48 @@ def analyze(
             "mission_risk_score": risk["score"],
             "mission_risk_level": risk["level"],
             "uav": uav_pos.to_dict(),
-            "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
-            "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
-            "home_base": _GPS.waypoints[0].to_dict(),
+            "waypoints": [wp.to_dict() for wp in gps.waypoints],
+            "planned_route": [[wp.latitude, wp.longitude] for wp in gps.waypoints],
+            "home_base": gps.waypoints[0].to_dict(),
+            "flight_plan_summary": gps.get_flight_plan_summary(),
         }
     )
 
     return result
 
 
-@app.get("/api/mission/waypoints")
-def mission_waypoints():
-    """Returns planned 3D mission waypoints, route coordinates, and base coordinates."""
+@app.get("/api/mission/presets")
+def mission_presets():
+    """Returns all available preset mission flight plans."""
     return {
-        "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
-        "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
-        "home_base": _GPS.waypoints[0].to_dict(),
-        "mission_name": "MALE-UAV ISR & Border Patrol Flight Plan",
-        "total_distance_km": round(_GPS.total_distance_km, 2),
-        "disclaimer": "Simulated civilian demonstration coordinates for SIH prototype",
+        k: {
+            "name": v["name"],
+            "description": v["description"],
+            "waypoints": [wp.to_dict() for wp in v["waypoints"]],
+        }
+        for k, v in PRESET_MISSIONS.items()
     }
+
+
+@app.post("/api/mission/plan")
+def calculate_flight_plan(request: FlightPlanRequest):
+    """Calculates full 3D flight plan metrics, distance, duration, and route summary."""
+    gps = SimulatedGPSSource(
+        waypoints=[MissionWaypoint.from_dict(w) for w in request.waypoints],
+        ground_temp_c=request.ground_temp_c,
+        hot_weather_bias=request.hot_weather_bias,
+    )
+    return gps.get_flight_plan_summary()
+
+
+@app.get("/api/mission/waypoints")
+def mission_waypoints(preset: str | None = None):
+    """Returns planned 3D mission waypoints, route coordinates, and base coordinates."""
+    if preset and preset in PRESET_MISSIONS:
+        gps = SimulatedGPSSource(PRESET_MISSIONS[preset]["waypoints"])
+    else:
+        gps = _GPS
+    return gps.get_flight_plan_summary()
 
 
 @app.post("/api/mission-whatif-rul")
@@ -797,6 +841,15 @@ async def telemetry_stream(
 
         ai = _require_ai()
 
+        if live_config.waypoints and len(live_config.waypoints) >= 2:
+            gps = SimulatedGPSSource(
+                waypoints=live_config.waypoints,
+                ground_temp_c=float(live_config.ambient_c),
+                hot_weather_bias=8.0 if live_config.hot_weather else 0.0,
+            )
+        else:
+            gps = _GPS
+
         mission = UAVMissionSimulator(
             duration_min=(
                 float(
@@ -829,6 +882,7 @@ async def telemetry_stream(
                     live_config.rapid_throttle
                 )
             ),
+            waypoints=gps.waypoints,
         )
 
         total_steps = int(
@@ -862,9 +916,10 @@ async def telemetry_stream(
                         mission.rapid_throttle
                     ),
                 },
-                "waypoints": [wp.to_dict() for wp in _GPS.waypoints],
-                "planned_route": [[wp.latitude, wp.longitude] for wp in _GPS.waypoints],
-                "home_base": _GPS.waypoints[0].to_dict(),
+                "waypoints": [wp.to_dict() for wp in gps.waypoints],
+                "planned_route": [[wp.latitude, wp.longitude] for wp in gps.waypoints],
+                "home_base": gps.waypoints[0].to_dict(),
+                "flight_plan_summary": gps.get_flight_plan_summary(),
             }
         )
 
@@ -1126,7 +1181,7 @@ async def telemetry_stream(
                     telemetry_packet.source
                 ),
 
-                "uav": _GPS.get_position(
+                "uav": gps.get_position(
                     progress_ratio=step / max(1, total_steps - 1),
                     mission_context={
                         "altitude_ft": telemetry_packet.Altitude_ft,
