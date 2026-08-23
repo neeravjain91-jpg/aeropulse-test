@@ -71,6 +71,145 @@
   cursor: grabbing;
 }
 
+.engine-thermal-field {
+  --thermal-rgb: 81, 229, 138;
+  --thermal-level: 0.45;
+  --thermal-outer-opacity: 0.30;
+  --thermal-core-opacity: 0.30;
+  --thermal-red-alpha: 0.06;
+  --thermal-amber-alpha: 0.18;
+  --thermal-core-red-alpha: 0.14;
+  --thermal-blur: 12px;
+  --thermal-pulse-scale: 1.03;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0.12;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity 240ms ease;
+}
+
+.engine-viewport.thermal-active .engine-thermal-field {
+  opacity: 1;
+}
+
+.engine-thermal-aura {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.engine-thermal-aura-outer {
+  width: 82%;
+  height: 69%;
+  opacity: var(--thermal-outer-opacity);
+  background:
+    repeating-radial-gradient(ellipse at center,
+      rgba(var(--thermal-rgb), 0) 0 11%,
+      rgba(var(--thermal-rgb), 0.09) 12%,
+      rgba(var(--thermal-rgb), 0) 14% 20%),
+    radial-gradient(ellipse at center,
+      rgba(255, 77, 91, var(--thermal-red-alpha)) 0 18%,
+      rgba(var(--thermal-rgb), 0.26) 32%,
+      rgba(var(--thermal-rgb), 0.1) 51%,
+      transparent 72%);
+  filter: blur(var(--thermal-blur));
+}
+
+.engine-thermal-aura-core {
+  width: 58%;
+  height: 43%;
+  opacity: var(--thermal-core-opacity);
+  background:
+    radial-gradient(circle at 32% 43%, rgba(255, 197, 54, var(--thermal-amber-alpha)), transparent 17%),
+    radial-gradient(circle at 68% 43%, rgba(255, 77, 91, var(--thermal-core-red-alpha)), transparent 18%),
+    radial-gradient(ellipse at center, rgba(var(--thermal-rgb), 0.3), transparent 68%);
+  filter: blur(18px);
+}
+
+.engine-viewport.thermal-active .engine-thermal-aura-outer {
+  animation: thermalEnvelopePulse 3.2s ease-in-out infinite;
+}
+
+.engine-viewport.thermal-active .engine-thermal-aura-core {
+  animation: thermalCoreDrift 4.6s ease-in-out infinite alternate;
+}
+
+@keyframes thermalEnvelopePulse {
+  50% { transform: translate(-50%, -50%) scale(var(--thermal-pulse-scale)); }
+}
+
+@keyframes thermalCoreDrift {
+  to { transform: translate(-49%, -52%) scale(1.035); }
+}
+
+.engine-thermal-scale {
+  position: absolute;
+  right: 18px;
+  bottom: 17px;
+  width: min(245px, 38%);
+  padding: 8px 9px 7px;
+  color: #ccecff;
+  border: 1px solid rgba(var(--thermal-rgb), 0.44);
+  border-radius: 4px;
+  background: rgba(3, 10, 18, 0.78);
+  box-shadow: 0 0 22px rgba(var(--thermal-rgb), 0.12);
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  font: 800 8px/1 "Segoe UI", sans-serif;
+  letter-spacing: 0.11em;
+}
+
+.engine-viewport.thermal-active .engine-thermal-scale {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.engine-thermal-scale > span,
+.engine-thermal-scale > strong {
+  display: block;
+}
+
+.engine-thermal-scale > span { color: rgb(var(--thermal-rgb)); }
+.engine-thermal-scale > strong { margin: 5px 0 7px; color: #f2fbff; font-size: 10px; }
+
+.engine-thermal-gradient {
+  position: relative;
+  height: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #29d3f2 0%, #51e58a 34%, #ffc536 70%, #ff4d5b 100%);
+  box-shadow: 0 0 12px rgba(var(--thermal-rgb), 0.25);
+}
+
+.engine-thermal-gradient i {
+  position: absolute;
+  left: 45%;
+  top: 50%;
+  width: 3px;
+  height: 15px;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 7px #fff;
+  transform: translate(-50%, -50%);
+  transition: left 240ms ease;
+}
+
+.engine-thermal-scale small {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  color: #7f9aae;
+  font-size: 6px;
+}
+
 .engine-scanline {
   position: absolute;
   inset: -40% 0 auto;
@@ -318,11 +457,12 @@ button.engine-tool.active {
   .engine-hud-right { top: auto; bottom: 18px; }
   .engine-tool-separator { display: none; }
   button.engine-tool { flex: 1 1 42%; }
+  .engine-thermal-scale { right: 12px; bottom: 58px; width: min(220px, 58%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .engine-scanline { animation: none; display: none; }
+  .engine-thermal-aura { animation: none !important; }
 }
 
 .top .badges {
-

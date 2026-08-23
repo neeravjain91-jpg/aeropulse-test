@@ -363,6 +363,7 @@
       this.resizeObserver.observe(canvas.parentElement);
       this.resize();
       this.updateInspector();
+      this.updateThermalField();
       requestAnimationFrame(time => this.frame(time));
     }
 
@@ -398,6 +399,7 @@
       });
       const modeLabel = document.getElementById('engineModeLabel');
       if (modeLabel) modeLabel.textContent = this.mode.toUpperCase();
+      this.updateThermalField();
     }
 
     setTelemetry(data) {
@@ -409,6 +411,37 @@
       if (data.fault != null) this.telemetry.fault = String(data.fault);
       this.updateHud();
       this.updateInspector();
+      this.updateThermalField();
+    }
+
+    updateThermalField() {
+      const t = this.telemetry;
+      const chtLevel = clamp((t.cht - 180) / (315 - 180), 0, 1);
+      const egtLevel = clamp((t.egt - 850) / (1500 - 850), 0, 1);
+      const level = Math.max(chtLevel, egtLevel * 0.94);
+      const color = thermalColor(level, 0, 1).map(channel => Math.round(channel * 255));
+      const viewport = this.canvas.closest('.engine-viewport');
+      if (viewport) {
+        viewport.classList.toggle('thermal-active', this.mode === 'thermal');
+        viewport.style.setProperty('--thermal-rgb', color.join(', '));
+        viewport.style.setProperty('--thermal-level', level.toFixed(3));
+        viewport.style.setProperty('--thermal-outer-opacity', (0.18 + level * 0.26).toFixed(3));
+        viewport.style.setProperty('--thermal-core-opacity', (0.16 + level * 0.3).toFixed(3));
+        viewport.style.setProperty('--thermal-red-alpha', (level * 0.11).toFixed(3));
+        viewport.style.setProperty('--thermal-amber-alpha', (level * 0.42).toFixed(3));
+        viewport.style.setProperty('--thermal-core-red-alpha', (level * 0.34).toFixed(3));
+        viewport.style.setProperty('--thermal-blur', `${Math.round(8 + level * 8)}px`);
+        viewport.style.setProperty('--thermal-pulse-scale', (1.015 + level * 0.025).toFixed(3));
+      }
+      const value = document.getElementById('engineThermalValue');
+      if (value) value.textContent = `${Math.round(t.cht)}°F CHT · ${Math.round(t.egt).toLocaleString()}°F EGT`;
+      const marker = document.getElementById('engineThermalMarker');
+      if (marker) marker.style.left = `${Math.round(level * 100)}%`;
+      const field = document.getElementById('engineThermalField');
+      if (field) {
+        const state = level >= 0.86 ? 'critical' : level >= 0.7 ? 'hot' : level >= 0.34 ? 'nominal' : 'cool';
+        field.dataset.thermalState = state;
+      }
     }
 
     updateHud() {
@@ -552,6 +585,10 @@
       const electricColor = fault.includes('elect') || fault.includes('battery') || t.busVoltage < 24 ? red : cyan;
       const cylinderColor = thermal ? thermalColor(t.cht, 180, 315) : aluminium;
       const exhaustColor = thermal ? thermalColor(t.egt, 850, 1500) : hexColor('#7b432c');
+      const thermalIntensity = Math.max(
+        clamp((t.cht - 180) / (315 - 180), 0, 1),
+        clamp((t.egt - 850) / (1500 - 850), 0, 1) * 0.94
+      );
       const housingAlpha = this.xray ? 0.22 : 1;
       const parts = [];
       const add = (...args) => parts.push(this.part(...args));
@@ -582,6 +619,12 @@
           const color = hotFault ? red : cylinderColor;
           add('cylinder', 'cylinders', `Cylinder ${cylinderIndex + 1}`, [x, 0.3, barrelZ], [0, 0, 0], [1.2, 1.2, 1.72], color, { alpha: housingAlpha, glow: hotFault ? 0.95 : thermal ? 0.32 : 0.03, pick: true });
           add('cylinder', 'cylinders', `Cylinder head ${cylinderIndex + 1}`, [x, 0.3, headZ], [0, 0, 0], [1.48, 1.48, 0.55], color, { glow: hotFault ? 1 : thermal ? 0.4 : 0.03 });
+          if (thermal) {
+            add('sphere', 'cylinders', `Cylinder ${cylinderIndex + 1} thermal envelope`, [x, 0.3, headZ], [0, 0, 0], [1.65, 1.65, 1.05], color, {
+              alpha: 0.055 + thermalIntensity * 0.075,
+              glow: 0.72 + thermalIntensity * 0.28
+            });
+          }
           add('cylinder', 'cylinders', `Piston ${cylinderIndex + 1}`, [x, 0.3, pistonZ], [0, 0, 0], [0.78, 0.78, 0.42], hexColor('#c1ccd8'), { glow: misfire ? 0.7 : 0.04 });
           const crankZ = Math.cos(phase) * 0.26;
           const middleZ = (pistonZ + crankZ) / 2;
@@ -602,6 +645,12 @@
       const turboPosition = [2.8 + explosion * 1.35, 1.34 + explosion * 0.75, -0.45];
       add('torus', 'turbo', 'Turbocharger housing', turboPosition, [0, Math.PI / 2, 0], [1.55, 1.55, 1.55], thermal ? exhaustColor : metal, { glow: thermal ? 0.5 : 0.08, pick: true });
       add('cylinder', 'turbo', 'Turbo turbine', turboPosition, [0, Math.PI / 2, this.crankAngle * 1.8], [0.7, 0.7, 0.42], aluminium, { glow: thermal ? 0.55 : 0.08 });
+      if (thermal) {
+        add('sphere', 'turbo', 'Turbo thermal envelope', turboPosition, [0, 0, 0], [1.45, 1.45, 1.45], exhaustColor, {
+          alpha: 0.06 + thermalIntensity * 0.08,
+          glow: 0.78 + thermalIntensity * 0.22
+        });
+      }
       add('cylinder', 'turbo', 'Intake manifold', [0.4, 1.63 + explosion * 0.5, 0], [0, Math.PI / 2, 0], [0.32, 0.32, 4.7], cyan, { alpha: 0.78, glow: 0.26 });
 
       [-1, 1].forEach(side => {
@@ -747,4 +796,3 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
   else init();
 })();
-
