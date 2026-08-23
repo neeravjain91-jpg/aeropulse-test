@@ -189,9 +189,10 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 }
 </style>
 <link rel="stylesheet" href="/static/aeropulse-command.css" />
+<link rel="stylesheet" href="/static/aeropulse-showcase.css" />
 </head>
 
-<body>
+<body data-apx-workspace="showcase" data-apx-view="operator">
 <div class="shell">
 
   <header class="apx-command-bar" aria-label="AeroPulse-X command status">
@@ -245,7 +246,8 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   </div>
 
   <nav class="apx-workspace-nav" aria-label="Dashboard workspaces">
-    <button type="button" class="apx-workspace-button active" data-apx-workspace-option="overview" aria-current="page">Overview</button>
+    <button type="button" class="apx-workspace-button active" data-apx-workspace-option="showcase" aria-current="page">Home</button>
+    <button type="button" class="apx-workspace-button" data-apx-workspace-option="overview">Dashboard</button>
     <button type="button" class="apx-workspace-button" data-apx-workspace-option="twin">Engine Twin</button>
     <button type="button" class="apx-workspace-button" data-apx-workspace-option="thermal">Thermal</button>
     <button type="button" class="apx-workspace-button" data-apx-workspace-option="mission">Mission</button>
@@ -705,7 +707,7 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
   </div>
 
   <!-- 5. INTERACTIVE WEBGL ENGINE TWIN & RAW CAN BUS MONITOR -->
-  <div class="cutaway-card" data-apx-workspace="overview twin thermal">
+  <div class="cutaway-card" data-apx-workspace="showcase overview twin thermal">
     <div class="engine-card-heading">
       <div style="font-size:15px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:8px;">
         <span>◈</span> Interactive MALE-UAV Aero-Piston Digital Twin
@@ -717,6 +719,31 @@ canvas{width:100%;height:250px;background:#081424;border:1px solid #1e334f;borde
 
     <div class="engine-digital-twin">
       <div class="engine-viewport">
+        <div class="apx-showcase-word" aria-hidden="true">AEROPULSE</div>
+        <div class="apx-showcase-copy">
+          <span class="apx-showcase-kicker">AI-ENABLED PROPULSION DIGITAL TWIN</span>
+          <h2>Engine intelligence.<br><em>Before failure.</em></h2>
+          <p>AeroPulse-X transforms simulated UAV engine telemetry, physics-based deviation and AI evidence into clear mission decisions.</p>
+          <div class="apx-showcase-actions">
+            <button type="button" id="apxStartDemo" class="apx-showcase-primary">Start Live Simulation</button>
+            <button type="button" id="apxEnterDashboard" class="apx-showcase-secondary">Open Dashboard</button>
+          </div>
+        </div>
+        <div class="apx-showcase-callout apx-showcase-callout-left">
+          <small>ENGINE ARCHITECTURE</small>
+          <strong>4-CYLINDER OPPOSED</strong>
+          <span>PROCEDURAL DIGITAL-TWIN VISUALIZATION</span>
+        </div>
+        <div class="apx-showcase-callout apx-showcase-callout-right">
+          <small>RUNTIME STATE</small>
+          <strong id="apxHeroConnection">BACKEND CHECKING</strong>
+          <span id="apxHeroPhase">PREFLIGHT · SIMULATION</span>
+        </div>
+        <div class="apx-showcase-stats" aria-label="Current propulsion summary">
+          <div><small>Health Index</small><strong id="apxHeroHealth">—</strong><span>MODEL-DERIVED</span></div>
+          <div><small>Mission Risk</small><strong id="apxHeroRisk">—</strong><span>PROTOTYPE INDEX</span></div>
+          <div><small>RUL Estimate</small><strong id="apxHeroRul">—</strong><span>PREDICTED</span></div>
+        </div>
         <canvas id="engineCanvas" tabindex="0" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine" aria-describedby="engineInteractionHelp" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home PageUp PageDown + -"></canvas>
         <div class="engine-thermal-field" id="engineThermalField" aria-hidden="true">
           <div class="engine-thermal-aura engine-thermal-aura-outer"></div>

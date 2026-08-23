@@ -9,7 +9,7 @@
   };
 
   const state = {
-    workspace: 'overview',
+    workspace: 'showcase',
     view: 'operator',
     streamStartedAt: null,
     lastSampleAt: null,
@@ -65,6 +65,7 @@
   function updatePhase(value) {
     const phase = normalizePhase(value);
     setText('apxMissionPhase', phase);
+    setText('apxHeroPhase', `${phase} · SIMULATION`);
     const activeIndex = phaseOrder.indexOf(phase);
     all('[data-apx-phase]').forEach((node, index) => {
       node.classList.toggle('active', index === activeIndex && !state.missionComplete);
@@ -87,8 +88,8 @@
   }
 
   function setWorkspace(workspace, persist = true) {
-    const allowed = new Set(['overview', 'twin', 'thermal', 'mission', 'diagnostics', 'rul', 'replay', 'maintenance', 'reports']);
-    const next = allowed.has(workspace) ? workspace : 'overview';
+    const allowed = new Set(['showcase', 'overview', 'twin', 'thermal', 'mission', 'diagnostics', 'rul', 'replay', 'maintenance', 'reports']);
+    const next = allowed.has(workspace) ? workspace : 'showcase';
     state.workspace = next;
     document.body.dataset.apxWorkspace = next;
 
@@ -110,11 +111,15 @@
       const thermalButton = document.querySelector('[data-engine-mode="thermal"]');
       if (thermalButton && !thermalButton.classList.contains('active')) thermalButton.click();
     }
+    if (next === 'showcase' && window.AeroPulseEngine3D?.renderer && !state.showcaseCameraApplied) {
+      window.AeroPulseEngine3D.renderer.camera.distance = 11.2;
+      state.showcaseCameraApplied = true;
+    }
     if ((next === 'maintenance' || next === 'reports') && byId('apxModelStatus')?.dataset.loaded !== 'true') {
       loadModelStatus();
     }
     if (persist) {
-      try { localStorage.setItem('aeropulse-workspace', next); } catch (_) { /* storage can be disabled */ }
+      try { localStorage.setItem('aeropulse-workspace-showcase-v1', next); } catch (_) { /* storage can be disabled */ }
     }
   }
 
@@ -178,6 +183,9 @@
     setText('apxHealthNow', health == null ? '—' : `${health.toFixed(1)} / 100`, healthState);
     setText('apxRiskNow', riskScore == null ? String(riskLevel || '—') : `${String(riskLevel || 'RISK')} · ${riskScore.toFixed(0)}`, riskState);
     setText('apxRulNow', rul == null ? 'NOT REPORTED' : `${rul.toFixed(1)} h`);
+    setText('apxHeroHealth', health == null ? '—' : `${health.toFixed(1)} / 100`, healthState);
+    setText('apxHeroRisk', riskScore == null ? String(riskLevel || '—') : `${String(riskLevel || 'RISK')} · ${riskScore.toFixed(0)}`, riskState);
+    setText('apxHeroRul', rul == null ? 'NOT REPORTED' : `${rul.toFixed(1)} h`);
 
     const confidenceText = confidence == null ? 'confidence not reported' : `${(confidence * 100).toFixed(1)}% confidence`;
     const evidence = payload.maintenance_advisory
@@ -209,6 +217,7 @@
 
   function setConnection(label, connectionState) {
     setText('apxConnection', label, connectionState || 'warning');
+    setText('apxHeroConnection', label, connectionState || 'warning');
   }
 
   function markMissionComplete(summary) {
@@ -433,10 +442,10 @@
     all('[data-apx-workspace-option]').forEach((button) => button.addEventListener('click', () => setWorkspace(button.dataset.apxWorkspaceOption)));
 
     let savedView = 'operator';
-    let savedWorkspace = 'overview';
+    let savedWorkspace = 'showcase';
     try {
       savedView = localStorage.getItem('aeropulse-view') || savedView;
-      savedWorkspace = localStorage.getItem('aeropulse-workspace') || savedWorkspace;
+      savedWorkspace = localStorage.getItem('aeropulse-workspace-showcase-v1') || savedWorkspace;
     } catch (_) { /* storage can be disabled */ }
 
     arrangeOperationalOverview();
@@ -449,6 +458,15 @@
     byId('apxRunReplay')?.addEventListener('click', runReplayAnalysis);
     byId('apxLoadModelStatus')?.addEventListener('click', loadModelStatus);
     byId('apxPrintReport')?.addEventListener('click', () => window.print());
+    byId('apxEnterDashboard')?.addEventListener('click', () => {
+      setWorkspace('overview');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    byId('apxStartDemo')?.addEventListener('click', (event) => {
+      if (typeof startLiveStream !== 'function') return;
+      startLiveStream();
+      event.currentTarget.textContent = 'Simulation Running';
+    });
     updatePhase(byId('autoPhasePill')?.textContent || 'PREFLIGHT');
     updateClocks();
     setInterval(updateClocks, 1000);
