@@ -1,9 +1,10 @@
 /*
- * AeroPulse-X WebGL engine digital twin
+ * AeroPulse-X WebGL 3D Piston Engine Digital Twin
  * ------------------------------------------------------------
- * Dependency-free WebGL renderer for the offline SIH demo. The
- * model is intentionally procedural: it represents a four-cylinder
- * horizontally opposed UAV aero-piston engine, not an automotive V8.
+ * High-definition, hardware-accelerated WebGL renderer for the
+ * MALE-UAV four-cylinder horizontally opposed aero-piston engine.
+ * Calibrated with Blinn-Phong specular highlights, Fresnel metallic
+ * definition, high-DPI scaling, and real-time telemetry coupling.
  */
 (function () {
   'use strict';
@@ -148,99 +149,120 @@
       [[0, 1, 0], [[-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, -0.5]]],
       [[0, -1, 0], [[-0.5, -0.5, 0.5], [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, -0.5, 0.5]]],
       [[0, 0, 1], [[-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]]],
-      [[0, 0, -1], [[0.5, -0.5, -0.5], [-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5]]]
+      [[0, 0, -1], [[-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5], [0.5, -0.5, -0.5]]]
     ];
-    faces.forEach(([normal, vertices]) => {
-      const offset = positions.length / 3;
-      vertices.forEach(vertex => {
-        positions.push(...vertex);
+    faces.forEach(([normal, quad]) => {
+      const baseIndex = positions.length / 3;
+      quad.forEach(point => {
+        positions.push(...point);
         normals.push(...normal);
       });
-      indices.push(offset, offset + 1, offset + 2, offset, offset + 2, offset + 3);
+      indices.push(baseIndex, baseIndex + 1, baseIndex + 2, baseIndex, baseIndex + 2, baseIndex + 3);
     });
     return { positions, normals, indices };
   }
 
-  function makeCylinder(segments) {
+  function makeCylinder(segments = 32) {
     const positions = [];
     const normals = [];
     const indices = [];
+
+    // Side quad strip
     for (let index = 0; index <= segments; index += 1) {
-      const angle = index / segments * Math.PI * 2;
-      const x = Math.cos(angle) * 0.5;
-      const y = Math.sin(angle) * 0.5;
-      positions.push(x, y, -0.5, x, y, 0.5);
-      normals.push(Math.cos(angle), Math.sin(angle), 0, Math.cos(angle), Math.sin(angle), 0);
+      const theta = (index / segments) * Math.PI * 2;
+      const x = Math.cos(theta) * 0.5;
+      const z = Math.sin(theta) * 0.5;
+      positions.push(x, 0.5, z, x, -0.5, z);
+      normals.push(x * 2, 0, z * 2, x * 2, 0, z * 2);
     }
     for (let index = 0; index < segments; index += 1) {
-      const a = index * 2;
-      indices.push(a, a + 1, a + 3, a, a + 3, a + 2);
+      const i0 = index * 2;
+      const i1 = i0 + 1;
+      const i2 = i0 + 2;
+      const i3 = i0 + 3;
+      indices.push(i0, i1, i2, i2, i1, i3);
     }
-    [-0.5, 0.5].forEach((z, capIndex) => {
-      const center = positions.length / 3;
-      positions.push(0, 0, z);
-      normals.push(0, 0, capIndex ? 1 : -1);
-      const ring = positions.length / 3;
-      for (let index = 0; index <= segments; index += 1) {
-        const angle = index / segments * Math.PI * 2;
-        positions.push(Math.cos(angle) * 0.5, Math.sin(angle) * 0.5, z);
-        normals.push(0, 0, capIndex ? 1 : -1);
-      }
-      for (let index = 0; index < segments; index += 1) {
-        if (capIndex) indices.push(center, ring + index, ring + index + 1);
-        else indices.push(center, ring + index + 1, ring + index);
-      }
-    });
+
+    // Top cap
+    const topCenter = positions.length / 3;
+    positions.push(0, 0.5, 0);
+    normals.push(0, 1, 0);
+    for (let index = 0; index <= segments; index += 1) {
+      const theta = (index / segments) * Math.PI * 2;
+      positions.push(Math.cos(theta) * 0.5, 0.5, Math.sin(theta) * 0.5);
+      normals.push(0, 1, 0);
+    }
+    for (let index = 0; index < segments; index += 1) {
+      indices.push(topCenter, topCenter + 1 + index, topCenter + 2 + index);
+    }
+
+    // Bottom cap
+    const bottomCenter = positions.length / 3;
+    positions.push(0, -0.5, 0);
+    normals.push(0, -1, 0);
+    for (let index = 0; index <= segments; index += 1) {
+      const theta = (index / segments) * Math.PI * 2;
+      positions.push(Math.cos(theta) * 0.5, -0.5, Math.sin(theta) * 0.5);
+      normals.push(0, -1, 0);
+    }
+    for (let index = 0; index < segments; index += 1) {
+      indices.push(bottomCenter, bottomCenter + 2 + index, bottomCenter + 1 + index);
+    }
+
     return { positions, normals, indices };
   }
 
-  function makeSphere(latitudeBands, longitudeBands) {
+  function makeSphere(latBands = 18, lonBands = 26) {
     const positions = [];
     const normals = [];
     const indices = [];
-    for (let latitude = 0; latitude <= latitudeBands; latitude += 1) {
-      const theta = latitude * Math.PI / latitudeBands;
-      for (let longitude = 0; longitude <= longitudeBands; longitude += 1) {
-        const phi = longitude * Math.PI * 2 / longitudeBands;
-        const x = Math.sin(theta) * Math.cos(phi);
-        const y = Math.cos(theta);
-        const z = Math.sin(theta) * Math.sin(phi);
-        positions.push(x * 0.5, y * 0.5, z * 0.5);
-        normals.push(x, y, z);
+    for (let lat = 0; lat <= latBands; lat += 1) {
+      const theta = (lat * Math.PI) / latBands;
+      const sinTheta = Math.sin(theta);
+      const cosTheta = Math.cos(theta);
+      for (let lon = 0; lon <= lonBands; lon += 1) {
+        const phi = (lon * 2 * Math.PI) / lonBands;
+        const x = Math.cos(phi) * sinTheta * 0.5;
+        const y = cosTheta * 0.5;
+        const z = Math.sin(phi) * sinTheta * 0.5;
+        positions.push(x, y, z);
+        normals.push(x * 2, y * 2, z * 2);
       }
     }
-    for (let latitude = 0; latitude < latitudeBands; latitude += 1) {
-      for (let longitude = 0; longitude < longitudeBands; longitude += 1) {
-        const first = latitude * (longitudeBands + 1) + longitude;
-        const second = first + longitudeBands + 1;
+    for (let lat = 0; lat < latBands; lat += 1) {
+      for (let lon = 0; lon < lonBands; lon += 1) {
+        const first = lat * (lonBands + 1) + lon;
+        const second = first + lonBands + 1;
         indices.push(first, second, first + 1, second, second + 1, first + 1);
       }
     }
     return { positions, normals, indices };
   }
 
-  function makeTorus(radialSegments, tubularSegments) {
+  function makeTorus(radialSegments = 32, tubularSegments = 16, radius = 0.5, tube = 0.18) {
     const positions = [];
     const normals = [];
     const indices = [];
-    const major = 0.34;
-    const minor = 0.16;
-    for (let radial = 0; radial <= radialSegments; radial += 1) {
-      const u = radial / radialSegments * Math.PI * 2;
-      for (let tubular = 0; tubular <= tubularSegments; tubular += 1) {
-        const v = tubular / tubularSegments * Math.PI * 2;
-        const x = (major + minor * Math.cos(v)) * Math.cos(u);
-        const y = (major + minor * Math.cos(v)) * Math.sin(u);
-        const z = minor * Math.sin(v);
+    for (let j = 0; j <= radialSegments; j += 1) {
+      for (let i = 0; i <= tubularSegments; i += 1) {
+        const u = (i / tubularSegments) * Math.PI * 2;
+        const v = (j / radialSegments) * Math.PI * 2;
+        const x = (radius + tube * Math.cos(v)) * Math.cos(u);
+        const y = (radius + tube * Math.cos(v)) * Math.sin(u);
+        const z = tube * Math.sin(v);
         positions.push(x, y, z);
-        normals.push(Math.cos(v) * Math.cos(u), Math.cos(v) * Math.sin(u), Math.sin(v));
+        const cx = radius * Math.cos(u);
+        const cy = radius * Math.sin(u);
+        normals.push(x - cx, y - cy, z);
       }
     }
-    for (let radial = 0; radial < radialSegments; radial += 1) {
-      for (let tubular = 0; tubular < tubularSegments; tubular += 1) {
-        const a = radial * (tubularSegments + 1) + tubular;
-        const b = (radial + 1) * (tubularSegments + 1) + tubular;
-        indices.push(a, b, a + 1, b, b + 1, a + 1);
+    for (let j = 1; j <= radialSegments; j += 1) {
+      for (let i = 1; i <= tubularSegments; i += 1) {
+        const a = (tubularSegments + 1) * j + i - 1;
+        const b = (tubularSegments + 1) * (j - 1) + i - 1;
+        const c = (tubularSegments + 1) * (j - 1) + i;
+        const d = (tubularSegments + 1) * j + i;
+        indices.push(a, b, d, b, c, d);
       }
     }
     return { positions, normals, indices };
@@ -256,6 +278,7 @@
 
   function createProgram(gl) {
     const vertex = createShader(gl, gl.VERTEX_SHADER, `
+      precision highp float;
       attribute vec3 aPosition;
       attribute vec3 aNormal;
       uniform mat4 uModel;
@@ -263,27 +286,50 @@
       uniform mat4 uProjection;
       varying vec3 vNormal;
       varying vec3 vWorld;
+      varying vec3 vViewPos;
       void main(){
         vec4 world = uModel * vec4(aPosition, 1.0);
         vWorld = world.xyz;
         vNormal = normalize(mat3(uModel) * aNormal);
-        gl_Position = uProjection * uView * world;
+        vec4 viewPos = uView * world;
+        vViewPos = viewPos.xyz;
+        gl_Position = uProjection * viewPos;
       }
     `);
     const fragment = createShader(gl, gl.FRAGMENT_SHADER, `
-      precision mediump float;
+      precision highp float;
       uniform vec3 uColor;
       uniform float uAlpha;
       uniform float uGlow;
       uniform float uSelected;
       varying vec3 vNormal;
       varying vec3 vWorld;
+      varying vec3 vViewPos;
       void main(){
-        vec3 light = normalize(vec3(0.35, 0.85, 0.65));
-        float diffuse = max(dot(normalize(vNormal), light), 0.0);
-        float rim = pow(1.0 - abs(dot(normalize(vNormal), normalize(vec3(0.25, 0.2, 1.0)))), 2.0);
-        vec3 color = uColor * (0.28 + 0.72 * diffuse);
-        color += uColor * uGlow * 0.65 + vec3(0.08, 0.7, 0.95) * rim * (0.16 + uSelected * 0.85);
+        vec3 N = normalize(vNormal);
+        vec3 L1 = normalize(vec3(0.55, 0.85, 0.65)); // Key light
+        vec3 L2 = normalize(vec3(-0.6, 0.25, -0.5)); // Fill light
+        vec3 V = normalize(-vViewPos);               // View vector
+
+        // Diffuse lighting
+        float diff1 = max(dot(N, L1), 0.0);
+        float diff2 = max(dot(N, L2), 0.0) * 0.40;
+        float diffuse = diff1 + diff2;
+
+        // Blinn-Phong Specular for crisp metallic edge reflection
+        vec3 H1 = normalize(L1 + V);
+        float spec = pow(max(dot(N, H1), 0.0), 32.0) * 0.45;
+
+        // Subtle Fresnel rim definition for depth definition
+        float rim = pow(1.0 - max(dot(N, V), 0.0), 2.5);
+
+        // Ambient base
+        vec3 ambient = uColor * 0.32;
+        vec3 color = ambient + uColor * (0.68 * diffuse) + vec3(0.85, 0.92, 1.0) * spec;
+
+        // Glow and selection highlighting
+        color += uColor * uGlow * 0.70 + vec3(0.12, 0.78, 0.98) * rim * (0.18 + uSelected * 0.82);
+
         gl_FragColor = vec4(color, uAlpha);
       }
     `);
@@ -311,7 +357,12 @@
   class AeroEngineRenderer {
     constructor(canvas) {
       this.canvas = canvas;
-      this.gl = canvas.getContext('webgl', { antialias: true, alpha: true });
+      this.gl = canvas.getContext('webgl', {
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance',
+        preserveDrawingBuffer: false
+      });
       if (!this.gl) throw new Error('WebGL is unavailable');
       this.program = createProgram(this.gl);
       this.locations = {
@@ -327,9 +378,9 @@
       };
       this.meshes = {
         cube: uploadMesh(this.gl, makeCube()),
-        cylinder: uploadMesh(this.gl, makeCylinder(24)),
-        sphere: uploadMesh(this.gl, makeSphere(12, 18)),
-        torus: uploadMesh(this.gl, makeTorus(24, 12))
+        cylinder: uploadMesh(this.gl, makeCylinder(32)),
+        sphere: uploadMesh(this.gl, makeSphere(16, 24)),
+        torus: uploadMesh(this.gl, makeTorus(32, 16))
       };
       this.telemetry = {
         rpm: 3000,
@@ -350,7 +401,8 @@
       this.exploded = false;
       this.explodeAmount = 0;
       this.crankAngle = 0;
-      this.camera = { yaw: -38 * DEG, pitch: 19 * DEG, distance: 12.5 };
+      // Default 3/4 engineering perspective with optimal focal distance
+      this.camera = { yaw: -36 * DEG, pitch: 20 * DEG, distance: 11.2 };
       this.selected = 'crankcase';
       this.drag = null;
       this.pickTargets = [];
@@ -359,8 +411,11 @@
       this.configureGl();
       this.bindInteractions();
       this.bindControls();
+      
       this.resizeObserver = new ResizeObserver(() => this.resize());
-      this.resizeObserver.observe(canvas.parentElement);
+      if (canvas.parentElement) {
+        this.resizeObserver.observe(canvas.parentElement);
+      }
       this.resize();
       this.updateInspector();
       this.updateThermalField();
@@ -374,13 +429,13 @@
       gl.enable(gl.CULL_FACE);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.clearColor(0.018, 0.045, 0.075, 1);
+      gl.clearColor(0.02, 0.05, 0.08, 1);
     }
 
     resize() {
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      const width = Math.max(320, Math.floor(this.canvas.clientWidth * ratio));
-      const height = Math.max(300, Math.floor(this.canvas.clientHeight * ratio));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(320, Math.floor(this.canvas.clientWidth * dpr));
+      const height = Math.max(260, Math.floor(this.canvas.clientHeight * dpr));
       if (this.canvas.width !== width || this.canvas.height !== height) {
         this.canvas.width = width;
         this.canvas.height = height;
@@ -389,7 +444,7 @@
     }
 
     resetCamera() {
-      this.camera = { yaw: -38 * DEG, pitch: 19 * DEG, distance: 12.5 };
+      this.camera = { yaw: -36 * DEG, pitch: 20 * DEG, distance: 11.2 };
     }
 
     setMode(mode) {
@@ -425,13 +480,6 @@
         viewport.classList.toggle('thermal-active', this.mode === 'thermal');
         viewport.style.setProperty('--thermal-rgb', color.join(', '));
         viewport.style.setProperty('--thermal-level', level.toFixed(3));
-        viewport.style.setProperty('--thermal-outer-opacity', (0.18 + level * 0.26).toFixed(3));
-        viewport.style.setProperty('--thermal-core-opacity', (0.16 + level * 0.3).toFixed(3));
-        viewport.style.setProperty('--thermal-red-alpha', (level * 0.11).toFixed(3));
-        viewport.style.setProperty('--thermal-amber-alpha', (level * 0.42).toFixed(3));
-        viewport.style.setProperty('--thermal-core-red-alpha', (level * 0.34).toFixed(3));
-        viewport.style.setProperty('--thermal-blur', `${Math.round(8 + level * 8)}px`);
-        viewport.style.setProperty('--thermal-pulse-scale', (1.015 + level * 0.025).toFixed(3));
       }
       const value = document.getElementById('engineThermalValue');
       if (value) value.textContent = `${Math.round(t.cht)}°F CHT · ${Math.round(t.egt).toLocaleString()}°F EGT`;
@@ -459,7 +507,7 @@
       const state = document.getElementById('engineTwinState');
       if (state) {
         const fault = this.telemetry.fault.toLowerCase();
-        state.textContent = fault && fault !== 'none' ? `FAULT FOCUS • ${this.telemetry.fault}` : 'DIGITAL TWIN SYNCHRONIZED';
+        state.textContent = fault && fault !== 'none' ? `FAULT FOCUS • ${this.telemetry.fault.toUpperCase()}` : 'DIGITAL TWIN SYNCHRONIZED';
         state.className = fault && fault !== 'none' ? 'engine-twin-state warn' : 'engine-twin-state';
       }
     }
@@ -506,7 +554,7 @@
       on('enginePause', 'click', event => {
         this.paused = !this.paused;
         event.currentTarget.classList.toggle('active', this.paused);
-        event.currentTarget.textContent = this.paused ? 'Resume motion' : 'Pause motion';
+        event.currentTarget.textContent = this.paused ? 'Resume' : 'Pause';
       });
       on('engineXray', 'click', event => {
         this.xray = !this.xray;
@@ -543,7 +591,7 @@
       });
       this.canvas.addEventListener('wheel', event => {
         event.preventDefault();
-        this.camera.distance = clamp(this.camera.distance + event.deltaY * 0.012, 7, 20);
+        this.camera.distance = clamp(this.camera.distance + event.deltaY * 0.010, 6.5, 18);
       }, { passive: false });
       this.canvas.addEventListener('dblclick', () => this.resetCamera());
     }
@@ -573,9 +621,10 @@
       const thermal = this.mode === 'thermal';
       const vibrationMode = this.mode === 'vibration';
       const explosion = this.explodeAmount;
-      const metal = hexColor('#3f536b');
-      const darkMetal = hexColor('#1d2b3b');
-      const aluminium = hexColor('#73859a');
+      const metal = hexColor('#425770');
+      const darkMetal = hexColor('#1e2c3c');
+      const aluminium = hexColor('#7a8c9e');
+      const brightSteel = hexColor('#b4c2d2');
       const cyan = hexColor('#29d3f2');
       const green = hexColor('#51e58a');
       const amber = hexColor('#ffc536');
@@ -593,16 +642,19 @@
       const parts = [];
       const add = (...args) => parts.push(this.part(...args));
 
+      // 1. Crankcase & Engine Block Housing
       add('cube', 'crankcase', 'Central crankcase', [0, 0, 0], [0, 0, 0], [4.8, 1.3, 1.55], darkMetal, { alpha: housingAlpha, pick: true });
       add('cube', 'crankcase', 'Upper accessory housing', [0.25, 1.02 + explosion * 0.45, 0], [0, 0, 0], [3.1, 0.62, 1.26], metal, { alpha: housingAlpha });
-      add('cube', 'lubrication', 'Oil sump', [0, -0.92 - explosion * 0.35, 0], [0, 0, 0], [3.7, 0.42, 1.25], oilColor, { alpha: this.xray ? 0.5 : 0.9, glow: thermal ? 0.15 : 0.03, pick: true });
+      add('cube', 'lubrication', 'Oil sump', [0, -0.92 - explosion * 0.35, 0], [0, 0, 0], [3.7, 0.42, 1.25], oilColor, { alpha: this.xray ? 0.5 : 0.95, glow: thermal ? 0.15 : 0.03, pick: true });
 
-      add('cylinder', 'crankshaft', 'Crankshaft', [0, 0.03, 0], [0, Math.PI / 2, 0], [0.38, 0.38, 5.5], aluminium, { glow: vibrationMode ? clamp(t.vibration / 4, 0, 0.8) : 0.03, pick: true });
+      // 2. Crankshaft & Counterweights
+      add('cylinder', 'crankshaft', 'Crankshaft', [0, 0.03, 0], [0, Math.PI / 2, 0], [0.38, 0.38, 5.5], brightSteel, { glow: vibrationMode ? clamp(t.vibration / 4, 0, 0.8) : 0.03, pick: true });
       [-1.4, 0, 1.4].forEach((x, index) => {
         const phase = this.crankAngle + index * Math.PI * 0.66;
-        add('cylinder', 'crankshaft', 'Crank throw', [x, Math.sin(phase) * 0.25, Math.cos(phase) * 0.25], [0, Math.PI / 2, 0], [0.55, 0.55, 0.26], hexColor('#95a4b7'), { glow: 0.05 });
+        add('cylinder', 'crankshaft', 'Crank throw', [x, Math.sin(phase) * 0.25, Math.cos(phase) * 0.25], [0, Math.PI / 2, 0], [0.55, 0.55, 0.26], hexColor('#9bb0c4'), { glow: 0.05 });
       });
 
+      // 3. Opposed 4-Cylinder Power Assembly
       const cylinderXs = [-1.32, 1.32];
       const phases = [0, Math.PI, Math.PI, 0];
       let cylinderIndex = 0;
@@ -617,52 +669,69 @@
           const pistonZ = side * (0.84 + stroke) + bankOffset * 0.28;
           const hotFault = (fault.includes('overheat') || fault.includes('thermal')) && cylinderIndex === 1;
           const color = hotFault ? red : cylinderColor;
+
+          // Cylinder Barrel
           add('cylinder', 'cylinders', `Cylinder ${cylinderIndex + 1}`, [x, 0.3, barrelZ], [0, 0, 0], [1.2, 1.2, 1.72], color, { alpha: housingAlpha, glow: hotFault ? 0.95 : thermal ? 0.32 : 0.03, pick: true });
+          
+          // Cylinder Cooling Fin Rings
+          [-0.4, -0.1, 0.2, 0.5].forEach(finOffset => {
+            add('torus', 'cylinders', `Cooling Fin ${cylinderIndex + 1}`, [x, 0.3, barrelZ + finOffset * side], [0, 0, 0], [1.32, 1.32, 0.25], metal, { alpha: housingAlpha });
+          });
+
+          // Cylinder Head
           add('cylinder', 'cylinders', `Cylinder head ${cylinderIndex + 1}`, [x, 0.3, headZ], [0, 0, 0], [1.48, 1.48, 0.55], color, { glow: hotFault ? 1 : thermal ? 0.4 : 0.03 });
+          
           if (thermal) {
-            add('sphere', 'cylinders', `Cylinder ${cylinderIndex + 1} thermal envelope`, [x, 0.3, headZ], [0, 0, 0], [1.65, 1.65, 1.05], color, {
-              alpha: 0.055 + thermalIntensity * 0.075,
-              glow: 0.72 + thermalIntensity * 0.28
+            add('sphere', 'cylinders', `Cylinder ${cylinderIndex + 1} thermal envelope`, [x, 0.3, headZ], [0, 0, 0], [1.55, 1.55, 0.95], color, {
+              alpha: 0.045 + thermalIntensity * 0.065,
+              glow: 0.65 + thermalIntensity * 0.35
             });
           }
-          add('cylinder', 'cylinders', `Piston ${cylinderIndex + 1}`, [x, 0.3, pistonZ], [0, 0, 0], [0.78, 0.78, 0.42], hexColor('#c1ccd8'), { glow: misfire ? 0.7 : 0.04 });
+
+          // Piston & Connecting Rod
+          add('cylinder', 'cylinders', `Piston ${cylinderIndex + 1}`, [x, 0.3, pistonZ], [0, 0, 0], [0.78, 0.78, 0.42], brightSteel, { glow: misfire ? 0.7 : 0.04 });
           const crankZ = Math.cos(phase) * 0.26;
           const middleZ = (pistonZ + crankZ) / 2;
           const deltaZ = pistonZ - crankZ;
           const length = Math.hypot(deltaZ, 0.3);
-          add('cube', 'crankshaft', `Connecting rod ${cylinderIndex + 1}`, [x, 0.16, middleZ], [Math.atan2(deltaZ, 0.3), 0, 0], [0.18, length, 0.18], hexColor('#b3c0cd'), { glow: misfire ? 0.45 : 0 });
+          add('cube', 'crankshaft', `Connecting rod ${cylinderIndex + 1}`, [x, 0.16, middleZ], [Math.atan2(deltaZ, 0.3), 0, 0], [0.18, length, 0.18], hexColor('#c2cfdc'), { glow: misfire ? 0.45 : 0 });
           cylinderIndex += 1;
         });
       });
 
+      // 4. Reduction Output Shaft & Propeller
       const propX = -3.1 - explosion * 1.25;
       add('cylinder', 'propeller', 'Reduction output shaft', [propX, 0, 0], [0, Math.PI / 2, 0], [0.52, 0.52, 2.2], aluminium, { pick: true });
-      add('sphere', 'propeller', 'Propeller spinner', [propX - 1.02, 0, 0], [0, 0, 0], [0.78, 0.78, 0.78], metal, { glow: 0.06 });
+      add('sphere', 'propeller', 'Propeller spinner', [propX - 1.02, 0, 0], [0, 0, 0], [0.78, 0.78, 0.78], brightSteel, { glow: 0.06 });
       const propAngle = this.crankAngle * 0.46;
       add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle, 0, 0], [0.16, 4.4, 0.28], hexColor('#456278'), { glow: 0.04 });
       add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle + Math.PI / 2, 0, 0], [0.16, 4.4, 0.28], hexColor('#456278'), { glow: 0.04 });
 
+      // 5. Turbocharger & Boost Circuit
       const turboPosition = [2.8 + explosion * 1.35, 1.34 + explosion * 0.75, -0.45];
       add('torus', 'turbo', 'Turbocharger housing', turboPosition, [0, Math.PI / 2, 0], [1.55, 1.55, 1.55], thermal ? exhaustColor : metal, { glow: thermal ? 0.5 : 0.08, pick: true });
-      add('cylinder', 'turbo', 'Turbo turbine', turboPosition, [0, Math.PI / 2, this.crankAngle * 1.8], [0.7, 0.7, 0.42], aluminium, { glow: thermal ? 0.55 : 0.08 });
+      add('cylinder', 'turbo', 'Turbo turbine', turboPosition, [0, Math.PI / 2, this.crankAngle * 1.8], [0.7, 0.7, 0.42], brightSteel, { glow: thermal ? 0.55 : 0.08 });
       if (thermal) {
-        add('sphere', 'turbo', 'Turbo thermal envelope', turboPosition, [0, 0, 0], [1.45, 1.45, 1.45], exhaustColor, {
-          alpha: 0.06 + thermalIntensity * 0.08,
-          glow: 0.78 + thermalIntensity * 0.22
+        add('sphere', 'turbo', 'Turbo thermal envelope', turboPosition, [0, 0, 0], [1.35, 1.35, 1.35], exhaustColor, {
+          alpha: 0.05 + thermalIntensity * 0.07,
+          glow: 0.70 + thermalIntensity * 0.30
         });
       }
       add('cylinder', 'turbo', 'Intake manifold', [0.4, 1.63 + explosion * 0.5, 0], [0, Math.PI / 2, 0], [0.32, 0.32, 4.7], cyan, { alpha: 0.78, glow: 0.26 });
 
+      // 6. Fuel Rails & Lubrication Galleries
       [-1, 1].forEach(side => {
         add('cylinder', 'fuel', 'Fuel rail', [0, 1.05 + explosion * 0.4, side * (1.12 + explosion * 1.5)], [0, Math.PI / 2, 0], [0.15, 0.15, 3.9], fuelColor, { glow: 0.65, pick: true });
         add('cylinder', 'turbo', 'Exhaust collector', [0.2, -0.52, side * (2.35 + explosion * 1.7)], [0, Math.PI / 2, 0], [0.32, 0.32, 4.1], exhaustColor, { glow: thermal ? 0.75 : 0.12 });
         add('cylinder', 'lubrication', 'Oil gallery', [0, -0.64 - explosion * 0.2, side * 0.83], [0, Math.PI / 2, 0], [0.13, 0.13, 4.0], oilColor, { glow: 0.7 });
       });
 
+      // 7. Alternator / FADEC Unit
       const alternatorPosition = [2.1 + explosion * 0.9, -1.32 - explosion * 0.6, 0];
       add('cylinder', 'electrical', 'Alternator', alternatorPosition, [0, Math.PI / 2, 0], [1.15, 1.15, 1.3], electricColor, { glow: electricColor === red ? 0.9 : 0.16, pick: true });
-      add('cylinder', 'electrical', 'Alternator rotor', alternatorPosition, [0, Math.PI / 2, this.crankAngle], [0.58, 0.58, 1.45], aluminium, { glow: 0.08 });
+      add('cylinder', 'electrical', 'Alternator rotor', alternatorPosition, [0, Math.PI / 2, this.crankAngle], [0.58, 0.58, 1.45], brightSteel, { glow: 0.08 });
 
+      // 8. Virtual FADEC Sensor Nodes
       const sensorPositions = [[-1.32, 1.02, -2.72], [-1.32, 1.02, 2.72], [1.32, 1.02, -2.72], [1.32, 1.02, 2.72], [0, -1.24, 0]];
       sensorPositions.forEach((position, index) => {
         const sensorFault = fault.includes('sensor') && index === 2;
@@ -670,6 +739,7 @@
         add('sphere', 'sensors', `Sensor node ${index + 1}`, [position[0], position[1], position[2] + Math.sign(position[2]) * explosion * 2], [0, 0, 0], [pulse, pulse, pulse], sensorFault ? red : green, { glow: sensorFault ? 1 : 0.72, pick: true });
       });
 
+      // 9. Flow Particles
       const flowSpeed = Math.max(0.2, t.oilPressure / 60);
       for (let index = 0; index < 7; index += 1) {
         const x = ((time * 0.0006 * flowSpeed + index / 7) % 1) * 3.5 - 1.75;
@@ -712,16 +782,16 @@
           component: part.component,
           x: (point[0] * 0.5 + 0.5) * rect.width,
           y: (1 - (point[1] * 0.5 + 0.5)) * rect.height,
-          radius: 48
+          radius: 42
         });
       });
     }
 
     drawGrid() {
-      const gridColor = hexColor('#16354a');
+      const gridColor = hexColor('#15283c');
       for (let index = -6; index <= 6; index += 1) {
-        this.drawPart(this.part('cube', 'grid', 'Grid', [index, -2.25, 0], [0, 0, 0], [0.018, 0.018, 12], gridColor, { alpha: 0.25 }));
-        this.drawPart(this.part('cube', 'grid', 'Grid', [0, -2.25, index], [0, 0, 0], [12, 0.018, 0.018], gridColor, { alpha: 0.25 }));
+        this.drawPart(this.part('cube', 'grid', 'Grid', [index, -2.25, 0], [0, 0, 0], [0.016, 0.016, 12], gridColor, { alpha: 0.28 }));
+        this.drawPart(this.part('cube', 'grid', 'Grid', [0, -2.25, index], [0, 0, 0], [12, 0.016, 0.016], gridColor, { alpha: 0.28 }));
       }
     }
 
@@ -737,13 +807,13 @@
 
       const gl = this.gl;
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      const aspect = this.canvas.width / this.canvas.height;
-      const projection = mat4Perspective(42 * DEG, aspect, 0.1, 100);
+      const aspect = Math.max(0.2, this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight));
+      const projection = mat4Perspective(36 * DEG, aspect, 0.1, 100);
       const camera = this.camera;
       const horizontal = Math.cos(camera.pitch) * camera.distance;
       const eye = [
         Math.sin(camera.yaw) * horizontal,
-        Math.sin(camera.pitch) * camera.distance + 0.35,
+        Math.sin(camera.pitch) * camera.distance + 0.30,
         Math.cos(camera.yaw) * horizontal
       ];
       const view = mat4LookAt(eye, [0, 0, 0], [0, 1, 0]);
