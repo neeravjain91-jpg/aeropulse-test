@@ -269,7 +269,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
   <!-- APPLICATION CONTAINER: LEFT SIDEBAR NAVIGATION + MAIN CONTENT PANE -->
   <div class="app-container">
 
-    <!-- LEFT SIDEBAR: VERTICAL 3-TAB NAVIGATION -->
+    <!-- LEFT SIDEBAR: VERTICAL 2-TAB NAVIGATION -->
     <nav class="side-nav">
       <button id="tabBtnLive" class="side-tab-btn active" onclick="switchDashboardTab('live')">
         <span class="side-tab-icon">🛰️</span>
@@ -279,14 +279,8 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
       <button id="tabBtnDiagnostics" class="side-tab-btn" onclick="switchDashboardTab('diagnostics')">
         <span class="side-tab-icon">🩺</span>
-        <span class="side-tab-title">FAULT & HEALTH DIAGNOSTICS</span>
-        <span class="side-tab-sub">AI Anomaly • RUL • Risk</span>
-      </button>
-
-      <button id="tabBtnTelemetry" class="side-tab-btn" onclick="switchDashboardTab('telemetry')">
-        <span class="side-tab-icon">⚡</span>
-        <span class="side-tab-title">TELEMETRY & PHYSICS</span>
-        <span class="side-tab-sub">Deviations • Sensor Trust</span>
+        <span class="side-tab-title">HEALTH & DIAGNOSTICS</span>
+        <span class="side-tab-sub">Faults • Telemetry • Physics</span>
       </button>
     </nav>
 
@@ -889,13 +883,6 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
           <div id="riskBreakdown"></div>
         </div>
 
-      </section>
-
-      <!-- ========================================================================= -->
-      <!-- TAB 3: TELEMETRY & PHYSICS -->
-      <!-- ========================================================================= -->
-      <section id="tabContentTelemetry" class="tab-content" style="display:none;">
-
         <!-- SENSOR HEALTH & PHYSICS-INFORMED DEVIATIONS -->
         <div class="grid two" style="margin-bottom:8px;">
           <div class="card">
@@ -965,7 +952,7 @@ let currentTab = 'live';
 
 function switchDashboardTab(tabId) {
   currentTab = tabId;
-  const tabs = ['live', 'diagnostics', 'telemetry'];
+  const tabs = ['live', 'diagnostics'];
   tabs.forEach(t => {
     const btn = $('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
     const content = $('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
