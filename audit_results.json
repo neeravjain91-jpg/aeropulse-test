@@ -1,0 +1,546 @@
+{
+  "ml_models": {
+    "aces_health.joblib": {
+      "exists": true,
+      "size_bytes": 14581180,
+      "type": "Pipeline",
+      "repr": "Pipeline(steps=[('pre',\n                 ColumnTransformer(transformers=[('num',\n                                       ",
+      "steps": [
+        "pre",
+        "model"
+      ],
+      "estimator_type": "RandomForestClassifier",
+      "n_estimators": 100,
+      "max_depth": 16,
+      "classes": [
+        "Critical",
+        "Normal",
+        "Warning",
+        "Watch"
+      ]
+    },
+    "aces_anomaly.joblib": {
+      "exists": true,
+      "size_bytes": 357979,
+      "type": "Pipeline",
+      "repr": "Pipeline(steps=[('impute', SimpleImputer(strategy='median')),\n                ('scale', StandardScaler()),\n             ",
+      "steps": [
+        "impute",
+        "scale",
+        "model"
+      ],
+      "estimator_type": "IsolationForest",
+      "n_estimators": 100
+    },
+    "cwru_vibration.joblib": {
+      "exists": true,
+      "size_bytes": 299954,
+      "type": "dict",
+      "repr": "{'model': RandomForestClassifier(class_weight='balanced_subsample', max_depth=14,\n                       n_estimators=18"
+    },
+    "marine_fault_research.joblib": {
+      "exists": true,
+      "size_bytes": 4083489,
+      "type": "dict",
+      "repr": "{'model': RandomForestClassifier(class_weight='balanced_subsample', max_depth=20,\n                       min_samples_lea"
+    }
+  },
+  "physics_altitude_sweep": [
+    {
+      "altitude_ft": 0,
+      "rpm": 3000.0,
+      "map": 22.14,
+      "cht": 291.6,
+      "egt": 1318.1,
+      "fuel_flow": 26.22,
+      "oil_press": 67.6
+    },
+    {
+      "altitude_ft": 5000,
+      "rpm": 3000.0,
+      "map": 20.92,
+      "cht": 285.4,
+      "egt": 1338.1,
+      "fuel_flow": 27.53,
+      "oil_press": 67.7
+    },
+    {
+      "altitude_ft": 10000,
+      "rpm": 3000.0,
+      "map": 19.83,
+      "cht": 280.5,
+      "egt": 1358.1,
+      "fuel_flow": 28.84,
+      "oil_press": 67.7
+    },
+    {
+      "altitude_ft": 15000,
+      "rpm": 3000.0,
+      "map": 18.86,
+      "cht": 276.7,
+      "egt": 1378.1,
+      "fuel_flow": 30.15,
+      "oil_press": 67.6
+    },
+    {
+      "altitude_ft": 20000,
+      "rpm": 3000.0,
+      "map": 18.15,
+      "cht": 275.1,
+      "egt": 1398.1,
+      "fuel_flow": 31.46,
+      "oil_press": 67.4
+    },
+    {
+      "altitude_ft": 25000,
+      "rpm": 3000.0,
+      "map": 18.15,
+      "cht": 279.1,
+      "egt": 1418.1,
+      "fuel_flow": 32.77,
+      "oil_press": 66.9
+    },
+    {
+      "altitude_ft": 30000,
+      "rpm": 3000.0,
+      "map": 18.15,
+      "cht": 283.1,
+      "egt": 1438.1,
+      "fuel_flow": 34.09,
+      "oil_press": 66.3
+    }
+  ],
+  "physics_throttle_sweep": [
+    {
+      "throttle_pct": 20,
+      "rpm": 3000.0,
+      "cht": 257.3,
+      "egt": 1250.1,
+      "fuel_flow": 18.84,
+      "vib": 1.461
+    },
+    {
+      "throttle_pct": 40,
+      "rpm": 3000.0,
+      "cht": 271.0,
+      "egt": 1294.1,
+      "fuel_flow": 23.18,
+      "vib": 1.546
+    },
+    {
+      "throttle_pct": 60,
+      "rpm": 3000.0,
+      "cht": 285.4,
+      "egt": 1338.1,
+      "fuel_flow": 27.53,
+      "vib": 1.632
+    },
+    {
+      "throttle_pct": 80,
+      "rpm": 3000.0,
+      "cht": 300.5,
+      "egt": 1382.1,
+      "fuel_flow": 31.88,
+      "vib": 1.717
+    },
+    {
+      "throttle_pct": 100,
+      "rpm": 3000.0,
+      "cht": 316.2,
+      "egt": 1426.1,
+      "fuel_flow": 36.23,
+      "vib": 1.802
+    }
+  ],
+  "physics_temp_sweep": [
+    {
+      "ambient_c": -20,
+      "cht": 261.2,
+      "egt": 1296.1,
+      "oil_temp": 79.5
+    },
+    {
+      "ambient_c": 0,
+      "cht": 274.8,
+      "egt": 1320.1,
+      "oil_temp": 86.4
+    },
+    {
+      "ambient_c": 15,
+      "cht": 285.4,
+      "egt": 1338.1,
+      "oil_temp": 91.6
+    },
+    {
+      "ambient_c": 30,
+      "cht": 296.2,
+      "egt": 1356.1,
+      "oil_temp": 96.9
+    },
+    {
+      "ambient_c": 45,
+      "cht": 307.3,
+      "egt": 1374.1,
+      "oil_temp": 102.2
+    }
+  ],
+  "fault_audit": {
+    "none": {
+      "health_state": "Critical",
+      "health_index": 11.5,
+      "anomaly_score": 0.1492,
+      "anomaly_flag": true,
+      "fault_candidates": [
+        "Thermal Runaway / Cooling System Breakdown"
+      ],
+      "advisory_count": 189,
+      "rul_hours": 1444.44,
+      "rul_lower_hours": 1011.11,
+      "rul_upper_hours": 1877.78,
+      "rul_confidence": 0.7,
+      "risk_score": 72.0,
+      "risk_level": "HIGH"
+    },
+    "overheating": {
+      "health_state": "Critical",
+      "health_index": 0.0,
+      "anomaly_score": 0.1456,
+      "anomaly_flag": true,
+      "fault_candidates": [
+        "Thermal Runaway / Cooling System Breakdown"
+      ],
+      "advisory_count": 189,
+      "rul_hours": 151.11,
+      "rul_lower_hours": 113.33,
+      "rul_upper_hours": 188.89,
+      "rul_confidence": 0.8,
+      "risk_score": 74.0,
+      "risk_level": "HIGH"
+    },
+    "lubrication": {
+      "health_state": "Critical",
+      "health_index": 0.0,
+      "anomaly_score": 0.1642,
+      "anomaly_flag": true,
+      "fault_candidates": [
+        "Thermal Runaway / Cooling System Breakdown"
+      ],
+      "advisory_count": 189,
+      "rul_hours": 151.11,
+      "rul_lower_hours": 113.33,
+      "rul_upper_hours": 188.89,
+      "rul_confidence": 0.8,
+      "risk_score": 76.7,
+      "risk_level": "HIGH"
+    },
+    "misfire": {
+      "health_state": "Critical",
+      "health_index": 0.0,
+      "anomaly_score": 0.1477,
+      "anomaly_flag": true,
+      "fault_candidates": [
+        "Thermal Runaway / Cooling System Breakdown",
+        "Combustion Imbalance / Single-Cylinder Misfire"
+      ],
+      "advisory_count": 189,
+      "rul_hours": 151.11,
+      "rul_lower_hours": 113.33,
+      "rul_upper_hours": 188.89,
+      "rul_confidence": 0.8,
+      "risk_score": 74.0,
+      "risk_level": "HIGH"
+    },
+    "injector": {
+      "health_state": "Critical",
+      "health_index": 0.0,
+      "anomaly_score": 0.151,
+      "anomaly_flag": true,
+      "fault_candidates": [
+        "Thermal Runaway / Cooling System Breakdown",
+        "Combustion Imbalance / Single-Cylinder Misfire"
+      ],
+      "advisory_count": 189,
+      "rul_hours": 151.11,
+      "rul_lower_hours": 113.33,
+      "rul_upper_hours": 188.89,
+      "rul_confidence": 0.8,
+      "risk_score": 74.0,
+      "risk_level": "HIGH"
+    },
+    "sensor_drift": {
+      "health_state": "Critical",
+      "health_index": 0.0,
+      "anomaly_score": 0.1353,
+      "anomaly_flag": true,
+      "fault_candidates": [
+        "Thermal Runaway / Cooling System Breakdown"
+      ],
+      "advisory_count": 189,
+      "rul_hours": 151.11,
+      "rul_lower_hours": 113.33,
+      "rul_upper_hours": 188.89,
+      "rul_confidence": 0.8,
+      "risk_score": 76.7,
+      "risk_level": "HIGH"
+    },
+    "electrical": {
+      "health_state": "Critical",
+      "health_index": 0.0,
+      "anomaly_score": 0.1499,
+      "anomaly_flag": true,
+      "fault_candidates": [
+        "Thermal Runaway / Cooling System Breakdown",
+        "Dual-Bus Alternator / FADEC Electrical Degradation"
+      ],
+      "advisory_count": 189,
+      "rul_hours": 151.11,
+      "rul_lower_hours": 113.33,
+      "rul_upper_hours": 188.89,
+      "rul_confidence": 0.8,
+      "risk_score": 73.3,
+      "risk_level": "HIGH"
+    }
+  },
+  "websocket_stream": {
+    "status": "PASS",
+    "samples_collected": 15,
+    "measured_mean_hz": 8.19,
+    "mean_interval_ms": 122.08,
+    "jitter_ms": 169.06,
+    "payload_fields_count": 2,
+    "sample_telemetry_keys": []
+  },
+  "api_endpoints": {
+    "/api/status": {
+      "status_code": 200,
+      "latency_ms": 18.39,
+      "result_status": "PASS",
+      "keys_returned": [
+        "project",
+        "version",
+        "models_ready",
+        "model_files",
+        "demo_ready",
+        "available_faults",
+        "operating_states",
+        "metrics_ready",
+        "vibration_model_ready",
+        "vibration_demo_ready",
+        "setup_error",
+        "telemetry_interface",
+        "capabilities",
+        "safety_note"
+      ]
+    },
+    "/api/sample?operating_state=CRUISE": {
+      "status_code": 200,
+      "latency_ms": 16.18,
+      "result_status": "PASS",
+      "keys_returned": [
+        "Engine_RPM",
+        "EGT1",
+        "EGT2",
+        "EGT3",
+        "CHT",
+        "Fuel_Flow",
+        "Oil_Temp",
+        "Oil_Pressure",
+        "Battery_Voltage",
+        "Battery_Current",
+        "Alternator_Temp",
+        "EFI_Fuel_Temp",
+        "EFI_Water_Temp",
+        "MAP_Injector",
+        "Operating_State"
+      ]
+    },
+    "/api/metrics": {
+      "status_code": 200,
+      "latency_ms": 25.58,
+      "result_status": "PASS",
+      "keys_returned": [
+        "aces_health"
+      ]
+    },
+    "/api/mission/presets": {
+      "status_code": 200,
+      "latency_ms": 19.34,
+      "result_status": "PASS",
+      "keys_returned": [
+        "border_patrol_alpha",
+        "high_alt_surveillance",
+        "coastal_maritime"
+      ]
+    },
+    "/api/mission/waypoints?preset=border_patrol_alpha": {
+      "status_code": 200,
+      "latency_ms": 15.27,
+      "result_status": "PASS",
+      "keys_returned": [
+        "total_waypoints",
+        "total_distance_km",
+        "estimated_duration_min",
+        "formatted_duration",
+        "waypoints",
+        "planned_route",
+        "route_risk_segments",
+        "home_base",
+        "max_altitude_ft",
+        "initial_ambient_c",
+        "environment_source"
+      ]
+    },
+    "/api/mission/plan": {
+      "status_code": 200,
+      "latency_ms": 2.13,
+      "result_status": "PASS",
+      "keys_returned": [
+        "total_waypoints",
+        "total_distance_km",
+        "estimated_duration_min",
+        "formatted_duration",
+        "waypoints",
+        "planned_route",
+        "route_risk_segments",
+        "home_base",
+        "max_altitude_ft",
+        "initial_ambient_c",
+        "environment_source"
+      ]
+    },
+    "/api/analyze": {
+      "status_code": 200,
+      "latency_ms": 28.88,
+      "result_status": "PASS",
+      "keys_returned": [
+        "health_state",
+        "ml_health_state",
+        "health_confidence",
+        "health_probabilities",
+        "health_index",
+        "base_health_index",
+        "degradation_severity",
+        "degradation_penalty",
+        "anomaly_score",
+        "anomaly_flag",
+        "twin",
+        "sensor_health",
+        "rul",
+        "fault_candidates",
+        "maintenance_advisory",
+        "disclaimer",
+        "telemetry",
+        "source_reference_state",
+        "scenario",
+        "mission_risk",
+        "mission_risk_score",
+        "mission_risk_level",
+        "uav",
+        "waypoints",
+        "planned_route",
+        "home_base",
+        "flight_plan_summary"
+      ]
+    },
+    "/api/replay": {
+      "status_code": 200,
+      "latency_ms": 595.49,
+      "result_status": "PASS",
+      "keys_returned": [
+        "timeline",
+        "summary",
+        "waypoints",
+        "planned_route",
+        "home_base",
+        "flight_plan_summary",
+        "scenario",
+        "source_reference_state",
+        "disclaimer"
+      ]
+    }
+  },
+  "rul_model_audit": {
+    "training_samples": 857,
+    "healthy_case": {
+      "estimate": 9.61,
+      "lower": 8.74,
+      "upper": 10.49,
+      "confidence": 0.691
+    },
+    "degraded_case": {
+      "estimate": 1.22,
+      "lower": 0.35,
+      "upper": 2.1,
+      "confidence": 0.691
+    },
+    "extreme_case": {
+      "estimate": 0.79,
+      "lower": 0.0,
+      "upper": 1.67,
+      "confidence": 0.691
+    }
+  },
+  "sensor_trust_audit": {
+    "clean_overall_trust": 55.0,
+    "clean_residual_rms": 62.53370451937401,
+    "drift_overall_trust": 60.0,
+    "drift_residual_rms": 62.826818819764135,
+    "drift_flagged_channels": [
+      "EGT1"
+    ]
+  },
+  "environment_audit": {
+    "live_query": {
+      "source": "live",
+      "ambient_c": 12.0,
+      "pressure_hpa": 727.1,
+      "pressure_inhg": 21.47,
+      "air_density_ratio": 0.7252,
+      "wind_speed_kt": 3.7,
+      "wind_direction_deg": 189.0,
+      "headwind_kt": -1.0,
+      "crosswind_kt": 3.6,
+      "humidity_pct": 87.0,
+      "visibility_km": 10.0,
+      "precipitation_mm": 0.0,
+      "weather_condition": "Overcast"
+    },
+    "simulated_query": {
+      "source": "simulated",
+      "ambient_c": 15.3,
+      "pressure_hpa": 753.2,
+      "pressure_inhg": 22.24,
+      "air_density_ratio": 0.7424,
+      "wind_speed_kt": 12.5,
+      "wind_direction_deg": 245.3,
+      "headwind_kt": -11.8,
+      "crosswind_kt": 4.0,
+      "humidity_pct": 56.4,
+      "visibility_km": 12.0,
+      "precipitation_mm": 0.0,
+      "weather_condition": "Simulated ISA Standard Atmosphere"
+    }
+  },
+  "navigation_audit": {
+    "total_distance_km": 215.10887300100535,
+    "total_duration_min": 124.71770475876436,
+    "start_pos": {
+      "lat": 28.452,
+      "lon": 77.025,
+      "alt": 750.0,
+      "phase": "GROUND"
+    },
+    "mid_pos": {
+      "lat": 28.871091,
+      "lon": 77.882093,
+      "alt": 17639.9,
+      "phase": "PATROL"
+    },
+    "end_pos": {
+      "lat": 28.452,
+      "lon": 77.025,
+      "alt": 750.0,
+      "phase": "LANDING"
+    }
+  }
+}
