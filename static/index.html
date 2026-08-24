@@ -20,15 +20,78 @@ body{
   background:radial-gradient(circle at 20% -10%,#101c12 0,#060a06 45%,#040704 100%);
   color:var(--text)
 }
-.shell{max-width:100%;margin:0;padding:8px 14px}
+.shell{max-width:100%;margin:0;padding:8px 12px}
 .top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:6px}
-.brand h1{margin:0;font-size:22px;letter-spacing:-.5px;color:#e8f0e8}
-.brand .sub{color:var(--muted);margin-top:1px;font-size:10.5px}
+.brand h1{margin:0;font-size:20px;letter-spacing:-.5px;color:#e8f0e8}
+.brand .sub{color:var(--muted);margin-top:1px;font-size:10px}
 .badges{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
-.badge{border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-size:10.5px;color:var(--muted);background:#09100a}
+.badge{border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:10px;color:var(--muted);background:#09100a}
 .badge.live{color:var(--green);border-color:#1c3d24;background:#0a1c0f}
 .badge.err{color:var(--red);border-color:#4a1c1c;background:#1c0b0b}
 .badge.warn{color:var(--amber);border-color:#3d2f10;background:#1c1407}
+
+/* Left Sidebar Layout Structure */
+.app-container{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  width:100%;
+}
+.side-nav{
+  width:160px;
+  min-width:160px;
+  max-width:160px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  background:linear-gradient(180deg,#0e160e,#060a06);
+  border:1px solid #18281b;
+  border-radius:8px;
+  padding:8px 6px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.6);
+  position:sticky;
+  top:8px;
+}
+.side-tab-btn{
+  background:#080e09;
+  border:1px solid #142016;
+  border-radius:6px;
+  padding:10px 8px;
+  text-align:left;
+  cursor:pointer;
+  color:#b2c2b4;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  width:100%;
+  margin:0;
+  transition:all .18s ease;
+}
+.side-tab-btn:hover{
+  background:#101c12;
+  border-color:#2c4530;
+  color:#e2ece2;
+  filter:none;
+}
+.side-tab-btn.active{
+  background:linear-gradient(180deg,#18331d,#0f2414);
+  border:1px solid #488755;
+  color:#8ee0a3;
+  box-shadow:inset 3px 0 0 #5eb574,0 4px 12px rgba(0,0,0,0.5);
+}
+.side-tab-icon{font-size:16px;margin-bottom:2px}
+.side-tab-title{font-size:10.5px;font-weight:800;letter-spacing:.04em;line-height:1.2}
+.side-tab-sub{font-size:8.5px;color:#7a8c7b;line-height:1.2}
+
+.main-pane{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+.tab-content{
+  width:100%;
+}
 
 .grid{display:grid;gap:8px}
 .kpis{grid-template-columns:repeat(5,minmax(130px,1fr))}
@@ -63,7 +126,7 @@ button:hover{filter:brightness(1.15)}
 .tbl{width:100%;border-collapse:collapse;font-size:11px}
 .tbl td,.tbl th{padding:4px 6px;border-bottom:1px solid #142016;text-align:left}
 .tbl th{color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase}
-.scroll{max-height:220px;overflow-y:auto}
+.scroll{max-height:240px;overflow-y:auto}
 .pill{display:inline-block;border-radius:999px;padding:1px 7px;background:#0f1710;border:1px solid #1c2b1e;font-size:10.5px;font-weight:600}
 .pill.good{background:#0a1c0f;border-color:#1c3d24;color:#4cb574}
 .pill.warn{background:#1c1407;border-color:#3d2f10;color:#c9983e}
@@ -150,7 +213,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 .hud-label{font-size:8px;text-transform:uppercase;color:#647565;font-weight:700;letter-spacing:.05em}
 .hud-val{font-size:11px;font-weight:800;color:#dbe5db;margin-top:1px}
 
-/* Compact Waypoint Editor Table (No Wasted Space) */
+/* Compact Waypoint Editor Table */
 .wp-table-box{
   background:#070d08;border:1px solid #142016;border-radius:6px;padding:6px 8px;margin-top:6px
 }
@@ -171,7 +234,10 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 .hw-group label{display:flex;justify-content:space-between;font-size:9px;color:#7a8c7b;font-weight:600}
 .hw-group input[type="range"]{width:100%;margin-top:2px;accent-color:#5eb574}
 
-@media(max-width:1000px){
+@media(max-width:1100px){
+  .app-container{flex-direction:column}
+  .side-nav{width:100%;min-width:100%;max-width:100%;flex-direction:row;position:static;}
+  .side-tab-btn{flex:1;}
   .kpis{grid-template-columns:repeat(2,1fr)}
   .two,.three{grid-template-columns:1fr}
   .controls{grid-template-columns:repeat(2,1fr)}
@@ -200,642 +266,699 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
   <div id="setupNotice" class="notice hidden"></div>
 
-  <!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
-  <div class="card mission-control-card">
-    <div class="mission-header">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:18px;">🛰️</span>
-        <div>
-          <div style="font-size:14px; font-weight:800; color:#e8f0e8;">MISSION CONTROL & FLIGHT PLANNER</div>
-          <div style="font-size:10px; color:var(--muted);">
-            Path-Driven Flight Simulation • Real Geographic Map • Dynamic Propulsion Demand
-          </div>
-        </div>
-      </div>
+  <!-- APPLICATION CONTAINER: LEFT SIDEBAR NAVIGATION + MAIN CONTENT PANE -->
+  <div class="app-container">
 
-      <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-        <span class="pill good" id="simModeBadge" style="font-size:10px; padding:2px 8px;">
-          SIMULATION MODE: ● AUTOMATIC
-        </span>
-        <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">🛠️ MISSION DESIGN</button>
-        <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">🚀 MISSION EXECUTION</button>
-      </div>
-    </div>
+    <!-- LEFT SIDEBAR: VERTICAL 3-TAB NAVIGATION -->
+    <nav class="side-nav">
+      <button id="tabBtnLive" class="side-tab-btn active" onclick="switchDashboardTab('live')">
+        <span class="side-tab-icon">🛰️</span>
+        <span class="side-tab-title">LIVE MISSION</span>
+        <span class="side-tab-sub">Map • 3D Twin • CAN</span>
+      </button>
 
-    <!-- AUTOMATIC PARAMETER READOUT STRIP -->
-    <div class="auto-flight-strip">
-      <div class="auto-item">
-        <span class="auto-label">Active Mission</span>
-        <span class="auto-val info" id="autoMissionName">ISR Border Patrol Alpha</span>
-      </div>
-      <div class="auto-item">
-        <span class="auto-label">Route Envelope</span>
-        <span class="auto-val" id="autoRouteSummary">9 Waypoints • 215.1 km</span>
-      </div>
-      <div class="auto-item">
-        <span class="auto-label">Est. Flight Duration</span>
-        <span class="auto-val" id="autoEstDuration">1h 45m</span>
-      </div>
-      <div class="auto-item">
-        <span class="auto-label">Mission Phase</span>
-        <span class="auto-val"><span id="autoPhasePill" class="pill good">READY</span></span>
-      </div>
-      <div class="auto-item">
-        <span class="auto-label">Current Altitude</span>
-        <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
-      </div>
-      <div class="auto-item">
-        <span class="auto-label">Ground Speed</span>
-        <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
-      </div>
-      <div class="auto-item">
-        <span class="auto-label">Auto Throttle</span>
-        <span class="auto-val" id="autoThrottle">58% <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
-      </div>
-      <div class="auto-item">
-        <span class="auto-label">Ambient Temp</span>
-        <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:8.5px; color:#4cb574;">AUTO (ISA)</small></span>
-      </div>
-    </div>
+      <button id="tabBtnDiagnostics" class="side-tab-btn" onclick="switchDashboardTab('diagnostics')">
+        <span class="side-tab-icon">🩺</span>
+        <span class="side-tab-title">FAULT & HEALTH DIAGNOSTICS</span>
+        <span class="side-tab-sub">AI Anomaly • RUL • Risk</span>
+      </button>
 
-    <!-- PRIMARY MISSION & REPLAY ACTIONS -->
-    <div class="primary-mission-actions">
-      <button id="btnStartMission" class="success" onclick="startAutomaticMission()">🚀 START SIMULATION</button>
-      <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">📼 MISSION REPLAY</button>
-      <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
-      <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
-      <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
-      <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
-      
-      <select id="selReplaySpeed" style="width:auto; margin:0; padding:3px 6px; font-size:9.5px; display:none;" onchange="setReplaySpeed(+this.value)">
-        <option value="1" selected>1x Speed</option>
-        <option value="2">2x Speed</option>
-        <option value="5">5x Speed</option>
-      </select>
+      <button id="tabBtnTelemetry" class="side-tab-btn" onclick="switchDashboardTab('telemetry')">
+        <span class="side-tab-icon">⚡</span>
+        <span class="side-tab-title">TELEMETRY & PHYSICS</span>
+        <span class="side-tab-sub">Deviations • Sensor Trust</span>
+      </button>
+    </nav>
 
-      <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
-        <span style="font-size:10.5px; color:#7a8c7b; font-weight:600;">Mission Preset:</span>
-        <select id="selMissionPreset" style="width:auto; margin:0; padding:3px 6px; font-size:10.5px;" onchange="loadPresetMission(this.value)">
-          <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
-          <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
-          <option value="coastal_maritime">Coastal & Maritime Patrol Charlie (7 WPs)</option>
-          <option value="custom">Custom Interactive Route</option>
-        </select>
-      </div>
-    </div>
+    <!-- MAIN DASHBOARD CONTENT PANE -->
+    <main class="main-pane">
 
-    <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
-    <details style="margin-top:6px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:5px 8px;">
-      <summary style="font-size:10px; font-weight:700; color:#7a8c7b; cursor:pointer;">
-        ⚙️ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
-      </summary>
-      <div style="font-size:9.5px; color:#c9983e; margin:3px 0;">
-        ⚠️ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
-      </div>
-      <div style="display:flex; gap:8px; align-items:center; margin-bottom:3px;">
-        <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
-          <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
-          <span style="color:#dbe5db; font-weight:bold;">Enable Manual Parameter Override</span>
-        </label>
-      </div>
-      <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
-        <div class="hw-group">
-          <label><span>Manual Throttle Lever</span><span id="hwValThrottle">60%</span></label>
-          <input type="range" id="hwSliderThrottle" min="10" max="100" value="60">
-        </div>
-        <div class="hw-group">
-          <label><span>Manual Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
-          <input type="range" id="hwSliderAltitude" min="0" max="30000" step="500" value="8000">
-        </div>
-        <div class="hw-group">
-          <label><span>Manual Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
-          <input type="range" id="hwSliderAmbient" min="-20" max="50" value="35">
-        </div>
-        <div class="hw-group">
-          <label><span>Manual Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
-          <input type="range" id="hwSliderDuration" min="1" max="24" step="0.5" value="6">
-        </div>
-      </div>
-    </details>
-  </div>
+      <!-- ========================================================================= -->
+      <!-- TAB 1: LIVE MISSION (Default Active) -->
+      <!-- ========================================================================= -->
+      <section id="tabContentLive" class="tab-content">
+        
+        <!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
+        <div class="card mission-control-card">
+          <div class="mission-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">🛰️</span>
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#e8f0e8;">MISSION CONTROL & FLIGHT PLANNER</div>
+                <div style="font-size:10px; color:var(--muted);">
+                  Path-Driven Flight Simulation • Real Geographic Map • Dynamic Propulsion Demand
+                </div>
+              </div>
+            </div>
 
-  <!-- 2. SIDE-BY-SIDE: UAV LIVE MISSION MAP (55%) + 3D PISTON ENGINE DIGITAL TWIN (45%) -->
-  <div class="mission-twin-split-grid">
-    
-    <!-- LEFT: UAV LIVE MISSION MAP -->
-    <div class="map-card">
-      <div class="map-header">
-        <div>
-          <div style="font-size:13.5px; font-weight:700; color:#5eb574; display:flex; align-items:center; gap:5px;">
-            <span>🗺️</span> UAV LIVE MISSION MAP
-          </div>
-          <div style="font-size:10px; color:#7a8c7b; margin-top:1px;" id="mapModeSubtitle">
-            Real Geographic Coordinates • Multi-Layer GIS • Close UAV Proximity View
-          </div>
-        </div>
-
-        <!-- MAP TOOLBAR: BASE LAYERS & FOLLOW CONTROLS -->
-        <div class="map-toolbar">
-          <div style="display:flex; background:#060a06; border:1px solid #142016; border-radius:4px; padding:2px;">
-            <button id="btnLayerStandard" class="map-btn" style="border:none; padding:2px 4px;" onclick="setMapLayer('standard')">Standard</button>
-            <button id="btnLayerDark" class="map-btn active" style="border:none; padding:2px 4px;" onclick="setMapLayer('dark')">Dark</button>
-            <button id="btnLayerSatellite" class="map-btn" style="border:none; padding:2px 4px;" onclick="setMapLayer('satellite')">Satellite</button>
-            <button id="btnLayerTerrain" class="map-btn" style="border:none; padding:2px 4px;" onclick="setMapLayer('terrain')">Terrain</button>
-          </div>
-
-          <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">🎯 Follow: ON</button>
-          <button class="map-btn" onclick="centerOnUAV()">📍 Center</button>
-          <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit</button>
-          <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">🔍 HUD</button>
-          <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">👁️ Route</button>
-          <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">🚩 WPs</button>
-        </div>
-      </div>
-
-      <!-- Leaflet Map Container Wrapper -->
-      <div class="map-wrapper">
-        <div id="uavMap"></div>
-
-        <!-- CLOSE UAV PROXIMITY VIEW GLASS OVERLAY -->
-        <div id="uavProximityOverlay" class="proximity-hud-box">
-          <div class="prox-header">
-            <span style="font-weight:800; color:#5eb574; font-size:9px; display:flex; align-items:center; gap:4px;">
-              <span>🔍</span> UAV CLOSE PROXIMITY VIEW
-            </span>
-            <span class="pill good" id="pxHealthBadge" style="font-size:7.5px; padding:1px 4px;">NORMAL</span>
-          </div>
-
-          <!-- 1. UAV LIVE FLIGHT STATE -->
-          <div class="prox-section">
-            <div class="prox-sec-title">✈️ UAV LIVE TELEMETRY</div>
-            <div class="prox-grid">
-              <div><span class="prox-lbl">LAT:</span> <b id="pxLat">28.4520° N</b></div>
-              <div><span class="prox-lbl">LON:</span> <b id="pxLon">77.0250° E</b></div>
-              <div><span class="prox-lbl">ALT:</span> <b id="pxAlt">8,000 ft</b></div>
-              <div><span class="prox-lbl">GS / TAS:</span> <b id="pxSpeed">142 / 145 kt</b></div>
-              <div><span class="prox-lbl">HEADING:</span> <b id="pxHdg">084°</b></div>
-              <div><span class="prox-lbl">VSI:</span> <b id="pxVSI">+850 fpm</b></div>
-              <div><span class="prox-lbl">PHASE:</span> <b id="pxPhase" style="color:#4cb574;">CLIMB</b></div>
-              <div><span class="prox-lbl">ETA NEXT:</span> <b id="pxETA">4.2 min</b></div>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <span class="pill good" id="simModeBadge" style="font-size:10px; padding:2px 8px;">
+                SIMULATION MODE: ● AUTOMATIC
+              </span>
+              <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">🛠️ MISSION DESIGN</button>
+              <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">🚀 MISSION EXECUTION</button>
             </div>
           </div>
 
-          <!-- 2. ENVIRONMENT -->
-          <div class="prox-section">
-            <div class="prox-sec-title">🌍 LIVE ENVIRONMENT</div>
-            <div class="prox-grid">
-              <div><span class="prox-lbl">TEMP:</span> <b id="pxTemp">18.4 °C</b></div>
-              <div><span class="prox-lbl">PRESS:</span> <b id="pxPress">802 hPa</b></div>
-              <div><span class="prox-lbl">AIR DENSITY:</span> <b id="pxDensity">0.824 σ</b></div>
-              <div><span class="prox-lbl">WIND:</span> <b id="pxWind">12.5 kt @ 240°</b></div>
-              <div><span class="prox-lbl">HEADWIND:</span> <b id="pxHW">5.8 kt</b></div>
-              <div><span class="prox-lbl">SOURCE:</span> <b id="pxEnvSrc" class="good">LIVE</b></div>
+          <!-- AUTOMATIC PARAMETER READOUT STRIP -->
+          <div class="auto-flight-strip">
+            <div class="auto-item">
+              <span class="auto-label">Active Mission</span>
+              <span class="auto-val info" id="autoMissionName">ISR Border Patrol Alpha</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Route Envelope</span>
+              <span class="auto-val" id="autoRouteSummary">9 Waypoints • 215.1 km</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Est. Flight Duration</span>
+              <span class="auto-val" id="autoEstDuration">1h 45m</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Mission Phase</span>
+              <span class="auto-val"><span id="autoPhasePill" class="pill good">READY</span></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Current Altitude</span>
+              <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Ground Speed</span>
+              <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Auto Throttle</span>
+              <span class="auto-val" id="autoThrottle">58% <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Ambient Temp</span>
+              <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:8.5px; color:#4cb574;">AUTO (ISA)</small></span>
             </div>
           </div>
 
-          <!-- 3. DIGITAL TWIN -->
-          <div class="prox-section" style="border-bottom:none;">
-            <div class="prox-sec-title">🧠 DIGITAL TWIN & RISK</div>
-            <div class="prox-grid">
-              <div><span class="prox-lbl">HEALTH:</span> <b id="pxHealth" class="good">98.2%</b></div>
-              <div><span class="prox-lbl">ANOMALY:</span> <b id="pxAnomaly" class="good">0.012</b></div>
-              <div><span class="prox-lbl">DEGRAD:</span> <b id="pxDegrad">0.00%</b></div>
-              <div><span class="prox-lbl">RUL:</span> <b id="pxRUL" class="good">48.5 h</b></div>
-              <div><span class="prox-lbl">RISK:</span> <b id="pxRisk" class="good">LOW (12)</b></div>
-              <div><span class="prox-lbl">RELIABILITY:</span> <b id="pxRel">88.0%</b></div>
+          <!-- PRIMARY MISSION & REPLAY ACTIONS -->
+          <div class="primary-mission-actions">
+            <button id="btnStartMission" class="success" onclick="startAutomaticMission()">🚀 START SIMULATION</button>
+            <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">📼 MISSION REPLAY</button>
+            <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
+            <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
+            <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
+            <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
+            
+            <select id="selReplaySpeed" style="width:auto; margin:0; padding:3px 6px; font-size:9.5px; display:none;" onchange="setReplaySpeed(+this.value)">
+              <option value="1" selected>1x Speed</option>
+              <option value="2">2x Speed</option>
+              <option value="5">5x Speed</option>
+            </select>
+
+            <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+              <span style="font-size:10.5px; color:#7a8c7b; font-weight:600;">Mission Preset:</span>
+              <select id="selMissionPreset" style="width:auto; margin:0; padding:3px 6px; font-size:10.5px;" onchange="loadPresetMission(this.value)">
+                <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
+                <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
+                <option value="coastal_maritime">Coastal & Maritime Patrol Charlie (7 WPs)</option>
+                <option value="custom">Custom Interactive Route</option>
+              </select>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- MAP STATUS & CURSOR COORDINATES BAR -->
-      <div class="map-status-bar">
-        <div id="mapCursorCoords">📍 Cursor: 28.4520° N, 77.0250° E | Zoom: 9</div>
-        <div>Geodetic Datum: WGS-84 • OpenStreetMap / ESRI GIS</div>
-      </div>
-
-      <!-- Compact UAV Telemetry Strip Below Map -->
-      <div class="map-hud">
-        <div class="hud-item">
-          <span class="hud-label">Latitude</span>
-          <span class="hud-val info" id="hudLat">28.4520° N</span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Longitude</span>
-          <span class="hud-val info" id="hudLon">77.0250° E</span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Altitude</span>
-          <span class="hud-val" id="hudAlt">8,000 ft</span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Speed (GS / TAS)</span>
-          <span class="hud-val" id="hudSpeed">142 / 145 kt</span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Heading / Track</span>
-          <span class="hud-val" id="hudHeading">084° / 086°</span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Mission Phase</span>
-          <span class="hud-val"><span id="hudPhase" class="pill good">READY</span></span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Progress</span>
-          <span class="hud-val" id="hudProgress">0.0%</span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Engine Health</span>
-          <span class="hud-val"><span id="hudHealth" class="pill good">98% Normal</span></span>
-        </div>
-        <div class="hud-item">
-          <span class="hud-label">Mission Risk</span>
-          <span class="hud-val"><span id="hudRisk" class="pill good">LOW (12)</span></span>
-        </div>
-      </div>
-
-      <!-- 3D WAYPOINT ROUTE & LIVE MISSION STATUS TABLE (COMPACT, PERSISTS ACROSS ALL PHASES) -->
-      <div id="waypointPlannerBox" class="wp-table-box">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <div style="font-size:11px; font-weight:700; color:#5eb574;" id="wpPlannerHeaderTitle">
-            3D Waypoint Route & Live Execution Status
-            <span style="font-size:9px; color:#7a8c7b; font-weight:normal; margin-left:5px;" id="wpPlannerHeaderSub">
-              (Live waypoint sequence, altitude, speed & ETA)
-            </span>
-          </div>
-          <div id="wpPlannerActions" style="display:flex; gap:3px;">
-            <button class="map-btn" style="background:#143b1e; color:#dbe5db;" onclick="addNewWaypoint()">+ Add WP</button>
-            <button class="map-btn" onclick="closeRouteToBase()">↺ Return to Base</button>
-            <button class="map-btn" style="background:#2b1010; color:#d9534f;" onclick="resetWaypointsToPreset()">↺ Reset</button>
-          </div>
+          <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
+          <details style="margin-top:6px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:5px 8px;">
+            <summary style="font-size:10px; font-weight:700; color:#7a8c7b; cursor:pointer;">
+              ⚙️ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
+            </summary>
+            <div style="font-size:9.5px; color:#c9983e; margin:3px 0;">
+              ⚠️ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:3px;">
+              <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
+                <span style="color:#dbe5db; font-weight:bold;">Enable Manual Parameter Override</span>
+              </label>
+            </div>
+            <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
+              <div class="hw-group">
+                <label><span>Manual Throttle Lever</span><span id="hwValThrottle">60%</span></label>
+                <input type="range" id="hwSliderThrottle" min="10" max="100" value="60">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
+                <input type="range" id="hwSliderAltitude" min="0" max="30000" step="500" value="8000">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
+                <input type="range" id="hwSliderAmbient" min="-20" max="50" value="35">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
+                <input type="range" id="hwSliderDuration" min="1" max="24" step="0.5" value="6">
+              </div>
+            </div>
+          </details>
         </div>
 
-        <div style="max-height:140px; overflow-y:auto;">
-          <table class="tbl" id="waypointsTable">
-            <thead>
-              <tr>
-                <th style="width:45px;">ID</th>
-                <th>Name</th>
-                <th style="width:85px;">Type</th>
-                <th style="width:75px;">Alt (ft)</th>
-                <th style="width:70px;">Speed</th>
-                <th style="width:60px;">Loiter</th>
-                <th style="width:90px; text-align:center;" id="wpTableActionColHeader">Status / ETA</th>
-              </tr>
-            </thead>
-            <tbody id="waypointsTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT: 3D PISTON ENGINE DIGITAL TWIN (COMPLETELY UNCHANGED) -->
-    <div class="engine-twin-card">
-      <div class="engine-card-heading">
-        <div>
-          <div style="font-size:13.5px; font-weight:700; color:#5eb574; display:flex; align-items:center; gap:5px;">
-            <span>◈</span> 3D ENGINE DIGITAL TWIN
-          </div>
-          <div style="font-size:10px; color:#7a8c7b; margin-top:1px;">
-            Opposed 4-Cyl UAV Aero-Piston • Real-Time Telemetry & Thermal Envelope
-          </div>
-        </div>
-        <div class="engine-twin-state" id="engineTwinState">
-          DIGITAL TWIN SYNCHRONIZED
-        </div>
-      </div>
-
-      <div class="engine-digital-twin">
-        <div class="engine-viewport">
-          <canvas id="engineCanvas" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine"></canvas>
+        <!-- 2. SIDE-BY-SIDE: UAV LIVE MISSION MAP (55%) + 3D PISTON ENGINE DIGITAL TWIN (45%) -->
+        <div class="mission-twin-split-grid">
           
-          <div class="engine-thermal-field" id="engineThermalField" aria-hidden="true">
-            <div class="engine-thermal-aura engine-thermal-aura-outer"></div>
-            <div class="engine-thermal-aura engine-thermal-aura-core"></div>
-            <div class="engine-thermal-scale">
-              <span>LIVE THERMAL ENVELOPE</span>
-              <strong id="engineThermalValue">220°F CHT · 1,200°F EGT</strong>
-              <div class="engine-thermal-gradient"><i id="engineThermalMarker"></i></div>
-              <small><span>COOL</span><span>NOMINAL</span><span>HOT</span><span>CRITICAL</span></small>
+          <!-- LEFT: UAV LIVE MISSION MAP -->
+          <div class="map-card">
+            <div class="map-header">
+              <div>
+                <div style="font-size:13.5px; font-weight:700; color:#5eb574; display:flex; align-items:center; gap:5px;">
+                  <span>🗺️</span> UAV LIVE MISSION MAP
+                </div>
+                <div style="font-size:10px; color:#7a8c7b; margin-top:1px;" id="mapModeSubtitle">
+                  Real Geographic Coordinates • Multi-Layer GIS • Close UAV Proximity View
+                </div>
+              </div>
+
+              <!-- MAP TOOLBAR: BASE LAYERS & FOLLOW CONTROLS -->
+              <div class="map-toolbar">
+                <div style="display:flex; background:#060a06; border:1px solid #142016; border-radius:4px; padding:2px;">
+                  <button id="btnLayerStandard" class="map-btn" style="border:none; padding:2px 4px;" onclick="setMapLayer('standard')">Standard</button>
+                  <button id="btnLayerDark" class="map-btn active" style="border:none; padding:2px 4px;" onclick="setMapLayer('dark')">Dark</button>
+                  <button id="btnLayerSatellite" class="map-btn" style="border:none; padding:2px 4px;" onclick="setMapLayer('satellite')">Satellite</button>
+                  <button id="btnLayerTerrain" class="map-btn" style="border:none; padding:2px 4px;" onclick="setMapLayer('terrain')">Terrain</button>
+                </div>
+
+                <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">🎯 Follow: ON</button>
+                <button class="map-btn" onclick="centerOnUAV()">📍 Center</button>
+                <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit</button>
+                <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">🔍 HUD</button>
+                <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">👁️ Route</button>
+                <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">🚩 WPs</button>
+              </div>
+            </div>
+
+            <!-- Leaflet Map Container Wrapper -->
+            <div class="map-wrapper">
+              <div id="uavMap"></div>
+
+              <!-- CLOSE UAV PROXIMITY VIEW GLASS OVERLAY -->
+              <div id="uavProximityOverlay" class="proximity-hud-box">
+                <div class="prox-header">
+                  <span style="font-weight:800; color:#5eb574; font-size:9px; display:flex; align-items:center; gap:4px;">
+                    <span>🔍</span> UAV CLOSE PROXIMITY VIEW
+                  </span>
+                  <span class="pill good" id="pxHealthBadge" style="font-size:7.5px; padding:1px 4px;">NORMAL</span>
+                </div>
+
+                <!-- 1. UAV LIVE FLIGHT STATE -->
+                <div class="prox-section">
+                  <div class="prox-sec-title">✈️ UAV LIVE TELEMETRY</div>
+                  <div class="prox-grid">
+                    <div><span class="prox-lbl">LAT:</span> <b id="pxLat">28.4520° N</b></div>
+                    <div><span class="prox-lbl">LON:</span> <b id="pxLon">77.0250° E</b></div>
+                    <div><span class="prox-lbl">ALT:</span> <b id="pxAlt">8,000 ft</b></div>
+                    <div><span class="prox-lbl">GS / TAS:</span> <b id="pxSpeed">142 / 145 kt</b></div>
+                    <div><span class="prox-lbl">HEADING:</span> <b id="pxHdg">084°</b></div>
+                    <div><span class="prox-lbl">VSI:</span> <b id="pxVSI">+850 fpm</b></div>
+                    <div><span class="prox-lbl">PHASE:</span> <b id="pxPhase" style="color:#4cb574;">CLIMB</b></div>
+                    <div><span class="prox-lbl">ETA NEXT:</span> <b id="pxETA">4.2 min</b></div>
+                  </div>
+                </div>
+
+                <!-- 2. ENVIRONMENT -->
+                <div class="prox-section">
+                  <div class="prox-sec-title">🌍 LIVE ENVIRONMENT</div>
+                  <div class="prox-grid">
+                    <div><span class="prox-lbl">TEMP:</span> <b id="pxTemp">18.4 °C</b></div>
+                    <div><span class="prox-lbl">PRESS:</span> <b id="pxPress">802 hPa</b></div>
+                    <div><span class="prox-lbl">AIR DENSITY:</span> <b id="pxDensity">0.824 σ</b></div>
+                    <div><span class="prox-lbl">WIND:</span> <b id="pxWind">12.5 kt @ 240°</b></div>
+                    <div><span class="prox-lbl">HEADWIND:</span> <b id="pxHW">5.8 kt</b></div>
+                    <div><span class="prox-lbl">SOURCE:</span> <b id="pxEnvSrc" class="good">LIVE</b></div>
+                  </div>
+                </div>
+
+                <!-- 3. DIGITAL TWIN -->
+                <div class="prox-section" style="border-bottom:none;">
+                  <div class="prox-sec-title">🧠 DIGITAL TWIN & RISK</div>
+                  <div class="prox-grid">
+                    <div><span class="prox-lbl">HEALTH:</span> <b id="pxHealth" class="good">98.2%</b></div>
+                    <div><span class="prox-lbl">ANOMALY:</span> <b id="pxAnomaly" class="good">0.012</b></div>
+                    <div><span class="prox-lbl">DEGRAD:</span> <b id="pxDegrad">0.00%</b></div>
+                    <div><span class="prox-lbl">RUL:</span> <b id="pxRUL" class="good">48.5 h</b></div>
+                    <div><span class="prox-lbl">RISK:</span> <b id="pxRisk" class="good">LOW (12)</b></div>
+                    <div><span class="prox-lbl">RELIABILITY:</span> <b id="pxRel">88.0%</b></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MAP STATUS & CURSOR COORDINATES BAR -->
+            <div class="map-status-bar">
+              <div id="mapCursorCoords">📍 Cursor: 28.4520° N, 77.0250° E | Zoom: 9</div>
+              <div>Geodetic Datum: WGS-84 • OpenStreetMap / ESRI GIS</div>
+            </div>
+
+            <!-- Compact UAV Telemetry Strip Below Map -->
+            <div class="map-hud">
+              <div class="hud-item">
+                <span class="hud-label">Latitude</span>
+                <span class="hud-val info" id="hudLat">28.4520° N</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Longitude</span>
+                <span class="hud-val info" id="hudLon">77.0250° E</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Altitude</span>
+                <span class="hud-val" id="hudAlt">8,000 ft</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Speed (GS / TAS)</span>
+                <span class="hud-val" id="hudSpeed">142 / 145 kt</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Heading / Track</span>
+                <span class="hud-val" id="hudHeading">084° / 086°</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Mission Phase</span>
+                <span class="hud-val"><span id="hudPhase" class="pill good">READY</span></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Progress</span>
+                <span class="hud-val" id="hudProgress">0.0%</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Engine Health</span>
+                <span class="hud-val"><span id="hudHealth" class="pill good">98% Normal</span></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Mission Risk</span>
+                <span class="hud-val"><span id="hudRisk" class="pill good">LOW (12)</span></span>
+              </div>
+            </div>
+
+            <!-- 3D WAYPOINT ROUTE & LIVE MISSION STATUS TABLE -->
+            <div id="waypointPlannerBox" class="wp-table-box">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <div style="font-size:11px; font-weight:700; color:#5eb574;" id="wpPlannerHeaderTitle">
+                  3D Waypoint Route & Live Execution Status
+                  <span style="font-size:9px; color:#7a8c7b; font-weight:normal; margin-left:5px;" id="wpPlannerHeaderSub">
+                    (Live waypoint sequence, altitude, speed & ETA)
+                  </span>
+                </div>
+                <div id="wpPlannerActions" style="display:flex; gap:3px;">
+                  <button class="map-btn" style="background:#143b1e; color:#dbe5db;" onclick="addNewWaypoint()">+ Add WP</button>
+                  <button class="map-btn" onclick="closeRouteToBase()">↺ Return to Base</button>
+                  <button class="map-btn" style="background:#2b1010; color:#d9534f;" onclick="resetWaypointsToPreset()">↺ Reset</button>
+                </div>
+              </div>
+
+              <div style="max-height:140px; overflow-y:auto;">
+                <table class="tbl" id="waypointsTable">
+                  <thead>
+                    <tr>
+                      <th style="width:45px;">ID</th>
+                      <th>Name</th>
+                      <th style="width:85px;">Type</th>
+                      <th style="width:75px;">Alt (ft)</th>
+                      <th style="width:70px;">Speed</th>
+                      <th style="width:60px;">Loiter</th>
+                      <th style="width:90px; text-align:center;" id="wpTableActionColHeader">Status / ETA</th>
+                    </tr>
+                  </thead>
+                  <tbody id="waypointsTableBody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          <div class="engine-scanline" aria-hidden="true"></div>
-          <div class="engine-axis" aria-hidden="true"><span>X</span><span>Y</span><span>Z</span></div>
-          
-          <div class="engine-hud engine-hud-left">
-            <strong id="engineHudRpm">3,000 RPM</strong>
-            <span id="engineHudCht">220°F CHT</span>
-            <span id="engineHudEgt">1,200°F EGT</span>
+          <!-- RIGHT: 3D PISTON ENGINE DIGITAL TWIN -->
+          <div class="engine-twin-card">
+            <div class="engine-card-heading">
+              <div>
+                <div style="font-size:13.5px; font-weight:700; color:#5eb574; display:flex; align-items:center; gap:5px;">
+                  <span>◈</span> 3D ENGINE DIGITAL TWIN
+                </div>
+                <div style="font-size:10px; color:#7a8c7b; margin-top:1px;">
+                  Opposed 4-Cyl UAV Aero-Piston • Real-Time Telemetry & Thermal Envelope
+                </div>
+              </div>
+              <div class="engine-twin-state" id="engineTwinState">
+                DIGITAL TWIN SYNCHRONIZED
+              </div>
+            </div>
+
+            <div class="engine-digital-twin">
+              <div class="engine-viewport">
+                <canvas id="engineCanvas" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine"></canvas>
+                
+                <div class="engine-thermal-field" id="engineThermalField" aria-hidden="true">
+                  <div class="engine-thermal-aura engine-thermal-aura-outer"></div>
+                  <div class="engine-thermal-aura engine-thermal-aura-core"></div>
+                  <div class="engine-thermal-scale">
+                    <span>LIVE THERMAL ENVELOPE</span>
+                    <strong id="engineThermalValue">220°F CHT · 1,200°F EGT</strong>
+                    <div class="engine-thermal-gradient"><i id="engineThermalMarker"></i></div>
+                    <small><span>COOL</span><span>NOMINAL</span><span>HOT</span><span>CRITICAL</span></small>
+                  </div>
+                </div>
+
+                <div class="engine-scanline" aria-hidden="true"></div>
+                <div class="engine-axis" aria-hidden="true"><span>X</span><span>Y</span><span>Z</span></div>
+                
+                <div class="engine-hud engine-hud-left">
+                  <strong id="engineHudRpm">3,000 RPM</strong>
+                  <span id="engineHudCht">220°F CHT</span>
+                  <span id="engineHudEgt">1,200°F EGT</span>
+                </div>
+                <div class="engine-hud engine-hud-right">
+                  <strong id="engineModeLabel">NORMAL</strong>
+                  <span id="engineHudOil">60 PSI OIL</span>
+                  <span id="engineHudVibration">1.02 g RMS</span>
+                </div>
+                <div class="engine-help">DRAG ORBIT · WHEEL ZOOM · CLICK COMPONENT · DOUBLE-CLICK RESET</div>
+              </div>
+
+              <aside class="engine-inspector" aria-live="polite">
+                <div class="engine-inspector-kicker">SELECTED ASSEMBLY</div>
+                <h3 id="selectedComponentName">Central crankcase</h3>
+                <div class="component-readings">
+                  <div><span>Primary</span><strong id="selectedComponentPrimary">3,000 RPM</strong></div>
+                  <div><span>Secondary</span><strong id="selectedComponentSecondary">1.02 g</strong></div>
+                </div>
+                <p id="selectedComponentDetail">Crankshaft and opposed-cylinder power core</p>
+                <div class="component-fault" id="selectedComponentFault">No active fault evidence</div>
+                <div class="engine-legend">
+                  <span><i class="legend-normal"></i>Nominal</span>
+                  <span><i class="legend-watch"></i>Watch</span>
+                  <span><i class="legend-critical"></i>Critical</span>
+                </div>
+              </aside>
+            </div>
+
+            <div class="engine-toolbar" aria-label="3D engine controls">
+              <button class="engine-tool active" data-engine-mode="normal">Normal</button>
+              <button class="engine-tool" data-engine-mode="thermal">Thermal</button>
+              <button class="engine-tool" data-engine-mode="vibration">Vibration</button>
+              <span class="engine-tool-separator"></span>
+              <button class="engine-tool" id="engineXray">X-ray</button>
+              <button class="engine-tool" id="engineExplode">Explode</button>
+              <button class="engine-tool" id="enginePause">Pause</button>
+              <button class="engine-tool" id="engineResetCamera">Reset View</button>
+            </div>
+
+            <!-- Compact Engine Telemetry Strip Below 3D Viewport -->
+            <div class="engine-hud-strip">
+              <div class="hud-item">
+                <span class="hud-label">Engine RPM</span>
+                <span class="hud-val info" id="engRPM">3,000 RPM</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Auto Throttle</span>
+                <span class="hud-val" id="engThrottle">58% <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Engine Load</span>
+                <span class="hud-val" id="engLoad">0.84 <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">CHT Temp</span>
+                <span class="hud-val" id="engCHT">220.4 °F</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">EGT Max</span>
+                <span class="hud-val" id="engEGT">1,205 °F</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Oil Press / Temp</span>
+                <span class="hud-val" id="engOil">60.2 PSI • 89.6 °C</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Fuel Flow</span>
+                <span class="hud-val" id="engFuel">20.4 L/h</span>
+              </div>
+              <div class="hud-item">
+                <span class="hud-label">Vibration RMS</span>
+                <span class="hud-val good" id="engVib">1.02 g</span>
+              </div>
+            </div>
           </div>
-          <div class="engine-hud engine-hud-right">
-            <strong id="engineModeLabel">NORMAL</strong>
-            <span id="engineHudOil">60 PSI OIL</span>
-            <span id="engineHudVibration">1.02 g RMS</span>
+        </div>
+
+        <!-- 3. 6-SUBSYSTEM HEALTH STATUS CARDS -->
+        <div class="subsystem-grid">
+          <div class="subsystem-card">
+            <div class="s-name">Thermal Subsys</div>
+            <div class="s-score good" id="subScoreThermal">98%</div>
+            <div class="pill good" id="subPillThermal">CHT / EGT / Coolant</div>
           </div>
-          <div class="engine-help">DRAG ORBIT · WHEEL ZOOM · CLICK COMPONENT · DOUBLE-CLICK RESET</div>
-        </div>
-
-        <aside class="engine-inspector" aria-live="polite">
-          <div class="engine-inspector-kicker">SELECTED ASSEMBLY</div>
-          <h3 id="selectedComponentName">Central crankcase</h3>
-          <div class="component-readings">
-            <div><span>Primary</span><strong id="selectedComponentPrimary">3,000 RPM</strong></div>
-            <div><span>Secondary</span><strong id="selectedComponentSecondary">1.02 g</strong></div>
+          <div class="subsystem-card">
+            <div class="s-name">Lubrication</div>
+            <div class="s-score good" id="subScoreLubrication">99%</div>
+            <div class="pill good" id="subPillLubrication">Oil P/T & Viscosity</div>
           </div>
-          <p id="selectedComponentDetail">Crankshaft and opposed-cylinder power core</p>
-          <div class="component-fault" id="selectedComponentFault">No active fault evidence</div>
-          <div class="engine-legend">
-            <span><i class="legend-normal"></i>Nominal</span>
-            <span><i class="legend-watch"></i>Watch</span>
-            <span><i class="legend-critical"></i>Critical</span>
+          <div class="subsystem-card">
+            <div class="s-name">Fuel Injection</div>
+            <div class="s-score good" id="subScoreFuel">97%</div>
+            <div class="pill good" id="subPillFuel">MAP & Injectors</div>
           </div>
-        </aside>
-      </div>
-
-      <div class="engine-toolbar" aria-label="3D engine controls">
-        <button class="engine-tool active" data-engine-mode="normal">Normal</button>
-        <button class="engine-tool" data-engine-mode="thermal">Thermal</button>
-        <button class="engine-tool" data-engine-mode="vibration">Vibration</button>
-        <span class="engine-tool-separator"></span>
-        <button class="engine-tool" id="engineXray">X-ray</button>
-        <button class="engine-tool" id="engineExplode">Explode</button>
-        <button class="engine-tool" id="enginePause">Pause</button>
-        <button class="engine-tool" id="engineResetCamera">Reset View</button>
-      </div>
-
-      <!-- Compact Engine Telemetry Strip Below 3D Viewport -->
-      <div class="engine-hud-strip">
-        <div class="hud-item">
-          <span class="hud-label">Engine RPM</span>
-          <span class="hud-val info" id="engRPM">3,000 RPM</span>
+          <div class="subsystem-card">
+            <div class="s-name">Combustion / Ign</div>
+            <div class="s-score good" id="subScoreCombustion">99%</div>
+            <div class="pill good" id="subPillCombustion">Balance & Stability</div>
+          </div>
+          <div class="subsystem-card">
+            <div class="s-name">Electrical / FADEC</div>
+            <div class="s-score good" id="subScoreElectrical">98%</div>
+            <div class="pill good" id="subPillElectrical">Dual-Bus 28V</div>
+          </div>
+          <div class="subsystem-card">
+            <div class="s-name">Mechanical / Vib</div>
+            <div class="s-score good" id="subScoreMechanical">99%</div>
+            <div class="pill good" id="subPillMechanical">Bearings & Shaft</div>
+          </div>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">Auto Throttle</span>
-          <span class="hud-val" id="engThrottle">58% <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+
+        <!-- 4. LIVE ENVIRONMENT & CAN BUS MONITOR -->
+        <div class="grid two" style="margin-bottom:8px;">
+          <!-- LIVE ENVIRONMENT PANEL -->
+          <div class="card" style="border-color:#18281b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
+                <span>🌍</span> LIVE ENVIRONMENTAL CONDITIONS
+              </h2>
+              <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo API)</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:5px; font-size:10.5px;">
+              <div class="auto-item">
+                <span class="auto-label">Ambient Temp</span>
+                <span class="auto-val info" id="envTemp">18.4 °C</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Pressure</span>
+                <span class="auto-val" id="envPress">802 hPa <small style="font-size:8.5px; color:#7a8c7b;">(23.7 inHg)</small></span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Density Ratio (σ)</span>
+                <span class="auto-val" id="envDensity">0.824</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Wind Speed / Dir</span>
+                <span class="auto-val" id="envWind">12.5 kt @ 240°</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Headwind / Crosswind</span>
+                <span class="auto-val" id="envHeadwind"><span style="color:#c9983e;">HW: 5.8 kt</span> • CW: 11.0 kt</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Relative Humidity</span>
+                <span class="auto-val" id="envHumidity">45%</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Visibility</span>
+                <span class="auto-val" id="envVisibility">10.0 km</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Weather Condition</span>
+                <span class="auto-val good" id="envCondition">Clear Sky</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- RAW CAN BUS MONITOR -->
+          <div class="card" style="border-color:#18281b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
+                <span>⚡</span> ECU CAN BUS / FADEC TELEMETRY STREAM
+              </h2>
+              <span class="pill good" style="font-size:9.5px;">● 10 Hz Synchronized</span>
+            </div>
+            <div class="can-box" id="canBusStream">
+              [CAN 0x201] RPM: 3000 | THROTTLE: 60.0% | MAP: 29.8 inHg | TIME: 00:14:22<br>
+              [CAN 0x202] CHT: 220.4 F | EGT1: 1205 F | EGT2: 1200 F | EGT3: 1198 F<br>
+              [CAN 0x203] OIL_PRESS: 60.2 PSI | OIL_TEMP: 89.6 C | STATUS: NORMAL<br>
+              [CAN 0x204] FUEL_FLOW: 20.4 L/h | RAIL_PRESS: 42.1 PSI | FUEL_TEMP: 32.1 C<br>
+              [CAN 0x205] BUS_VOLT: 28.20 V | ALT_CURR: 18.2 A | ALT_TEMP: 68.4 C<br>
+              [CAN 0x206] VIBRATION_RMS: 1.02 g | KNOCK_IDX: 0.02 | STATUS: HEALTHY
+            </div>
+          </div>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">Engine Load</span>
-          <span class="hud-val" id="engLoad">0.84 <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: FAULT & HEALTH DIAGNOSTICS -->
+      <!-- ========================================================================= -->
+      <section id="tabContentDiagnostics" class="tab-content" style="display:none;">
+
+        <!-- EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE -->
+        <div class="card" style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
+              <span>🧪</span> EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE
+            </h2>
+            <span class="pill" style="color:#c9983e; border-color:#3d2f10; background:#1c1407; font-size:9.5px;">
+              Testing Subsystem • Injects anomalies into simulated flight
+            </span>
+          </div>
+
+          <div class="grid controls">
+            <label>
+              Inject Engine Fault
+              <select id="fault">
+                <option value="none">None / Healthy Baseline</option>
+                <option value="overheating">Overheating</option>
+                <option value="lubrication">Lubrication Degradation</option>
+                <option value="misfire">Misfire-Like Combustion</option>
+                <option value="injector">Injector Abnormality</option>
+                <option value="sensor_drift">Sensor Drift</option>
+                <option value="electrical">Battery / Alternator</option>
+              </select>
+            </label>
+
+            <label>
+              Fault Severity (0.0 – 1.0)
+              <input id="severity" type="number" min="0" max="1" step="0.1" value="0.6">
+            </label>
+
+            <label>
+              Fault Onset Point (% of mission)
+              <input id="onset" type="number" min="0" max="0.95" step="0.05" value="0.35">
+            </label>
+
+            <div style="display:flex; align-items:flex-end; gap:4px;">
+              <button onclick="analyzeSnapshot()" style="width:100%;">⚡ Single-Point Analyze</button>
+            </div>
+          </div>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">CHT Temp</span>
-          <span class="hud-val" id="engCHT">220.4 °F</span>
+
+        <!-- DIGITAL TWIN KPIS & RESIDUALS -->
+        <div class="grid kpis" style="margin-bottom:8px;">
+          <div class="card">
+            <div class="kpi-label">Health State</div>
+            <div id="health" class="kpi">—</div>
+            <div id="healthSub" class="tiny">ML status</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Health Index</div>
+            <div id="healthIndex" class="kpi">—</div>
+            <div class="tiny">0–100 scale</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Mission Risk</div>
+            <div id="missionRisk" class="kpi">—</div>
+            <div id="reliability" class="tiny">reliability index</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Remaining Useful Life (RUL)</div>
+            <div id="rul" class="kpi">—</div>
+            <div id="rulSub" class="tiny">Predicted flight endurance remaining</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Twin Residual RMS</div>
+            <div id="residual" class="kpi">—</div>
+            <div id="anomaly" class="tiny">anomaly flag</div>
+          </div>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">EGT Max</span>
-          <span class="hud-val" id="engEGT">1,205 °F</span>
+
+        <!-- MISSION REPLAY TIMELINE & ACTIONABLE MAINTENANCE ADVISORY -->
+        <div class="grid two" style="margin-bottom:8px;">
+          <div class="card">
+            <h2>Mission Replay & Anomaly Health Timeline</h2>
+            <canvas id="timeline" width="800" height="200"></canvas>
+            <div id="events"></div>
+          </div>
+
+          <div class="card">
+            <h2>Actionable Maintenance Advisory</h2>
+            <div id="advice" class="event">—</div>
+            <h3 style="margin-top:8px;">Probable Fault Candidates</h3>
+            <div id="faults" class="scroll"></div>
+          </div>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">Oil Press / Temp</span>
-          <span class="hud-val" id="engOil">60.2 PSI • 89.6 °C</span>
+
+        <!-- MISSION RISK BREAKDOWN -->
+        <div class="card" style="margin-bottom:8px;">
+          <h2>Mission Risk Breakdown & Component Risk Weights</h2>
+          <div id="riskBreakdown"></div>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">Fuel Flow</span>
-          <span class="hud-val" id="engFuel">20.4 L/h</span>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 3: TELEMETRY & PHYSICS -->
+      <!-- ========================================================================= -->
+      <section id="tabContentTelemetry" class="tab-content" style="display:none;">
+
+        <!-- SENSOR HEALTH & PHYSICS-INFORMED DEVIATIONS -->
+        <div class="grid two" style="margin-bottom:8px;">
+          <div class="card">
+            <h2>Sensor Health & Trust</h2>
+            <div id="sensorSummary" style="margin-bottom:5px;font-size:11px"></div>
+            <div class="scroll">
+              <table class="tbl">
+                <thead><tr><th>Channel</th><th>Trust</th></tr></thead>
+                <tbody id="sensorTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Physics-Informed Deviations</h2>
+            <div class="scroll">
+              <table class="tbl">
+                <thead><tr><th>Parameter</th><th>Z-Score</th><th>Dev %</th></tr></thead>
+                <tbody id="deviationTable"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-        <div class="hud-item">
-          <span class="hud-label">Vibration RMS</span>
-          <span class="hud-val good" id="engVib">1.02 g</span>
+
+        <!-- DIGITAL TWIN EXPECTED VS OBSERVED & RAW TELEMETRY -->
+        <div class="grid two" style="margin-bottom:8px;">
+          <div class="card">
+            <h2>Digital Twin Expected vs Observed Telemetry</h2>
+            <div class="scroll">
+              <table class="tbl">
+                <thead><tr><th>Parameter</th><th>Expected</th><th>Observed</th><th>Z-Score</th></tr></thead>
+                <tbody id="compare"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Raw Parameter Telemetry</h2>
+            <div class="scroll">
+              <table class="tbl">
+                <thead><tr><th>Sensor</th><th>Value</th></tr></thead>
+                <tbody id="telemetry"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- 3. 6-SUBSYSTEM HEALTH STATUS CARDS -->
-  <div class="subsystem-grid">
-    <div class="subsystem-card">
-      <div class="s-name">Thermal Subsys</div>
-      <div class="s-score good" id="subScoreThermal">98%</div>
-      <div class="pill good" id="subPillThermal">CHT / EGT / Coolant</div>
-    </div>
-    <div class="subsystem-card">
-      <div class="s-name">Lubrication</div>
-      <div class="s-score good" id="subScoreLubrication">99%</div>
-      <div class="pill good" id="subPillLubrication">Oil P/T & Viscosity</div>
-    </div>
-    <div class="subsystem-card">
-      <div class="s-name">Fuel Injection</div>
-      <div class="s-score good" id="subScoreFuel">97%</div>
-      <div class="pill good" id="subPillFuel">MAP & Injectors</div>
-    </div>
-    <div class="subsystem-card">
-      <div class="s-name">Combustion / Ign</div>
-      <div class="s-score good" id="subScoreCombustion">99%</div>
-      <div class="pill good" id="subPillCombustion">Balance & Stability</div>
-    </div>
-    <div class="subsystem-card">
-      <div class="s-name">Electrical / FADEC</div>
-      <div class="s-score good" id="subScoreElectrical">98%</div>
-      <div class="pill good" id="subPillElectrical">Dual-Bus 28V</div>
-    </div>
-    <div class="subsystem-card">
-      <div class="s-name">Mechanical / Vib</div>
-      <div class="s-score good" id="subScoreMechanical">99%</div>
-      <div class="pill good" id="subPillMechanical">Bearings & Shaft</div>
-    </div>
-  </div>
+      </section>
 
-  <!-- 4. LIVE ENVIRONMENT & CAN BUS MONITOR -->
-  <div class="grid two" style="margin-bottom:8px;">
-    <!-- LIVE ENVIRONMENT PANEL -->
-    <div class="card" style="border-color:#18281b;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
-          <span>🌍</span> LIVE ENVIRONMENTAL CONDITIONS
-        </h2>
-        <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo)</span>
-      </div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:5px; font-size:10.5px;">
-        <div class="auto-item">
-          <span class="auto-label">Ambient Temp</span>
-          <span class="auto-val info" id="envTemp">18.4 °C</span>
-        </div>
-        <div class="auto-item">
-          <span class="auto-label">Pressure</span>
-          <span class="auto-val" id="envPress">802 hPa <small style="font-size:8.5px; color:#7a8c7b;">(23.7 inHg)</small></span>
-        </div>
-        <div class="auto-item">
-          <span class="auto-label">Density Ratio (σ)</span>
-          <span class="auto-val" id="envDensity">0.824</span>
-        </div>
-        <div class="auto-item">
-          <span class="auto-label">Wind Speed / Dir</span>
-          <span class="auto-val" id="envWind">12.5 kt @ 240°</span>
-        </div>
-        <div class="auto-item">
-          <span class="auto-label">Headwind / Crosswind</span>
-          <span class="auto-val" id="envHeadwind"><span style="color:#c9983e;">HW: 5.8 kt</span> • CW: 11.0 kt</span>
-        </div>
-        <div class="auto-item">
-          <span class="auto-label">Relative Humidity</span>
-          <span class="auto-val" id="envHumidity">45%</span>
-        </div>
-        <div class="auto-item">
-          <span class="auto-label">Visibility</span>
-          <span class="auto-val" id="envVisibility">10.0 km</span>
-        </div>
-        <div class="auto-item">
-          <span class="auto-label">Weather Condition</span>
-          <span class="auto-val good" id="envCondition">Clear Sky</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- RAW CAN BUS MONITOR -->
-    <div class="card" style="border-color:#18281b;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
-          <span>⚡</span> ECU CAN BUS / FADEC TELEMETRY STREAM
-        </h2>
-        <span class="pill good" style="font-size:9.5px;">● 10 Hz Synchronized</span>
-      </div>
-      <div class="can-box" id="canBusStream">
-        [CAN 0x201] RPM: 3000 | THROTTLE: 60.0% | MAP: 29.8 inHg | TIME: 00:14:22<br>
-        [CAN 0x202] CHT: 220.4 F | EGT1: 1205 F | EGT2: 1200 F | EGT3: 1198 F<br>
-        [CAN 0x203] OIL_PRESS: 60.2 PSI | OIL_TEMP: 89.6 C | STATUS: NORMAL<br>
-        [CAN 0x204] FUEL_FLOW: 20.4 L/h | RAIL_PRESS: 42.1 PSI | FUEL_TEMP: 32.1 C<br>
-        [CAN 0x205] BUS_VOLT: 28.20 V | ALT_CURR: 18.2 A | ALT_TEMP: 68.4 C<br>
-        [CAN 0x206] VIBRATION_RMS: 1.02 g | KNOCK_IDX: 0.02 | STATUS: HEALTHY
-      </div>
-    </div>
-  </div>
-
-  <!-- 5. EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE -->
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-      <h2 style="margin:0; font-size:13px;">Experimental Fault Injection & Health Diagnostics</h2>
-      <span class="pill" style="color:#c9983e; border-color:#3d2f10; background:#1c1407; font-size:9.5px;">
-        Testing Subsystem • Injects anomalies into simulated flight
-      </span>
-    </div>
-
-    <div class="grid controls">
-      <label>
-        Inject Engine Fault
-        <select id="fault">
-          <option value="none">None / Healthy Baseline</option>
-          <option value="overheating">Overheating</option>
-          <option value="lubrication">Lubrication Degradation</option>
-          <option value="misfire">Misfire-Like Combustion</option>
-          <option value="injector">Injector Abnormality</option>
-          <option value="sensor_drift">Sensor Drift</option>
-          <option value="electrical">Battery / Alternator</option>
-        </select>
-      </label>
-
-      <label>
-        Fault Severity (0.0 – 1.0)
-        <input id="severity" type="number" min="0" max="1" step="0.1" value="0.6">
-      </label>
-
-      <label>
-        Fault Onset Point (% of mission)
-        <input id="onset" type="number" min="0" max="0.95" step="0.05" value="0.35">
-      </label>
-
-      <div style="display:flex; align-items:flex-end; gap:4px;">
-        <button onclick="analyzeSnapshot()" style="width:100%;">⚡ Single-Point Analyze</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 6. DIGITAL TWIN KPIS & RESIDUALS -->
-  <div class="grid kpis" style="margin-top:8px;">
-    <div class="card">
-      <div class="kpi-label">Health State</div>
-      <div id="health" class="kpi">—</div>
-      <div id="healthSub" class="tiny">ML status</div>
-    </div>
-
-    <div class="card">
-      <div class="kpi-label">Health Index</div>
-      <div id="healthIndex" class="kpi">—</div>
-      <div class="tiny">0–100 scale</div>
-    </div>
-
-    <div class="card">
-      <div class="kpi-label">Mission Risk</div>
-      <div id="missionRisk" class="kpi">—</div>
-      <div id="reliability" class="tiny">reliability index</div>
-    </div>
-
-    <div class="card">
-      <div class="kpi-label">Remaining Useful Life (RUL)</div>
-      <div id="rul" class="kpi">—</div>
-      <div id="rulSub" class="tiny">Predicted flight endurance remaining</div>
-    </div>
-
-    <div class="card">
-      <div class="kpi-label">Twin Residual RMS</div>
-      <div id="residual" class="kpi">—</div>
-      <div id="anomaly" class="tiny">anomaly flag</div>
-    </div>
-  </div>
-
-  <div class="grid two" style="margin-top:8px;">
-    <div class="card">
-      <h2>Mission Replay & Anomaly Health Timeline</h2>
-      <canvas id="timeline" width="800" height="200"></canvas>
-      <div id="events"></div>
-    </div>
-
-    <div class="card">
-      <h2>Actionable Maintenance Advisory</h2>
-      <div id="advice" class="event">—</div>
-      <h3 style="margin-top:8px;">Probable Fault Candidates</h3>
-      <div id="faults" class="scroll"></div>
-    </div>
-  </div>
-
-  <div class="grid three" style="margin-top:8px;">
-    <div class="card">
-      <h2>Sensor Health & Trust</h2>
-      <div id="sensorSummary" style="margin-bottom:5px;font-size:11px"></div>
-      <div class="scroll">
-        <table class="tbl">
-          <thead><tr><th>Channel</th><th>Trust</th></tr></thead>
-          <tbody id="sensorTable"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Physics-Informed Deviations</h2>
-      <div class="scroll">
-        <table class="tbl">
-          <thead><tr><th>Parameter</th><th>Z-Score</th><th>Dev %</th></tr></thead>
-          <tbody id="deviationTable"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Mission Risk Breakdown</h2>
-      <div id="riskBreakdown"></div>
-    </div>
-  </div>
-
-  <div class="grid two" style="margin-top:8px;">
-    <div class="card">
-      <h2>Digital Twin Expected vs Observed Telemetry</h2>
-      <div class="scroll">
-        <table class="tbl">
-          <thead><tr><th>Parameter</th><th>Expected</th><th>Observed</th><th>Z-Score</th></tr></thead>
-          <tbody id="compare"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Raw Parameter Telemetry</h2>
-      <div class="scroll">
-        <table class="tbl">
-          <thead><tr><th>Sensor</th><th>Value</th></tr></thead>
-          <tbody id="telemetry"></tbody>
-        </table>
-      </div>
-    </div>
+    </main>
   </div>
 
   <div class="footer">
@@ -850,6 +973,31 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 // 🛰️ Global State & Navigation Core
 // ==========================================
 const $ = id => document.getElementById(id);
+
+let currentTab = 'live';
+
+function switchDashboardTab(tabId) {
+  currentTab = tabId;
+  const tabs = ['live', 'diagnostics', 'telemetry'];
+  tabs.forEach(t => {
+    const btn = $('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+    const content = $('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (t === tabId) {
+      if (btn) btn.classList.add('active');
+      if (content) content.style.display = 'block';
+    } else {
+      if (btn) btn.classList.remove('active');
+      if (content) content.style.display = 'none';
+    }
+  });
+
+  if (tabId === 'live') {
+    setTimeout(() => {
+      if (uavMap) uavMap.invalidateSize();
+      window.AeroPulseEngine3D?.resize();
+    }, 60);
+  }
+}
 
 let uavMap = null;
 let uavMarker = null;
@@ -1086,7 +1234,6 @@ function setUIMode(mode) {
     $('wpPlannerActions').style.display = 'none';
     $('wpTableActionColHeader').textContent = 'Status / ETA';
   }
-  // Waypoint table remains permanently visible in all modes
   $('waypointPlannerBox').style.display = 'block';
   renderWaypointsAndPlannedRoute();
   renderWaypointsTable();
@@ -1690,7 +1837,7 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
   $('engFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
   $('engVib').textContent = `${fmt(telemetry.Vibration, 2)} g`;
 
-  // Synchronize 3D WebGL Piston Engine Twin (Zero changes to engine core)
+  // Synchronize 3D WebGL Piston Engine Twin
   window.AeroPulseEngine3D?.setTelemetry({
     rpm,
     throttle: thr,
@@ -2028,6 +2175,7 @@ async function analyzeSnapshot(){
 
 function drawTimeline(items){
   const c=$('timeline');
+  if(!c) return;
   const ctx=c.getContext('2d');
   const W=c.width;
   const H=c.height;
