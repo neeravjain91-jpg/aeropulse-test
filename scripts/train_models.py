@@ -7,15 +7,22 @@ import json
 import platform
 import zipfile
 
+import time
 import joblib
 import numpy as np
 import pandas as pd
 import sklearn
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import IsolationForest, RandomForestClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier, IsolationForest
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, classification_report
-from sklearn.model_selection import GroupShuffleSplit
+from sklearn.metrics import (
+    accuracy_score,
+    balanced_accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+)
+from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -101,24 +108,54 @@ def train_all(data_dir: Path | str | None = None) -> dict:
         ("pre", pre),
         (
             "model",
-            RandomForestClassifier(
-                n_estimators=100,
-                max_depth=16,
-                min_samples_leaf=2,
-                class_weight="balanced_subsample",
+            HistGradientBoostingClassifier(
+                max_iter=150,
+                learning_rate=0.10,
+                max_leaf_nodes=31,
+                min_samples_leaf=20,
+                l2_regularization=1.0,
+                class_weight="balanced",
                 random_state=42,
-                n_jobs=-1,
             ),
         ),
     ])
+    t0 = time.perf_counter()
     health_pipe.fit(train[aces_features], train["Health_State"])
+    fit_duration = time.perf_counter() - t0
+
     pred = health_pipe.predict(test[aces_features])
+    classes = health_pipe.classes_.tolist()
+    cm = confusion_matrix(test["Health_State"], pred, labels=classes)
+
+    # 5-Fold GroupKFold Cross Validation
+    gkf = GroupKFold(n_splits=5)
+    cv_scores = []
+    if "Flight" in aces.columns and aces["Flight"].nunique() >= 5:
+        for fold, (trn_i, val_i) in enumerate(gkf.split(aces, groups=aces["Flight"])):
+            f_trn = aces.iloc[trn_i]
+            f_val = aces.iloc[val_i]
+            pipe_cv = Pipeline([
+                ("pre", pre),
+                ("model", HistGradientBoostingClassifier(max_iter=150, learning_rate=0.10, max_leaf_nodes=31, min_samples_leaf=20, l2_regularization=1.0, class_weight="balanced", random_state=42))
+            ])
+            pipe_cv.fit(f_trn[aces_features], f_trn["Health_State"])
+            f_pred = pipe_cv.predict(f_val[aces_features])
+            cv_scores.append(accuracy_score(f_val["Health_State"], f_pred))
+
     metrics["aces_health"] = {
+        "model_architecture": "HistGradientBoostingClassifier",
         "accuracy": float(accuracy_score(test["Health_State"], pred)),
         "balanced_accuracy": float(balanced_accuracy_score(test["Health_State"], pred)),
+        "macro_f1": float(f1_score(test["Health_State"], pred, average="macro", zero_division=0)),
+        "weighted_f1": float(f1_score(test["Health_State"], pred, average="weighted", zero_division=0)),
         "split_strategy": split_strategy,
         "held_out_flights": held_out_groups,
         "features": aces_features,
+        "fit_time_seconds": round(fit_duration, 2),
+        "classes": classes,
+        "confusion_matrix": cm.tolist(),
+        "5fold_group_cv_mean": float(np.mean(cv_scores)) if cv_scores else None,
+        "5fold_group_cv_std": float(np.std(cv_scores)) if cv_scores else None,
         "report": classification_report(test["Health_State"], pred, output_dict=True, zero_division=0),
     }
     joblib.dump(health_pipe, OUT / "aces_health.joblib", compress=3)

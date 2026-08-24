@@ -1,6 +1,7 @@
 {
   "project": "AeroPulse-X",
-  "model_version": "1.0.0-sih",
+  "model_version": "1.1.0-sih-validated",
+  "model_architecture": "HistGradientBoostingClassifier",
   "python": "3.11.9",
   "scikit_learn": "1.8.0",
   "aces": {
