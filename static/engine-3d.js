@@ -1,10 +1,10 @@
 /*
- * AeroPulse-X WebGL 3D Piston Engine Digital Twin (Military GCS Theme)
- * ------------------------------------------------------------
+ * AeroPulse-X WebGL 3D Piston Engine Digital Twin (Military GCS Theme - Sharp Rendering)
+ * -----------------------------------------------------------------------------------
  * High-definition, hardware-accelerated WebGL renderer for the
  * MALE-UAV four-cylinder horizontally opposed aero-piston engine.
- * Calibrated with Blinn-Phong specular highlights, Fresnel metallic
- * definition, high-DPI scaling, and real-time telemetry coupling.
+ * Calibrated with Blinn-Phong specular highlights, crisp metallic geometry,
+ * high-DPI scaling, and real-time telemetry coupling.
  */
 (function () {
   'use strict';
@@ -307,28 +307,28 @@
       varying vec3 vViewPos;
       void main(){
         vec3 N = normalize(vNormal);
-        vec3 L1 = normalize(vec3(0.55, 0.85, 0.65)); // Key light
+        vec3 L1 = normalize(vec3(0.55, 0.85, 0.65)); // Key directional light
         vec3 L2 = normalize(vec3(-0.6, 0.25, -0.5)); // Fill light
-        vec3 V = normalize(-vViewPos);               // View vector
+        vec3 V = normalize(-vViewPos);               // View direction
 
-        // Diffuse lighting
+        // Crisp diffuse lighting
         float diff1 = max(dot(N, L1), 0.0);
-        float diff2 = max(dot(N, L2), 0.0) * 0.40;
+        float diff2 = max(dot(N, L2), 0.0) * 0.35;
         float diffuse = diff1 + diff2;
 
-        // Blinn-Phong Specular for crisp metallic edge reflection
+        // Sharp Blinn-Phong specular highlight for crisp mechanical reflections
         vec3 H1 = normalize(L1 + V);
-        float spec = pow(max(dot(N, H1), 0.0), 32.0) * 0.45;
+        float spec = pow(max(dot(N, H1), 0.0), 48.0) * 0.55;
 
-        // Subtle Fresnel rim definition for depth definition
-        float rim = pow(1.0 - max(dot(N, V), 0.0), 2.5);
+        // Subtle Fresnel rim active only when selected
+        float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);
 
-        // Ambient base
-        vec3 ambient = uColor * 0.32;
-        vec3 color = ambient + uColor * (0.68 * diffuse) + vec3(0.85, 0.95, 0.88) * spec;
+        // Solid metallic base without haze
+        vec3 ambient = uColor * 0.28;
+        vec3 color = ambient + uColor * (0.72 * diffuse) + vec3(0.90, 0.96, 0.92) * spec;
 
-        // Glow and selection highlighting
-        color += uColor * uGlow * 0.70 + vec3(0.45, 0.85, 0.55) * rim * (0.18 + uSelected * 0.82);
+        // Selection & glow accents
+        color += uColor * uGlow * 0.70 + vec3(0.45, 0.90, 0.55) * rim * (uSelected * 0.85);
 
         gl_FragColor = vec4(color, uAlpha);
       }
@@ -434,8 +434,9 @@
 
     resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const width = Math.max(320, Math.floor(this.canvas.clientWidth * dpr));
-      const height = Math.max(260, Math.floor(this.canvas.clientHeight * dpr));
+      const rect = this.canvas.getBoundingClientRect();
+      const width = Math.max(320, Math.round(rect.width * dpr));
+      const height = Math.max(260, Math.round(rect.height * dpr));
       if (this.canvas.width !== width || this.canvas.height !== height) {
         this.canvas.width = width;
         this.canvas.height = height;
@@ -645,13 +646,13 @@
       // 1. Crankcase & Engine Block Housing
       add('cube', 'crankcase', 'Central crankcase', [0, 0, 0], [0, 0, 0], [4.8, 1.3, 1.55], darkMetal, { alpha: housingAlpha, pick: true });
       add('cube', 'crankcase', 'Upper accessory housing', [0.25, 1.02 + explosion * 0.45, 0], [0, 0, 0], [3.1, 0.62, 1.26], metal, { alpha: housingAlpha });
-      add('cube', 'lubrication', 'Oil sump', [0, -0.92 - explosion * 0.35, 0], [0, 0, 0], [3.7, 0.42, 1.25], oilColor, { alpha: this.xray ? 0.5 : 0.95, glow: thermal ? 0.15 : 0.03, pick: true });
+      add('cube', 'lubrication', 'Oil sump', [0, -0.92 - explosion * 0.35, 0], [0, 0, 0], [3.7, 0.42, 1.25], oilColor, { alpha: this.xray ? 0.5 : 0.95, glow: thermal ? 0.15 : 0, pick: true });
 
       // 2. Crankshaft & Counterweights
-      add('cylinder', 'crankshaft', 'Crankshaft', [0, 0.03, 0], [0, Math.PI / 2, 0], [0.38, 0.38, 5.5], brightSteel, { glow: vibrationMode ? clamp(t.vibration / 4, 0, 0.8) : 0.03, pick: true });
+      add('cylinder', 'crankshaft', 'Crankshaft', [0, 0.03, 0], [0, Math.PI / 2, 0], [0.38, 0.38, 5.5], brightSteel, { glow: vibrationMode ? clamp(t.vibration / 4, 0, 0.8) : 0, pick: true });
       [-1.4, 0, 1.4].forEach((x, index) => {
         const phase = this.crankAngle + index * Math.PI * 0.66;
-        add('cylinder', 'crankshaft', 'Crank throw', [x, Math.sin(phase) * 0.25, Math.cos(phase) * 0.25], [0, Math.PI / 2, 0], [0.55, 0.55, 0.26], hexColor('#93a395'), { glow: 0.05 });
+        add('cylinder', 'crankshaft', 'Crank throw', [x, Math.sin(phase) * 0.25, Math.cos(phase) * 0.25], [0, Math.PI / 2, 0], [0.55, 0.55, 0.26], hexColor('#93a395'), { glow: 0 });
       });
 
       // 3. Opposed 4-Cylinder Power Assembly
@@ -671,7 +672,7 @@
           const color = hotFault ? red : cylinderColor;
 
           // Cylinder Barrel
-          add('cylinder', 'cylinders', `Cylinder ${cylinderIndex + 1}`, [x, 0.3, barrelZ], [0, 0, 0], [1.2, 1.2, 1.72], color, { alpha: housingAlpha, glow: hotFault ? 0.95 : thermal ? 0.32 : 0.03, pick: true });
+          add('cylinder', 'cylinders', `Cylinder ${cylinderIndex + 1}`, [x, 0.3, barrelZ], [0, 0, 0], [1.2, 1.2, 1.72], color, { alpha: housingAlpha, glow: hotFault ? 0.95 : thermal ? 0.32 : 0, pick: true });
           
           // Cylinder Cooling Fin Rings
           [-0.4, -0.1, 0.2, 0.5].forEach(finOffset => {
@@ -679,7 +680,7 @@
           });
 
           // Cylinder Head
-          add('cylinder', 'cylinders', `Cylinder head ${cylinderIndex + 1}`, [x, 0.3, headZ], [0, 0, 0], [1.48, 1.48, 0.55], color, { glow: hotFault ? 1 : thermal ? 0.4 : 0.03 });
+          add('cylinder', 'cylinders', `Cylinder head ${cylinderIndex + 1}`, [x, 0.3, headZ], [0, 0, 0], [1.48, 1.48, 0.55], color, { glow: hotFault ? 1 : thermal ? 0.4 : 0 });
           
           if (thermal) {
             add('sphere', 'cylinders', `Cylinder ${cylinderIndex + 1} thermal envelope`, [x, 0.3, headZ], [0, 0, 0], [1.55, 1.55, 0.95], color, {
@@ -689,7 +690,7 @@
           }
 
           // Piston & Connecting Rod
-          add('cylinder', 'cylinders', `Piston ${cylinderIndex + 1}`, [x, 0.3, pistonZ], [0, 0, 0], [0.78, 0.78, 0.42], brightSteel, { glow: misfire ? 0.7 : 0.04 });
+          add('cylinder', 'cylinders', `Piston ${cylinderIndex + 1}`, [x, 0.3, pistonZ], [0, 0, 0], [0.78, 0.78, 0.42], brightSteel, { glow: misfire ? 0.7 : 0 });
           const crankZ = Math.cos(phase) * 0.26;
           const middleZ = (pistonZ + crankZ) / 2;
           const deltaZ = pistonZ - crankZ;
@@ -702,48 +703,48 @@
       // 4. Reduction Output Shaft & Propeller
       const propX = -3.1 - explosion * 1.25;
       add('cylinder', 'propeller', 'Reduction output shaft', [propX, 0, 0], [0, Math.PI / 2, 0], [0.52, 0.52, 2.2], aluminium, { pick: true });
-      add('sphere', 'propeller', 'Propeller spinner', [propX - 1.02, 0, 0], [0, 0, 0], [0.78, 0.78, 0.78], brightSteel, { glow: 0.06 });
+      add('sphere', 'propeller', 'Propeller spinner', [propX - 1.02, 0, 0], [0, 0, 0], [0.78, 0.78, 0.78], brightSteel, { glow: 0 });
       const propAngle = this.crankAngle * 0.46;
-      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle, 0, 0], [0.16, 4.4, 0.28], hexColor('#3a4a3c'), { glow: 0.04 });
-      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle + Math.PI / 2, 0, 0], [0.16, 4.4, 0.28], hexColor('#3a4a3c'), { glow: 0.04 });
+      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle, 0, 0], [0.16, 4.4, 0.28], hexColor('#3a4a3c'), { glow: 0 });
+      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle + Math.PI / 2, 0, 0], [0.16, 4.4, 0.28], hexColor('#3a4a3c'), { glow: 0 });
 
       // 5. Turbocharger & Boost Circuit
       const turboPosition = [2.8 + explosion * 1.35, 1.34 + explosion * 0.75, -0.45];
-      add('torus', 'turbo', 'Turbocharger housing', turboPosition, [0, Math.PI / 2, 0], [1.55, 1.55, 1.55], thermal ? exhaustColor : metal, { glow: thermal ? 0.5 : 0.08, pick: true });
-      add('cylinder', 'turbo', 'Turbo turbine', turboPosition, [0, Math.PI / 2, this.crankAngle * 1.8], [0.7, 0.7, 0.42], brightSteel, { glow: thermal ? 0.55 : 0.08 });
+      add('torus', 'turbo', 'Turbocharger housing', turboPosition, [0, Math.PI / 2, 0], [1.55, 1.55, 1.55], thermal ? exhaustColor : metal, { glow: thermal ? 0.5 : 0, pick: true });
+      add('cylinder', 'turbo', 'Turbo turbine', turboPosition, [0, Math.PI / 2, this.crankAngle * 1.8], [0.7, 0.7, 0.42], brightSteel, { glow: thermal ? 0.55 : 0 });
       if (thermal) {
         add('sphere', 'turbo', 'Turbo thermal envelope', turboPosition, [0, 0, 0], [1.35, 1.35, 1.35], exhaustColor, {
           alpha: 0.05 + thermalIntensity * 0.07,
           glow: 0.70 + thermalIntensity * 0.30
         });
       }
-      add('cylinder', 'turbo', 'Intake manifold', [0.4, 1.63 + explosion * 0.5, 0], [0, Math.PI / 2, 0], [0.32, 0.32, 4.7], cyan, { alpha: 0.78, glow: 0.26 });
+      add('cylinder', 'turbo', 'Intake manifold', [0.4, 1.63 + explosion * 0.5, 0], [0, Math.PI / 2, 0], [0.32, 0.32, 4.7], cyan, { alpha: 0.78, glow: 0.1 });
 
       // 6. Fuel Rails & Lubrication Galleries
       [-1, 1].forEach(side => {
-        add('cylinder', 'fuel', 'Fuel rail', [0, 1.05 + explosion * 0.4, side * (1.12 + explosion * 1.5)], [0, Math.PI / 2, 0], [0.15, 0.15, 3.9], fuelColor, { glow: 0.65, pick: true });
-        add('cylinder', 'turbo', 'Exhaust collector', [0.2, -0.52, side * (2.35 + explosion * 1.7)], [0, Math.PI / 2, 0], [0.32, 0.32, 4.1], exhaustColor, { glow: thermal ? 0.75 : 0.12 });
-        add('cylinder', 'lubrication', 'Oil gallery', [0, -0.64 - explosion * 0.2, side * 0.83], [0, Math.PI / 2, 0], [0.13, 0.13, 4.0], oilColor, { glow: 0.7 });
+        add('cylinder', 'fuel', 'Fuel rail', [0, 1.05 + explosion * 0.4, side * (1.12 + explosion * 1.5)], [0, Math.PI / 2, 0], [0.15, 0.15, 3.9], fuelColor, { glow: 0.35, pick: true });
+        add('cylinder', 'turbo', 'Exhaust collector', [0.2, -0.52, side * (2.35 + explosion * 1.7)], [0, Math.PI / 2, 0], [0.32, 0.32, 4.1], exhaustColor, { glow: thermal ? 0.75 : 0 });
+        add('cylinder', 'lubrication', 'Oil gallery', [0, -0.64 - explosion * 0.2, side * 0.83], [0, Math.PI / 2, 0], [0.13, 0.13, 4.0], oilColor, { glow: 0.2 });
       });
 
       // 7. Alternator / FADEC Unit
       const alternatorPosition = [2.1 + explosion * 0.9, -1.32 - explosion * 0.6, 0];
-      add('cylinder', 'electrical', 'Alternator', alternatorPosition, [0, Math.PI / 2, 0], [1.15, 1.15, 1.3], electricColor, { glow: electricColor === red ? 0.9 : 0.16, pick: true });
-      add('cylinder', 'electrical', 'Alternator rotor', alternatorPosition, [0, Math.PI / 2, this.crankAngle], [0.58, 0.58, 1.45], brightSteel, { glow: 0.08 });
+      add('cylinder', 'electrical', 'Alternator', alternatorPosition, [0, Math.PI / 2, 0], [1.15, 1.15, 1.3], electricColor, { glow: electricColor === red ? 0.9 : 0, pick: true });
+      add('cylinder', 'electrical', 'Alternator rotor', alternatorPosition, [0, Math.PI / 2, this.crankAngle], [0.58, 0.58, 1.45], brightSteel, { glow: 0 });
 
       // 8. Virtual FADEC Sensor Nodes
       const sensorPositions = [[-1.32, 1.02, -2.72], [-1.32, 1.02, 2.72], [1.32, 1.02, -2.72], [1.32, 1.02, 2.72], [0, -1.24, 0]];
       sensorPositions.forEach((position, index) => {
         const sensorFault = fault.includes('sensor') && index === 2;
         const pulse = 0.16 + Math.sin(time * 0.006 + index) * 0.04;
-        add('sphere', 'sensors', `Sensor node ${index + 1}`, [position[0], position[1], position[2] + Math.sign(position[2]) * explosion * 2], [0, 0, 0], [pulse, pulse, pulse], sensorFault ? red : green, { glow: sensorFault ? 1 : 0.72, pick: true });
+        add('sphere', 'sensors', `Sensor node ${index + 1}`, [position[0], position[1], position[2] + Math.sign(position[2]) * explosion * 2], [0, 0, 0], [pulse, pulse, pulse], sensorFault ? red : green, { glow: sensorFault ? 1 : 0.6, pick: true });
       });
 
       // 9. Flow Particles
       const flowSpeed = Math.max(0.2, t.oilPressure / 60);
       for (let index = 0; index < 7; index += 1) {
         const x = ((time * 0.0006 * flowSpeed + index / 7) % 1) * 3.5 - 1.75;
-        add('sphere', 'lubrication', 'Oil flow particle', [x, -0.65, -0.82], [0, 0, 0], [0.11, 0.11, 0.11], oilColor, { glow: 0.95 });
+        add('sphere', 'lubrication', 'Oil flow particle', [x, -0.65, -0.82], [0, 0, 0], [0.11, 0.11, 0.11], oilColor, { glow: 0.75 });
       }
       return parts;
     }
@@ -807,7 +808,8 @@
 
       const gl = this.gl;
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      const aspect = Math.max(0.2, this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight));
+      const rect = this.canvas.getBoundingClientRect();
+      const aspect = Math.max(0.2, rect.width / Math.max(1, rect.height));
       const projection = mat4Perspective(36 * DEG, aspect, 0.1, 100);
       const camera = this.camera;
       const horizontal = Math.cos(camera.pitch) * camera.distance;

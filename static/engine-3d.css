@@ -90,6 +90,8 @@
   background: transparent;
   cursor: grab;
   touch-action: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 #engineCanvas:active {
