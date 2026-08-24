@@ -47,30 +47,20 @@
 .engine-digital-twin {
   position: relative;
   width: 100%;
-  height: 420px;
-  min-height: 420px;
+  height: 380px;
+  min-height: 380px;
   border: 1px solid #1c2e1f;
-  border-radius: 10px;
+  border-radius: 8px 8px 0 0;
   overflow: hidden;
   background: #070d08;
-  display: grid;
-  grid-template-columns: 1fr 200px;
-}
-
-@media (max-width: 1300px) {
-  .engine-digital-twin {
-    grid-template-columns: 1fr;
-  }
-  .engine-inspector {
-    display: none;
-  }
+  display: block;
 }
 
 .engine-viewport {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 420px;
+  min-height: 380px;
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 50%, rgba(28, 60, 34, 0.22) 0%, transparent 60%),
@@ -302,90 +292,102 @@
 }
 
 /* ============================================================
-   Engine Component Inspector
+   Engine Component Inspector & Selected Assembly Telemetry
    ============================================================ */
 .engine-inspector {
   position: relative;
-  padding: 12px 10px;
-  border-left: 1px solid #1c2e1f;
+  padding: 8px 10px;
+  border: 1px solid #1c2e1f;
+  border-radius: 8px;
   background: linear-gradient(180deg, #101a12, #070d08);
   font-size: 11px;
   display: flex;
   flex-direction: column;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .engine-inspector-kicker {
   color: var(--gcs-cyan);
-  font: 800 8px/1 Inter, sans-serif;
+  font: 800 8.5px/1 Inter, sans-serif;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .engine-inspector h3 {
-  margin: 6px 0 10px;
+  margin: 2px 0 2px;
   color: #fff;
-  font-size: 13px;
+  font-size: 12.5px;
   text-transform: uppercase;
+  font-weight: 800;
 }
 
 .component-readings {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.component-readings div {
-  padding: 6px;
-  border: 1px solid #1f3322;
-  background: rgba(7, 13, 8, 0.7);
-  border-radius: 4px;
-}
-
-.component-readings span {
-  display: block;
-  color: var(--gcs-muted);
-  font: 700 8px/1 Inter, sans-serif;
-  text-transform: uppercase;
-}
-
-.component-readings strong {
-  display: block;
-  margin-top: 3px;
-  color: var(--gcs-green);
-  font-size: 11px;
+  display: none;
 }
 
 .engine-inspector p {
-  margin: 10px 0 8px;
-  color: #9cb09e;
-  font-size: 11px;
-  line-height: 1.4;
+  margin: 0;
+  color: #889c8a;
+  font-size: 10px;
+  line-height: 1.3;
 }
 
 .component-fault {
-  padding: 6px 8px;
+  padding: 3px 8px;
   color: var(--gcs-green);
   border-left: 2px solid currentColor;
   background: rgba(7, 13, 8, 0.7);
-  font: 700 10px/1.3 Inter, sans-serif;
-  margin-bottom: 10px;
+  font: 700 9.5px/1.3 Inter, sans-serif;
+  border-radius: 2px;
 }
 
 .engine-legend {
-  margin-top: auto;
   display: flex;
-  justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px solid #1c2e1f;
+  align-items: center;
+  gap: 8px;
   color: var(--gcs-muted);
-  font: 700 8px/1 Inter, sans-serif;
+  font: 700 7.5px/1 Inter, sans-serif;
   text-transform: uppercase;
 }
 
-.engine-legend span { display: flex; align-items: center; gap: 4px; }
-.engine-legend i { width: 6px; height: 6px; border-radius: 50%; }
+.engine-legend span { display: flex; align-items: center; gap: 3px; }
+.engine-legend i { width: 5px; height: 5px; border-radius: 50%; }
 .legend-normal { color: var(--gcs-green); background: currentColor; }
 .legend-watch { color: var(--gcs-amber); background: currentColor; }
 .legend-critical { color: var(--gcs-red); background: currentColor; }
+
+/* Consolidated Selected Assembly Telemetry Grid */
+.assembly-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 4px 6px;
+  margin-top: 6px;
+}
+
+.asm-param {
+  background: rgba(5, 10, 6, 0.85);
+  border: 1px solid #142016;
+  border-radius: 4px;
+  padding: 3px 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+.asm-lbl {
+  font-size: 7.5px;
+  text-transform: uppercase;
+  color: var(--gcs-muted);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.asm-val {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #dbe5db;
+  margin-top: 1px;
+}
 
 /* ============================================================
    Engine Toolbar

@@ -603,6 +603,44 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
               </div>
             </div>
 
+            <!-- TOP: CONSOLIDATED SELECTED ASSEMBLY & LIVE ENGINE PARAMETERS -->
+            <aside class="engine-inspector" aria-live="polite">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:6px;">
+                <div>
+                  <div class="engine-inspector-kicker">SELECTED ASSEMBLY</div>
+                  <h3 id="selectedComponentName">Central crankcase</h3>
+                  <p id="selectedComponentDetail">Crankshaft and opposed-cylinder power core</p>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                  <div class="component-fault" id="selectedComponentFault">No active fault evidence</div>
+                  <div class="engine-legend">
+                    <span><i class="legend-normal"></i>Nominal</span>
+                    <span><i class="legend-watch"></i>Watch</span>
+                    <span><i class="legend-critical"></i>Critical</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- LIVE ENGINE PARAMETERS CONSOLIDATED INSIDE SELECTED ASSEMBLY -->
+              <div class="assembly-telemetry-grid">
+                <div class="asm-param"><span class="asm-lbl">Engine RPM</span><b class="asm-val info" id="engRPM">3,000 RPM</b></div>
+                <div class="asm-param"><span class="asm-lbl">Auto Throttle</span><b class="asm-val" id="engThrottle">58% <small style="font-size:7.5px; color:#4cb574;">AUTO</small></b></div>
+                <div class="asm-param"><span class="asm-lbl">Engine Load</span><b class="asm-val" id="engLoad">0.84 <small style="font-size:7.5px; color:#4cb574;">AUTO</small></b></div>
+                <div class="asm-param"><span class="asm-lbl">CHT Temp</span><b class="asm-val" id="engCHT">220.4 °F</b></div>
+                <div class="asm-param"><span class="asm-lbl">EGT Max</span><b class="asm-val" id="engEGT">1,205 °F</b></div>
+                <div class="asm-param"><span class="asm-lbl">Oil Press / Temp</span><b class="asm-val" id="engOil">60.2 PSI • 89.6 °C</b></div>
+                <div class="asm-param"><span class="asm-lbl">Fuel Flow</span><b class="asm-val" id="engFuel">20.4 L/h</b></div>
+                <div class="asm-param"><span class="asm-lbl">Vibration RMS</span><b class="asm-val good" id="engVib">1.02 g</b></div>
+                <div class="asm-param"><span class="asm-lbl">Manifold (MAP)</span><b class="asm-val" id="engMAP">29.8 inHg</b></div>
+                <div class="asm-param"><span class="asm-lbl">Ignition Timing</span><b class="asm-val" id="engIgn">24.0° BTDC</b></div>
+                <div class="asm-param"><span class="asm-lbl">Battery / Bus</span><b class="asm-val" id="engVolt">28.2 V</b></div>
+                <div class="asm-param"><span class="asm-lbl">Alternator Temp</span><b class="asm-val" id="engAlt">68.4 °C</b></div>
+                <div class="asm-param"><span class="asm-lbl">Fuel Rail Press</span><b class="asm-val" id="engFuelPress">42.4 PSI</b></div>
+                <div class="asm-param"><span class="asm-lbl">Knock Index</span><b class="asm-val good" id="engKnock">0.02</b></div>
+              </div>
+            </aside>
+
+            <!-- DOWNWARD: 3D PISTON ENGINE DIGITAL TWIN VIEWPORT -->
             <div class="engine-digital-twin">
               <div class="engine-viewport">
                 <canvas id="engineCanvas" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine"></canvas>
@@ -633,24 +671,9 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
                 </div>
                 <div class="engine-help">DRAG ORBIT · WHEEL ZOOM · CLICK COMPONENT · DOUBLE-CLICK RESET</div>
               </div>
-
-              <aside class="engine-inspector" aria-live="polite">
-                <div class="engine-inspector-kicker">SELECTED ASSEMBLY</div>
-                <h3 id="selectedComponentName">Central crankcase</h3>
-                <div class="component-readings">
-                  <div><span>Primary</span><strong id="selectedComponentPrimary">3,000 RPM</strong></div>
-                  <div><span>Secondary</span><strong id="selectedComponentSecondary">1.02 g</strong></div>
-                </div>
-                <p id="selectedComponentDetail">Crankshaft and opposed-cylinder power core</p>
-                <div class="component-fault" id="selectedComponentFault">No active fault evidence</div>
-                <div class="engine-legend">
-                  <span><i class="legend-normal"></i>Nominal</span>
-                  <span><i class="legend-watch"></i>Watch</span>
-                  <span><i class="legend-critical"></i>Critical</span>
-                </div>
-              </aside>
             </div>
 
+            <!-- CONTROLS TOOLBAR -->
             <div class="engine-toolbar" aria-label="3D engine controls">
               <button class="engine-tool active" data-engine-mode="normal">Normal</button>
               <button class="engine-tool" data-engine-mode="thermal">Thermal</button>
@@ -660,42 +683,6 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
               <button class="engine-tool" id="engineExplode">Explode</button>
               <button class="engine-tool" id="enginePause">Pause</button>
               <button class="engine-tool" id="engineResetCamera">Reset View</button>
-            </div>
-
-            <!-- Compact Engine Telemetry Strip Below 3D Viewport -->
-            <div class="engine-hud-strip">
-              <div class="hud-item">
-                <span class="hud-label">Engine RPM</span>
-                <span class="hud-val info" id="engRPM">3,000 RPM</span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">Auto Throttle</span>
-                <span class="hud-val" id="engThrottle">58% <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">Engine Load</span>
-                <span class="hud-val" id="engLoad">0.84 <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">CHT Temp</span>
-                <span class="hud-val" id="engCHT">220.4 °F</span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">EGT Max</span>
-                <span class="hud-val" id="engEGT">1,205 °F</span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">Oil Press / Temp</span>
-                <span class="hud-val" id="engOil">60.2 PSI • 89.6 °C</span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">Fuel Flow</span>
-                <span class="hud-val" id="engFuel">20.4 L/h</span>
-              </div>
-              <div class="hud-item">
-                <span class="hud-label">Vibration RMS</span>
-                <span class="hud-val good" id="engVib">1.02 g</span>
-              </div>
             </div>
           </div>
         </div>
@@ -1827,15 +1814,21 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
   const load = uav && uav.auto_load != null ? uav.auto_load : (telemetry.Load || 0.85);
   hwState.throttle = thr;
 
-  // Update Compact Engine HUD Strip Below 3D Viewport
-  $('engRPM').textContent = `${rpm.toLocaleString()} RPM`;
-  $('engThrottle').innerHTML = `${thr}% <small style="font-size:8.5px; color:#4cb574;">AUTO</small>`;
-  $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:8.5px; color:#4cb574;">AUTO</small>`;
-  $('engCHT').textContent = `${fmt(telemetry.CHT, 1)} °F`;
-  $('engEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
-  $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI • ${fmt(telemetry.Oil_Temp, 0)} °C`;
-  $('engFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
-  $('engVib').textContent = `${fmt(telemetry.Vibration, 2)} g`;
+  // Update Consolidated Selected Assembly Engine Telemetry Grid
+  if ($('engRPM')) $('engRPM').textContent = `${rpm.toLocaleString()} RPM`;
+  if ($('engThrottle')) $('engThrottle').innerHTML = `${thr}% <small style="font-size:7.5px; color:#4cb574;">AUTO</small>`;
+  if ($('engLoad')) $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:7.5px; color:#4cb574;">AUTO</small>`;
+  if ($('engCHT')) $('engCHT').textContent = `${fmt(telemetry.CHT, 1)} °F`;
+  if ($('engEGT')) $('engEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
+  if ($('engOil')) $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI • ${fmt(telemetry.Oil_Temp, 0)} °C`;
+  if ($('engFuel')) $('engFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
+  if ($('engVib')) $('engVib').textContent = `${fmt(telemetry.Vibration || telemetry.Vibration_RMS || 1.02, 2)} g`;
+  if ($('engMAP')) $('engMAP').textContent = `${fmt(telemetry.MAP_Injector || 29.8, 1)} inHg`;
+  if ($('engIgn')) $('engIgn').textContent = `${(20.0 + 4.0 * (rpm / 3000)).toFixed(1)}° BTDC`;
+  if ($('engVolt')) $('engVolt').textContent = `${fmt(telemetry.Battery_Voltage || 28.2, 1)} V`;
+  if ($('engAlt')) $('engAlt').textContent = `${fmt(telemetry.Alternator_Temp || 68.4, 1)} °C`;
+  if ($('engFuelPress')) $('engFuelPress').textContent = `${(38.0 + 0.22 * (telemetry.Fuel_Flow || 20)).toFixed(1)} PSI`;
+  if ($('engKnock')) $('engKnock').textContent = `${(0.01 + 0.02 * Math.max(0, ((telemetry.CHT || 220) - 220) / 40)).toFixed(2)}`;
 
   // Synchronize 3D WebGL Piston Engine Twin
   window.AeroPulseEngine3D?.setTelemetry({
