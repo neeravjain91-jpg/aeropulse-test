@@ -1,5 +1,5 @@
 /*
- * AeroPulse-X WebGL 3D Piston Engine Digital Twin
+ * AeroPulse-X WebGL 3D Piston Engine Digital Twin (Military GCS Theme)
  * ------------------------------------------------------------
  * High-definition, hardware-accelerated WebGL renderer for the
  * MALE-UAV four-cylinder horizontally opposed aero-piston engine.
@@ -134,9 +134,9 @@
 
   function thermalColor(value, low, high) {
     const t = clamp((value - low) / (high - low), 0, 1);
-    if (t < 0.34) return mixColor(hexColor('#28d7f2'), hexColor('#51e58a'), t / 0.34);
-    if (t < 0.7) return mixColor(hexColor('#51e58a'), hexColor('#ffc536'), (t - 0.34) / 0.36);
-    return mixColor(hexColor('#ffc536'), hexColor('#ff4d5b'), (t - 0.7) / 0.3);
+    if (t < 0.34) return mixColor(hexColor('#72c988'), hexColor('#52cf80'), t / 0.34);
+    if (t < 0.7) return mixColor(hexColor('#52cf80'), hexColor('#d9a74a'), (t - 0.34) / 0.36);
+    return mixColor(hexColor('#d9a74a'), hexColor('#d9534f'), (t - 0.7) / 0.3);
   }
 
   function makeCube() {
@@ -212,7 +212,7 @@
     return { positions, normals, indices };
   }
 
-  function makeSphere(latBands = 18, lonBands = 26) {
+  function makeSphere(latBands = 16, lonBands = 24) {
     const positions = [];
     const normals = [];
     const indices = [];
@@ -325,10 +325,10 @@
 
         // Ambient base
         vec3 ambient = uColor * 0.32;
-        vec3 color = ambient + uColor * (0.68 * diffuse) + vec3(0.85, 0.92, 1.0) * spec;
+        vec3 color = ambient + uColor * (0.68 * diffuse) + vec3(0.85, 0.95, 0.88) * spec;
 
         // Glow and selection highlighting
-        color += uColor * uGlow * 0.70 + vec3(0.12, 0.78, 0.98) * rim * (0.18 + uSelected * 0.82);
+        color += uColor * uGlow * 0.70 + vec3(0.45, 0.85, 0.55) * rim * (0.18 + uSelected * 0.82);
 
         gl_FragColor = vec4(color, uAlpha);
       }
@@ -429,7 +429,7 @@
       gl.enable(gl.CULL_FACE);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.clearColor(0.02, 0.05, 0.08, 1);
+      gl.clearColor(0.025, 0.045, 0.028, 1);
     }
 
     resize() {
@@ -621,19 +621,19 @@
       const thermal = this.mode === 'thermal';
       const vibrationMode = this.mode === 'vibration';
       const explosion = this.explodeAmount;
-      const metal = hexColor('#425770');
-      const darkMetal = hexColor('#1e2c3c');
-      const aluminium = hexColor('#7a8c9e');
-      const brightSteel = hexColor('#b4c2d2');
-      const cyan = hexColor('#29d3f2');
-      const green = hexColor('#51e58a');
-      const amber = hexColor('#ffc536');
-      const red = hexColor('#ff4d5b');
+      const metal = hexColor('#3e4e40');
+      const darkMetal = hexColor('#1a241c');
+      const aluminium = hexColor('#78887a');
+      const brightSteel = hexColor('#b2beb4');
+      const cyan = hexColor('#72c988');
+      const green = hexColor('#52cf80');
+      const amber = hexColor('#d9a74a');
+      const red = hexColor('#d9534f');
       const oilColor = fault.includes('lubric') ? red : green;
       const fuelColor = fault.includes('inject') ? amber : cyan;
       const electricColor = fault.includes('elect') || fault.includes('battery') || t.busVoltage < 24 ? red : cyan;
       const cylinderColor = thermal ? thermalColor(t.cht, 180, 315) : aluminium;
-      const exhaustColor = thermal ? thermalColor(t.egt, 850, 1500) : hexColor('#7b432c');
+      const exhaustColor = thermal ? thermalColor(t.egt, 850, 1500) : hexColor('#6b422a');
       const thermalIntensity = Math.max(
         clamp((t.cht - 180) / (315 - 180), 0, 1),
         clamp((t.egt - 850) / (1500 - 850), 0, 1) * 0.94
@@ -651,7 +651,7 @@
       add('cylinder', 'crankshaft', 'Crankshaft', [0, 0.03, 0], [0, Math.PI / 2, 0], [0.38, 0.38, 5.5], brightSteel, { glow: vibrationMode ? clamp(t.vibration / 4, 0, 0.8) : 0.03, pick: true });
       [-1.4, 0, 1.4].forEach((x, index) => {
         const phase = this.crankAngle + index * Math.PI * 0.66;
-        add('cylinder', 'crankshaft', 'Crank throw', [x, Math.sin(phase) * 0.25, Math.cos(phase) * 0.25], [0, Math.PI / 2, 0], [0.55, 0.55, 0.26], hexColor('#9bb0c4'), { glow: 0.05 });
+        add('cylinder', 'crankshaft', 'Crank throw', [x, Math.sin(phase) * 0.25, Math.cos(phase) * 0.25], [0, Math.PI / 2, 0], [0.55, 0.55, 0.26], hexColor('#93a395'), { glow: 0.05 });
       });
 
       // 3. Opposed 4-Cylinder Power Assembly
@@ -694,7 +694,7 @@
           const middleZ = (pistonZ + crankZ) / 2;
           const deltaZ = pistonZ - crankZ;
           const length = Math.hypot(deltaZ, 0.3);
-          add('cube', 'crankshaft', `Connecting rod ${cylinderIndex + 1}`, [x, 0.16, middleZ], [Math.atan2(deltaZ, 0.3), 0, 0], [0.18, length, 0.18], hexColor('#c2cfdc'), { glow: misfire ? 0.45 : 0 });
+          add('cube', 'crankshaft', `Connecting rod ${cylinderIndex + 1}`, [x, 0.16, middleZ], [Math.atan2(deltaZ, 0.3), 0, 0], [0.18, length, 0.18], hexColor('#bac6bc'), { glow: misfire ? 0.45 : 0 });
           cylinderIndex += 1;
         });
       });
@@ -704,8 +704,8 @@
       add('cylinder', 'propeller', 'Reduction output shaft', [propX, 0, 0], [0, Math.PI / 2, 0], [0.52, 0.52, 2.2], aluminium, { pick: true });
       add('sphere', 'propeller', 'Propeller spinner', [propX - 1.02, 0, 0], [0, 0, 0], [0.78, 0.78, 0.78], brightSteel, { glow: 0.06 });
       const propAngle = this.crankAngle * 0.46;
-      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle, 0, 0], [0.16, 4.4, 0.28], hexColor('#456278'), { glow: 0.04 });
-      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle + Math.PI / 2, 0, 0], [0.16, 4.4, 0.28], hexColor('#456278'), { glow: 0.04 });
+      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle, 0, 0], [0.16, 4.4, 0.28], hexColor('#3a4a3c'), { glow: 0.04 });
+      add('cube', 'propeller', 'Propeller blade', [propX - 1.08, 0, 0], [propAngle + Math.PI / 2, 0, 0], [0.16, 4.4, 0.28], hexColor('#3a4a3c'), { glow: 0.04 });
 
       // 5. Turbocharger & Boost Circuit
       const turboPosition = [2.8 + explosion * 1.35, 1.34 + explosion * 0.75, -0.45];
@@ -788,7 +788,7 @@
     }
 
     drawGrid() {
-      const gridColor = hexColor('#15283c');
+      const gridColor = hexColor('#18281b');
       for (let index = -6; index <= 6; index += 1) {
         this.drawPart(this.part('cube', 'grid', 'Grid', [index, -2.25, 0], [0, 0, 0], [0.016, 0.016, 12], gridColor, { alpha: 0.28 }));
         this.drawPart(this.part('cube', 'grid', 'Grid', [0, -2.25, index], [0, 0, 0], [12, 0.016, 0.016], gridColor, { alpha: 0.28 }));

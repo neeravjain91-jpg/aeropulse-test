@@ -11,24 +11,24 @@
 
 <style>
 :root{
-  --bg:#07101f;--panel:#0e1a2d;--panel2:#111f35;--line:#243956;--text:#eff6ff;
-  --muted:#91a5c2;--cyan:#55d7ff;--green:#5ce59a;--amber:#ffd166;--red:#ff7070;--blue:#6f9cff;
+  --bg:#080d08;--panel:#0e1710;--panel2:#121e14;--line:#1f3322;--text:#e2ece2;
+  --muted:#889c8a;--cyan:#72c988;--green:#52cf80;--amber:#d9a74a;--red:#d9534f;--blue:#5a9e70;
 }
 *{box-sizing:border-box}
 body{
   margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial;
-  background:radial-gradient(circle at 20% -10%,#102c4d 0,#07101f 38%);
+  background:radial-gradient(circle at 20% -10%,#152517 0,#080d08 45%,#050805 100%);
   color:var(--text)
 }
 .shell{max-width:1480px;margin:auto;padding:16px 20px}
 .top{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:14px}
-.brand h1{margin:0;font-size:26px;letter-spacing:-.5px;color:#fff}
+.brand h1{margin:0;font-size:26px;letter-spacing:-.5px;color:#f0f5f0}
 .brand .sub{color:var(--muted);margin-top:3px;font-size:12px}
 .badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.badge{border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:11px;color:var(--muted);background:#0b1628}
-.badge.live{color:var(--green);border-color:#285b49;background:#0d231a}
-.badge.err{color:var(--red);border-color:#6b3030;background:#240f0f}
-.badge.warn{color:var(--amber);border-color:#614917;background:#2a200a}
+.badge{border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:11px;color:var(--muted);background:#0c140e}
+.badge.live{color:var(--green);border-color:#1f4d2c;background:#0d2315}
+.badge.err{color:var(--red);border-color:#5c2323;background:#240f0f}
+.badge.warn{color:var(--amber);border-color:#4d3a14;background:#241909}
 
 .grid{display:grid;gap:14px}
 .kpis{grid-template-columns:repeat(5,minmax(140px,1fr))}
@@ -37,9 +37,9 @@ body{
 .card{
   background:linear-gradient(180deg,var(--panel2),var(--panel));
   border:1px solid var(--line);border-radius:14px;padding:16px;
-  box-shadow:0 10px 30px #0004
+  box-shadow:0 10px 30px rgba(0,0,0,0.6)
 }
-.card h2,.card h3{margin:0 0 12px;font-size:15px;color:#cbd5e1}
+.card h2,.card h3{margin:0 0 12px;font-size:15px;color:#c8d6c8}
 .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
 .kpi{font-size:25px;font-weight:800;margin-top:5px}
 .tiny{font-size:11px;color:var(--muted);margin-top:4px}
@@ -50,126 +50,126 @@ body{
 .controls{grid-template-columns:repeat(4,minmax(140px,1fr))}
 label{font-size:11px;color:var(--muted);font-weight:600}
 select,input,button{
-  width:100%;border:1px solid #2b4262;border-radius:8px;
-  background:#091426;color:var(--text);padding:7px 10px;margin-top:4px;font-size:12px
+  width:100%;border:1px solid #1f3322;border-radius:8px;
+  background:#09120a;color:var(--text);padding:7px 10px;margin-top:4px;font-size:12px
 }
-button{cursor:pointer;font-weight:700;background:linear-gradient(90deg,#225bd8,#2d81e8);border-color:#477fe0;transition:filter .2s}
-button.secondary{background:#111f35;border-color:#2a4468}
-button.success{background:linear-gradient(90deg,#198754,#20c997);border-color:#20c997}
-button.danger{background:#441414;border-color:#842525;color:#ff7070}
+button{cursor:pointer;font-weight:700;background:linear-gradient(90deg,#1c4524,#275e32);border-color:#3b7e4a;color:#eaf5ec;transition:filter .2s}
+button.secondary{background:#111d13;border-color:#223524;color:#bed0c1}
+button.success{background:linear-gradient(90deg,#184523,#226b38);border-color:#2e8b4b;color:#eaf5ec}
+button.danger{background:#331414;border-color:#5c2323;color:#e57373}
 button:hover{filter:brightness(1.15)}
 .actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .actions button{max-width:210px}
 .tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl td,.tbl th{padding:6px 8px;border-bottom:1px solid #1f314a;text-align:left}
+.tbl td,.tbl th{padding:6px 8px;border-bottom:1px solid #1a2c1d;text-align:left}
 .tbl th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase}
 .scroll{max-height:260px;overflow-y:auto}
-.pill{display:inline-block;border-radius:999px;padding:2px 8px;background:#192b45;border:1px solid #2c4466;font-size:11px;font-weight:600}
-.pill.good{background:#112e20;border-color:#285b49;color:#5ce59a}
-.pill.warn{background:#30250e;border-color:#614917;color:#ffd166}
-.pill.bad{background:#331111;border-color:#6e2929;color:#ff7070}
-.bar{height:7px;background:#081222;border-radius:999px;overflow:hidden;border:1px solid #1c3049}
-.bar>i{display:block;height:100%;background:linear-gradient(90deg,#3f7cff,#55d7ff)}
+.pill{display:inline-block;border-radius:999px;padding:2px 8px;background:#131f15;border:1px solid #233827;font-size:11px;font-weight:600}
+.pill.good{background:#0f2416;border-color:#1f4d2c;color:#52cf80}
+.pill.warn{background:#261e0b;border-color:#4d3a14;color:#d9a74a}
+.pill.bad{background:#2b1010;border-color:#572020;color:#d9534f}
+.bar{height:7px;background:#080e09;border-radius:999px;overflow:hidden;border:1px solid #1a2b1d}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#3b7a4a,#72c988)}
 .riskrow{display:grid;grid-template-columns:140px 1fr 40px;gap:8px;align-items:center;margin:7px 0;font-size:12px}
-.diag{padding:7px 0;border-bottom:1px solid #1f314a}
+.diag{padding:7px 0;border-bottom:1px solid #1a2c1d}
 .diag:last-child{border-bottom:0}
 .diag b{display:block;font-size:12px}
 .evidence{color:var(--muted);font-size:11px;margin-top:2px}
-canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e334f;border-radius:10px}
-.event{padding:9px;border-left:3px solid var(--cyan);background:#0a1728;border-radius:6px;margin:7px 0;font-size:12px}
+canvas#timeline{width:100%;height:220px;background:#080f09;border:1px solid #1a2b1d;border-radius:10px}
+.event{padding:9px;border-left:3px solid var(--cyan);background:#0b140c;border-radius:6px;margin:7px 0;font-size:12px}
 .event strong{display:block;color:#fff}
-.notice{padding:10px 12px;border:1px solid #5c4d22;background:#221d0e;color:#ffe39b;border-radius:8px;margin-bottom:12px;font-size:12px;}
+.notice{padding:10px 12px;border:1px solid #4d3a14;background:#1f190a;color:#ffd166;border-radius:8px;margin-bottom:12px;font-size:12px;}
 .hidden{display:none}
 .footer{color:var(--muted);font-size:11px;padding:16px 2px 4px}
 
 /* Mission Control Banner & Auto Readout Strip */
 .mission-control-card{
-  background:linear-gradient(180deg,#12253f,#0a1628);border:1px solid #295382;
-  border-radius:14px;padding:14px 16px;margin-bottom:14px;box-shadow:0 10px 30px #0007
+  background:linear-gradient(180deg,#142016,#0b120c);border:1px solid #243c29;
+  border-radius:14px;padding:14px 16px;margin-bottom:14px;box-shadow:0 10px 30px rgba(0,0,0,0.7)
 }
 .mission-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}
 .auto-flight-strip{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;
-  background:#06101d;border:1px solid #1b3658;border-radius:10px;padding:10px 12px;margin-bottom:10px
+  background:#080e09;border:1px solid #18281b;border-radius:10px;padding:10px 12px;margin-bottom:10px
 }
 .auto-item{display:flex;flex-direction:column}
-.auto-label{font-size:9px;text-transform:uppercase;color:#85a2c4;font-weight:700;letter-spacing:.05em}
-.auto-val{font-size:13px;font-weight:800;color:#eff6ff;margin-top:2px}
+.auto-label{font-size:9px;text-transform:uppercase;color:#7d9480;font-weight:700;letter-spacing:.05em}
+.auto-val{font-size:13px;font-weight:800;color:#e2ece2;margin-top:2px}
 .primary-mission-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .primary-mission-actions button{width:auto;min-width:130px;margin:0;padding:6px 12px;}
 
 /* UAV Live Mission Map Styles */
 .map-card{
-  background:linear-gradient(180deg,#0e1d32,#091424);border:1px solid #244369;
-  border-radius:14px;padding:16px;box-shadow:0 12px 35px #0006;
+  background:linear-gradient(180deg,#121c14,#0b120c);border:1px solid #203524;
+  border-radius:14px;padding:16px;box-shadow:0 12px 35px rgba(0,0,0,0.6);
   display:flex;flex-direction:column;
 }
 .map-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .map-toolbar{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .map-btn{
-  background:#132845;border:1px solid #254b79;color:#eff6ff;padding:5px 9px;
+  background:#111a12;border:1px solid #203323;color:#e2ece2;padding:5px 9px;
   border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;width:auto;margin:0
 }
-.map-btn:hover{background:#1c3c69;border-color:#3f77bd}
-.map-btn.active{background:#23579e;border-color:#55d7ff;color:#55d7ff}
+.map-btn:hover{background:#192b1c;border-color:#36593b}
+.map-btn.active{background:#204526;border-color:#6ecb85;color:#8ee0a3}
 
-.map-wrapper{position:relative;width:100%;height:420px;min-height:420px;border-radius:10px;overflow:hidden;border:1px solid #1a314f;}
-#uavMap{height:100%;width:100%;background:#050d18;z-index:1}
-.leaflet-container{background:#060e1a!important;font-family:inherit}
+.map-wrapper{position:relative;width:100%;height:420px;min-height:420px;border-radius:10px;overflow:hidden;border:1px solid #1c2e1f;}
+#uavMap{height:100%;width:100%;background:#070d08;z-index:1}
+.leaflet-container{background:#070d08!important;font-family:inherit}
 .leaflet-popup-content-wrapper{
-  background:#0c1a2d;color:#eff6ff;border:1px solid #2b4f7a;border-radius:8px;font-size:12px;box-shadow:0 6px 20px #0008
+  background:#0e1710;color:#e2ece2;border:1px solid #243a27;border-radius:8px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,0.8)
 }
-.leaflet-popup-tip{background:#0c1a2d;border:1px solid #2b4f7a}
+.leaflet-popup-tip{background:#0e1710;border:1px solid #243a27}
 
 /* Floating UAV Close Proximity HUD Box */
 .proximity-hud-box{
   position:absolute;top:10px;right:10px;z-index:1000;width:290px;
-  background:rgba(6,16,29,0.94);border:1px solid #275282;border-radius:8px;
-  padding:10px;backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,0.85);
+  background:rgba(8,14,9,0.94);border:1px solid #233a26;border-radius:8px;
+  padding:10px;backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,0.9);
   font-size:10px;display:none;pointer-events:auto;
 }
-.prox-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #1c395e}
-.prox-section{padding:5px 0;border-bottom:1px solid #152b47}
-.prox-sec-title{font-size:9px;text-transform:uppercase;color:#55d7ff;font-weight:700;letter-spacing:.06em;margin-bottom:3px}
+.prox-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid #1a2c1d}
+.prox-section{padding:5px 0;border-bottom:1px solid #142217}
+.prox-sec-title{font-size:9px;text-transform:uppercase;color:#72c988;font-weight:700;letter-spacing:.06em;margin-bottom:3px}
 .prox-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 6px}
-.prox-lbl{color:#8aa4c4;font-size:9px}
-.prox-grid b{color:#eff6ff;font-size:10px}
+.prox-lbl{color:#7d9480;font-size:9px}
+.prox-grid b{color:#e2ece2;font-size:10px}
 
 /* Map Status Bar */
 .map-status-bar{
   display:flex;justify-content:space-between;align-items:center;
-  background:#040a14;padding:4px 8px;font-size:10px;color:#7893b4;
-  border-top:1px solid #14253b;
+  background:#060b07;padding:4px 8px;font-size:10px;color:#758a77;
+  border-top:1px solid #142216;
 }
 
 .map-hud{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:6px;
-  background:#060e1a;border:1px solid #182d48;border-radius:10px;padding:8px 10px;margin-top:10px
+  background:#080e09;border:1px solid #18281b;border-radius:10px;padding:8px 10px;margin-top:10px
 }
 .hud-item{display:flex;flex-direction:column}
-.hud-label{font-size:9px;text-transform:uppercase;color:#7b94b2;font-weight:700;letter-spacing:.05em}
-.hud-val{font-size:12px;font-weight:800;color:#eff6ff;margin-top:2px}
+.hud-label{font-size:9px;text-transform:uppercase;color:#758a77;font-weight:700;letter-spacing:.05em}
+.hud-val{font-size:12px;font-weight:800;color:#e2ece2;margin-top:2px}
 
 /* Waypoint Editor Table */
 .wp-table-box{
-  background:#081322;border:1px solid #1f3756;border-radius:10px;padding:10px;margin-top:10px
+  background:#09120a;border:1px solid #1a2b1d;border-radius:10px;padding:10px;margin-top:10px
 }
-.wp-input{padding:3px 5px;font-size:10px;margin:0;background:#060e1a;border-color:#203754}
+.wp-input{padding:3px 5px;font-size:10px;margin:0;background:#060a07;border-color:#1c2d1e}
 
 /* Subsystem & Cutaway Styles */
 .subsystem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
-.subsystem-card{background:#0c182b;border:1px solid #203756;border-radius:10px;padding:8px;text-align:center}
-.subsystem-card .s-name{font-size:10px;color:#91a5c2;font-weight:600;text-transform:uppercase}
+.subsystem-card{background:#0c140e;border:1px solid #1a2c1d;border-radius:10px;padding:8px;text-align:center}
+.subsystem-card .s-name{font-size:10px;color:#889c8a;font-weight:600;text-transform:uppercase}
 .subsystem-card .s-score{font-size:18px;font-weight:800;margin:2px 0}
 .can-box{
-  background:#050b14;border:1px solid #1a2f48;border-radius:8px;
+  background:#060b07;border:1px solid #162418;border-radius:8px;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
-  color:#7ce38b;padding:6px 10px;max-height:100px;overflow-y:auto;line-height:1.4
+  color:#72c988;padding:6px 10px;max-height:100px;overflow-y:auto;line-height:1.4
 }
 .hw-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
-.hw-group{background:#091426;border:1px solid #1f3552;border-radius:8px;padding:7px 9px}
-.hw-group label{display:flex;justify-content:space-between;font-size:10px;color:#91a5c2;font-weight:600}
-.hw-group input[type="range"]{width:100%;margin-top:4px;accent-color:#55d7ff}
+.hw-group{background:#09120a;border:1px solid #1a2b1d;border-radius:8px;padding:7px 9px}
+.hw-group label{display:flex;justify-content:space-between;font-size:10px;color:#889c8a;font-weight:600}
+.hw-group input[type="range"]{width:100%;margin-top:4px;accent-color:#72c988}
 
 @media(max-width:1000px){
   .kpis{grid-template-columns:repeat(2,1fr)}
@@ -242,19 +242,19 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
       </div>
       <div class="auto-item">
         <span class="auto-label">Current Altitude</span>
-        <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:9px; color:#5ce59a;">AUTO</small></span>
+        <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:9px; color:#52cf80;">AUTO</small></span>
       </div>
       <div class="auto-item">
         <span class="auto-label">Ground Speed</span>
-        <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:9px; color:#5ce59a;">AUTO</small></span>
+        <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:9px; color:#52cf80;">AUTO</small></span>
       </div>
       <div class="auto-item">
         <span class="auto-label">Auto Throttle</span>
-        <span class="auto-val" id="autoThrottle">58% <small style="font-size:9px; color:#5ce59a;">AUTO</small></span>
+        <span class="auto-val" id="autoThrottle">58% <small style="font-size:9px; color:#52cf80;">AUTO</small></span>
       </div>
       <div class="auto-item">
         <span class="auto-label">Ambient Temp</span>
-        <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:9px; color:#5ce59a;">AUTO (ISA)</small></span>
+        <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:9px; color:#52cf80;">AUTO (ISA)</small></span>
       </div>
     </div>
 
@@ -262,12 +262,12 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
     <div class="primary-mission-actions">
       <button id="btnStartMission" class="success" onclick="startAutomaticMission()">🚀 START MISSION SIMULATION</button>
       <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
-      <button id="btnResumeMission" style="display:none; background:#225bd8;" onclick="toggleMissionPause()">▶ Resume</button>
+      <button id="btnResumeMission" style="display:none; background:#1c4524;" onclick="toggleMissionPause()">▶ Resume</button>
       <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
       <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
       
       <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-        <span style="font-size:11px; color:#91a5c2; font-weight:600;">Mission Preset:</span>
+        <span style="font-size:11px; color:#889c8a; font-weight:600;">Mission Preset:</span>
         <select id="selMissionPreset" style="width:auto; margin:0; padding:5px 8px;" onchange="loadPresetMission(this.value)">
           <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
           <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
@@ -278,17 +278,17 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
     </div>
 
     <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
-    <details style="margin-top:10px; background:#081322; border:1px solid #1c3350; border-radius:8px; padding:8px 12px;">
-      <summary style="font-size:11px; font-weight:700; color:#91a5c2; cursor:pointer;">
+    <details style="margin-top:10px; background:#080e09; border:1px solid #1a2b1d; border-radius:8px; padding:8px 12px;">
+      <summary style="font-size:11px; font-weight:700; color:#889c8a; cursor:pointer;">
         ⚙️ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
       </summary>
-      <div style="font-size:10px; color:#ffd166; margin:6px 0;">
+      <div style="font-size:10px; color:#d9a74a; margin:6px 0;">
         ⚠️ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
       </div>
       <div style="display:flex; gap:10px; align-items:center; margin-bottom:6px;">
         <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
           <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
-          <span style="color:#eff6ff; font-weight:bold;">Enable Manual Parameter Override</span>
+          <span style="color:#e2ece2; font-weight:bold;">Enable Manual Parameter Override</span>
         </label>
       </div>
       <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
@@ -319,17 +319,17 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
     <div class="map-card">
       <div class="map-header">
         <div>
-          <div style="font-size:15px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:6px;">
+          <div style="font-size:15px; font-weight:700; color:#72c988; display:flex; align-items:center; gap:6px;">
             <span>🗺️</span> UAV LIVE MISSION MAP
           </div>
-          <div style="font-size:11px; color:#91a5c2; margin-top:2px;" id="mapModeSubtitle">
+          <div style="font-size:11px; color:#889c8a; margin-top:2px;" id="mapModeSubtitle">
             Real Geographic Coordinates • Multi-Layer GIS • Close UAV Proximity View
           </div>
         </div>
 
         <!-- MAP TOOLBAR: BASE LAYERS & FOLLOW CONTROLS -->
         <div class="map-toolbar">
-          <div style="display:flex; background:#071220; border:1px solid #203f68; border-radius:5px; padding:2px;">
+          <div style="display:flex; background:#080e09; border:1px solid #1a2b1d; border-radius:5px; padding:2px;">
             <button id="btnLayerStandard" class="map-btn" style="border:none; padding:3px 6px;" onclick="setMapLayer('standard')">Standard</button>
             <button id="btnLayerDark" class="map-btn active" style="border:none; padding:3px 6px;" onclick="setMapLayer('dark')">Dark</button>
             <button id="btnLayerSatellite" class="map-btn" style="border:none; padding:3px 6px;" onclick="setMapLayer('satellite')">Satellite</button>
@@ -352,7 +352,7 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
         <!-- CLOSE UAV PROXIMITY VIEW GLASS OVERLAY -->
         <div id="uavProximityOverlay" class="proximity-hud-box">
           <div class="prox-header">
-            <span style="font-weight:800; color:#55d7ff; font-size:10px; display:flex; align-items:center; gap:4px;">
+            <span style="font-weight:800; color:#72c988; font-size:10px; display:flex; align-items:center; gap:4px;">
               <span>🔍</span> UAV CLOSE PROXIMITY VIEW
             </span>
             <span class="pill good" id="pxHealthBadge" style="font-size:8px; padding:1px 5px;">NORMAL</span>
@@ -368,7 +368,7 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
               <div><span class="prox-lbl">GS / TAS:</span> <b id="pxSpeed">142 / 145 kt</b></div>
               <div><span class="prox-lbl">HEADING:</span> <b id="pxHdg">084°</b></div>
               <div><span class="prox-lbl">VSI:</span> <b id="pxVSI">+850 fpm</b></div>
-              <div><span class="prox-lbl">PHASE:</span> <b id="pxPhase" style="color:#5ce59a;">CLIMB</b></div>
+              <div><span class="prox-lbl">PHASE:</span> <b id="pxPhase" style="color:#52cf80;">CLIMB</b></div>
               <div><span class="prox-lbl">ETA NEXT:</span> <b id="pxETA">4.2 min</b></div>
             </div>
           </div>
@@ -450,16 +450,16 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
       <!-- INTERACTIVE WAYPOINT LIST & FLIGHT PLANNER (VISIBLE IN DESIGN MODE) -->
       <div id="waypointPlannerBox" class="wp-table-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <div style="font-size:12px; font-weight:700; color:#55d7ff;">
+          <div style="font-size:12px; font-weight:700; color:#72c988;">
             🛠️ 3D Waypoint Flight Plan Editor
-            <span style="font-size:10px; color:#91a5c2; font-weight:normal; margin-left:6px;">
+            <span style="font-size:10px; color:#889c8a; font-weight:normal; margin-left:6px;">
               (Click on map to add, drag markers to reposition)
             </span>
           </div>
           <div style="display:flex; gap:4px;">
-            <button class="map-btn" style="background:#198754;" onclick="addNewWaypoint()">+ Add WP</button>
+            <button class="map-btn" style="background:#1b4d2b; color:#eaf5ec;" onclick="addNewWaypoint()">+ Add WP</button>
             <button class="map-btn" onclick="closeRouteToBase()">↺ Return to Base</button>
-            <button class="map-btn" style="background:#3d1818; color:#ff7070;" onclick="resetWaypointsToPreset()">↺ Reset</button>
+            <button class="map-btn" style="background:#331414; color:#e57373;" onclick="resetWaypointsToPreset()">↺ Reset</button>
           </div>
         </div>
 
@@ -486,10 +486,10 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
     <div class="engine-twin-card">
       <div class="engine-card-heading">
         <div>
-          <div style="font-size:15px; font-weight:700; color:#55d7ff; display:flex; align-items:center; gap:6px;">
+          <div style="font-size:15px; font-weight:700; color:#72c988; display:flex; align-items:center; gap:6px;">
             <span>◈</span> 3D ENGINE DIGITAL TWIN
           </div>
-          <div style="font-size:11px; color:#91a5c2; margin-top:2px;">
+          <div style="font-size:11px; color:#889c8a; margin-top:2px;">
             Opposed 4-Cyl UAV Aero-Piston • Real-Time Telemetry & Thermal Envelope
           </div>
         </div>
@@ -565,11 +565,11 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
         </div>
         <div class="hud-item">
           <span class="hud-label">Auto Throttle</span>
-          <span class="hud-val" id="engThrottle">58% <small style="font-size:9px; color:#5ce59a;">AUTO</small></span>
+          <span class="hud-val" id="engThrottle">58% <small style="font-size:9px; color:#52cf80;">AUTO</small></span>
         </div>
         <div class="hud-item">
           <span class="hud-label">Engine Load</span>
-          <span class="hud-val" id="engLoad">0.84 <small style="font-size:9px; color:#5ce59a;">AUTO</small></span>
+          <span class="hud-val" id="engLoad">0.84 <small style="font-size:9px; color:#52cf80;">AUTO</small></span>
         </div>
         <div class="hud-item">
           <span class="hud-label">CHT Temp</span>
@@ -632,9 +632,9 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
   <!-- 4. LIVE ENVIRONMENT & CAN BUS MONITOR -->
   <div class="grid two" style="margin-bottom:14px;">
     <!-- LIVE ENVIRONMENT PANEL -->
-    <div class="card" style="border-color:#1e4875;">
+    <div class="card" style="border-color:#203524;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="margin:0; font-size:14px; color:#55d7ff; display:flex; align-items:center; gap:6px;">
+        <h2 style="margin:0; font-size:14px; color:#72c988; display:flex; align-items:center; gap:6px;">
           <span>🌍</span> LIVE ENVIRONMENTAL CONDITIONS
         </h2>
         <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo)</span>
@@ -646,7 +646,7 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
         </div>
         <div class="auto-item">
           <span class="auto-label">Pressure</span>
-          <span class="auto-val" id="envPress">802 hPa <small style="font-size:9px; color:#91a5c2;">(23.7 inHg)</small></span>
+          <span class="auto-val" id="envPress">802 hPa <small style="font-size:9px; color:#889c8a;">(23.7 inHg)</small></span>
         </div>
         <div class="auto-item">
           <span class="auto-label">Density Ratio (σ)</span>
@@ -658,7 +658,7 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
         </div>
         <div class="auto-item">
           <span class="auto-label">Headwind / Crosswind</span>
-          <span class="auto-val" id="envHeadwind"><span style="color:#ffd166;">HW: 5.8 kt</span> • CW: 11.0 kt</span>
+          <span class="auto-val" id="envHeadwind"><span style="color:#d9a74a;">HW: 5.8 kt</span> • CW: 11.0 kt</span>
         </div>
         <div class="auto-item">
           <span class="auto-label">Relative Humidity</span>
@@ -676,9 +676,9 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
     </div>
 
     <!-- RAW CAN BUS MONITOR -->
-    <div class="card" style="border-color:#1e4875;">
+    <div class="card" style="border-color:#203524;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h2 style="margin:0; font-size:14px; color:#55d7ff; display:flex; align-items:center; gap:6px;">
+        <h2 style="margin:0; font-size:14px; color:#72c988; display:flex; align-items:center; gap:6px;">
           <span>⚡</span> ECU CAN BUS / FADEC TELEMETRY STREAM
         </h2>
         <span class="pill good" style="font-size:10px;">● 10 Hz Synchronized</span>
@@ -698,7 +698,7 @@ canvas#timeline{width:100%;height:220px;background:#081424;border:1px solid #1e3
   <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
       <h2 style="margin:0; font-size:14px;">Experimental Fault Injection & Health Diagnostics</h2>
-      <span class="pill" style="color:#ffd166; border-color:#614917; background:#241909; font-size:10px;">
+      <span class="pill" style="color:#d9a74a; border-color:#4d3a14; background:#241909; font-size:10px;">
         Testing Subsystem • Injects anomalies into simulated flight
       </span>
     </div>
@@ -1015,7 +1015,7 @@ function toggleProximityHUD() {
   }
 }
 
-function createUAVIcon(headingDeg, healthColor = '#5ce59a') {
+function createUAVIcon(headingDeg, healthColor = '#52cf80') {
   const rotation = Math.round(headingDeg || 0);
   const svgHtml = `
     <div style="transform: rotate(${rotation}deg); transform-origin: center center; display: flex; justify-content: center; align-items: center;">
@@ -1036,15 +1036,15 @@ function createUAVIcon(headingDeg, healthColor = '#5ce59a') {
 }
 
 function createWaypointIcon(type, id, isDraggable = false) {
-  let color = '#38bdf8';
-  if (type === 'BASE' || type === 'RECOVERY') color = '#5ce59a';
-  if (type === 'CLIMB') color = '#818cf8';
-  if (type === 'ISR' || type === 'PATROL') color = '#fbbf24';
-  if (type === 'DESCENT' || type === 'RETURN') color = '#f87171';
+  let color = '#72c988';
+  if (type === 'BASE' || type === 'RECOVERY') color = '#52cf80';
+  if (type === 'CLIMB') color = '#72c988';
+  if (type === 'ISR' || type === 'PATROL') color = '#d9a74a';
+  if (type === 'DESCENT' || type === 'RETURN') color = '#d9534f';
 
   const html = `
     <div style="text-align: center;">
-      <div style="background: #091526; border: 2px solid ${color}; color: #ffffff; font-weight: 800; font-size: 9px; padding: 1px 5px; border-radius: 999px; box-shadow: 0 4px 10px #0009; white-space: nowrap;">
+      <div style="background: #09120a; border: 2px solid ${color}; color: #ffffff; font-weight: 800; font-size: 9px; padding: 1px 5px; border-radius: 999px; box-shadow: 0 4px 10px rgba(0,0,0,0.8); white-space: nowrap;">
         ${id}
       </div>
       <div style="width: 2px; height: 7px; background: ${color}; margin: auto;"></div>
@@ -1135,7 +1135,7 @@ function renderWaypointsAndPlannedRoute() {
   if (currentPlannedCoords && currentPlannedCoords.length > 0) {
     if (plannedRoutePolyline) uavMap.removeLayer(plannedRoutePolyline);
     plannedRoutePolyline = L.polyline(currentPlannedCoords, {
-      color: '#38bdf8',
+      color: '#72c988',
       weight: 3,
       opacity: 0.75,
       dashArray: '8, 8'
@@ -1144,9 +1144,9 @@ function renderWaypointsAndPlannedRoute() {
 
   if (currentRiskSegments && currentRiskSegments.length > 0) {
     currentRiskSegments.forEach(seg => {
-      let riskCol = '#5ce59a';
-      if (seg.predicted_risk === 'MEDIUM') riskCol = '#ffd166';
-      if (seg.predicted_risk === 'HIGH') riskCol = '#ff7070';
+      let riskCol = '#52cf80';
+      if (seg.predicted_risk === 'MEDIUM') riskCol = '#d9a74a';
+      if (seg.predicted_risk === 'HIGH') riskCol = '#d9534f';
       
       const poly = L.polyline([seg.start_coord, seg.end_coord], {
         color: riskCol,
@@ -1157,7 +1157,7 @@ function renderWaypointsAndPlannedRoute() {
         <div style="font-size:11px;">
           <b>Leg: ${seg.from_id} ➔ ${seg.to_id}</b><br>
           Predicted Risk: <b style="color:${riskCol}">${seg.predicted_risk}</b><br>
-          <span style="color:#91a5c2; font-size:10px;">(Predicted Simulation Projection)</span>
+          <span style="color:#889c8a; font-size:10px;">(Predicted Simulation Projection)</span>
         </div>
       `);
       riskSegmentsLayerGroup.addLayer(poly);
@@ -1183,11 +1183,11 @@ function renderWaypointsAndPlannedRoute() {
 
     marker.bindPopup(`
       <div style="font-family:Inter,sans-serif;">
-        <div style="font-weight:bold; font-size:12px; color:#55d7ff;">${wp.id}: ${wp.name}</div>
-        <div style="color:#91a5c2; font-size:11px; margin-top:2px;">Objective: <b style="color:#eff6ff;">${wp.type}</b></div>
-        <div style="color:#91a5c2; font-size:11px;">Altitude: <b style="color:#5ce59a;">${wp.altitude_ft.toLocaleString()} ft</b></div>
-        <div style="color:#91a5c2; font-size:11px;">Airspeed: <b style="color:#eff6ff;">${wp.speed_kt} kt</b> • Loiter: <b style="color:#ffd166;">${wp.loiter_time_min}m</b></div>
-        <div style="color:#91a5c2; font-size:11px;">GPS: ${wp.latitude.toFixed(4)}°N, ${wp.longitude.toFixed(4)}°E</div>
+        <div style="font-weight:bold; font-size:12px; color:#72c988;">${wp.id}: ${wp.name}</div>
+        <div style="color:#889c8a; font-size:11px; margin-top:2px;">Objective: <b style="color:#e2ece2;">${wp.type}</b></div>
+        <div style="color:#889c8a; font-size:11px;">Altitude: <b style="color:#52cf80;">${wp.altitude_ft.toLocaleString()} ft</b></div>
+        <div style="color:#889c8a; font-size:11px;">Airspeed: <b style="color:#e2ece2;">${wp.speed_kt} kt</b> • Loiter: <b style="color:#d9a74a;">${wp.loiter_time_min}m</b></div>
+        <div style="color:#889c8a; font-size:11px;">GPS: ${wp.latitude.toFixed(4)}°N, ${wp.longitude.toFixed(4)}°E</div>
       </div>
     `);
     waypointLayerGroup.addLayer(marker);
@@ -1219,7 +1219,7 @@ function renderWaypointsTable() {
       <td style="text-align:center;">
         <button class="map-btn" style="padding:1px 4px; font-size:9px;" onclick="moveWp(${i}, -1)">▲</button>
         <button class="map-btn" style="padding:1px 4px; font-size:9px;" onclick="moveWp(${i}, 1)">▼</button>
-        <button class="map-btn" style="padding:1px 4px; font-size:9px; background:#441414; color:#ff7070;" onclick="deleteWp(${i})">✕</button>
+        <button class="map-btn" style="padding:1px 4px; font-size:9px; background:#331414; color:#e57373;" onclick="deleteWp(${i})">✕</button>
       </td>
     </tr>
   `).join('');
@@ -1379,9 +1379,9 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   const throttle = uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : 60;
   const amb = uav.ambient_c != null ? uav.ambient_c : 20.0;
 
-  let healthColor = '#5ce59a';
-  if (healthState === 'Watch' || riskLevel === 'MEDIUM') healthColor = '#ffd166';
-  if (healthState === 'Warning' || healthState === 'Critical' || riskLevel === 'HIGH') healthColor = '#ff7070';
+  let healthColor = '#52cf80';
+  if (healthState === 'Watch' || riskLevel === 'MEDIUM') healthColor = '#d9a74a';
+  if (healthState === 'Warning' || healthState === 'Critical' || riskLevel === 'HIGH') healthColor = '#d9534f';
 
   if (!uavMarker) {
     uavMarker = L.marker([lat, lon], {
@@ -1391,10 +1391,10 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
 
     uavMarker.bindPopup(`
       <div style="font-family:Inter,sans-serif;">
-        <div style="font-weight:bold; font-size:12px; color:#5ce59a;">✈️ AeroPulse-X MALE-UAV</div>
-        <div style="font-size:11px; color:#91a5c2; margin-top:2px;">Phase: <b style="color:#eff6ff;">${phase}</b></div>
-        <div style="font-size:11px; color:#91a5c2;">Altitude: <b style="color:#5ce59a;">${Math.round(alt).toLocaleString()} ft</b></div>
-        <div style="font-size:11px; color:#91a5c2;">GS: <b style="color:#eff6ff;">${speed} kt</b> | TAS: <b>${airspeed} kt</b></div>
+        <div style="font-weight:bold; font-size:12px; color:#52cf80;">✈️ AeroPulse-X MALE-UAV</div>
+        <div style="font-size:11px; color:#889c8a; margin-top:2px;">Phase: <b style="color:#e2ece2;">${phase}</b></div>
+        <div style="font-size:11px; color:#889c8a;">Altitude: <b style="color:#52cf80;">${Math.round(alt).toLocaleString()} ft</b></div>
+        <div style="font-size:11px; color:#889c8a;">GS: <b style="color:#e2ece2;">${speed} kt</b> | TAS: <b>${airspeed} kt</b></div>
       </div>
     `);
   } else {
@@ -1435,10 +1435,10 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   $('hudRisk').className = 'pill ' + (riskLevel === 'LOW' ? 'good' : riskLevel === 'MEDIUM' ? 'warn' : 'bad');
 
   // Update Top Mission Control Automatic Readouts
-  $('autoAltitude').innerHTML = `${Math.round(alt).toLocaleString()} ft <small style="font-size:9px; color:#5ce59a;">AUTO</small>`;
-  $('autoSpeed').innerHTML = `${speed} kt <small style="font-size:9px; color:#5ce59a;">AUTO</small>`;
-  $('autoThrottle').innerHTML = `${throttle}% <small style="font-size:9px; color:#5ce59a;">AUTO</small>`;
-  $('autoAmbient').innerHTML = `${amb.toFixed(1)}°C <small style="font-size:9px; color:#5ce59a;">AUTO (ISA)</small>`;
+  $('autoAltitude').innerHTML = `${Math.round(alt).toLocaleString()} ft <small style="font-size:9px; color:#52cf80;">AUTO</small>`;
+  $('autoSpeed').innerHTML = `${speed} kt <small style="font-size:9px; color:#52cf80;">AUTO</small>`;
+  $('autoThrottle').innerHTML = `${throttle}% <small style="font-size:9px; color:#52cf80;">AUTO</small>`;
+  $('autoAmbient').innerHTML = `${amb.toFixed(1)}°C <small style="font-size:9px; color:#52cf80;">AUTO (ISA)</small>`;
   $('autoPhasePill').textContent = phase;
 
   // Update Live Environment Panel
@@ -1447,10 +1447,10 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
     $('envSourceBadge').textContent = env.source === 'live' ? '● LIVE (Open-Meteo API)' : '● SIMULATED (ISA Model)';
     $('envSourceBadge').className = 'pill ' + (env.source === 'live' ? 'good' : 'warn');
     $('envTemp').textContent = `${env.ambient_c} °C`;
-    $('envPress').innerHTML = `${env.pressure_hpa} hPa <small style="font-size:9px; color:#91a5c2;">(${env.pressure_inhg} inHg)</small>`;
+    $('envPress').innerHTML = `${env.pressure_hpa} hPa <small style="font-size:9px; color:#889c8a;">(${env.pressure_inhg} inHg)</small>`;
     $('envDensity').textContent = `${env.air_density_ratio}`;
     $('envWind').textContent = `${env.wind_speed_kt} kt @ ${env.wind_direction_deg}°`;
-    $('envHeadwind').innerHTML = `<span style="color:${env.headwind_kt>0?'#ffd166':'#5ce59a'}">HW: ${env.headwind_kt} kt</span> • CW: ${env.crosswind_kt} kt`;
+    $('envHeadwind').innerHTML = `<span style="color:${env.headwind_kt>0?'#d9a74a':'#52cf80'}">HW: ${env.headwind_kt} kt</span> • CW: ${env.crosswind_kt} kt`;
     $('envHumidity').textContent = `${env.humidity_pct}%`;
     $('envVisibility').textContent = `${env.visibility_km} km`;
     $('envCondition').textContent = env.weather_condition;
@@ -1494,8 +1494,8 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
 
   // Update Compact Engine HUD Strip Below 3D Viewport
   $('engRPM').textContent = `${rpm.toLocaleString()} RPM`;
-  $('engThrottle').innerHTML = `${thr}% <small style="font-size:9px; color:#5ce59a;">AUTO</small>`;
-  $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:9px; color:#5ce59a;">AUTO</small>`;
+  $('engThrottle').innerHTML = `${thr}% <small style="font-size:9px; color:#52cf80;">AUTO</small>`;
+  $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:9px; color:#52cf80;">AUTO</small>`;
   $('engCHT').textContent = `${fmt(telemetry.CHT, 1)} °F`;
   $('engEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
   $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI • ${fmt(telemetry.Oil_Temp, 0)} °C`;
@@ -1846,10 +1846,10 @@ function drawTimeline(items){
   const pad=34;
 
   ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#081424';
+  ctx.fillStyle='#080f09';
   ctx.fillRect(0,0,W,H);
 
-  ctx.strokeStyle='#1e334f';
+  ctx.strokeStyle='#18281b';
   ctx.lineWidth=1;
   for(let i=0;i<=4;i++){
     const y=pad+(H-2*pad)*i/4;
@@ -1857,12 +1857,12 @@ function drawTimeline(items){
     ctx.moveTo(pad,y);
     ctx.lineTo(W-pad,y);
     ctx.stroke();
-    ctx.fillStyle='#7890ae';
+    ctx.fillStyle='#7d9480';
     ctx.font='10px system-ui';
     ctx.fillText(String(100-i*25),6,y+4);
   }
 
-  const series=[['health_index','#5ce59a'],['risk_score','#ff7070']];
+  const series=[['health_index','#52cf80'],['risk_score','#d9534f']];
   for(const [key,color] of series){
     ctx.beginPath();
     items.forEach((p,i)=>{
@@ -1875,9 +1875,9 @@ function drawTimeline(items){
     ctx.stroke();
   }
 
-  ctx.fillStyle='#5ce59a';
+  ctx.fillStyle='#52cf80';
   ctx.fillText('Health',W-135,16);
-  ctx.fillStyle='#ff7070';
+  ctx.fillStyle='#d9534f';
   ctx.fillText('Risk',W-75,16);
 }
 
