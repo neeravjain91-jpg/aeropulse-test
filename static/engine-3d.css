@@ -1,20 +1,20 @@
 :root {
-  --gcs-cyan: #72c988;
-  --gcs-green: #52cf80;
-  --gcs-amber: #d9a74a;
-  --gcs-red: #d9534f;
-  --gcs-muted: #889c8a;
+  --gcs-cyan: #5eb574;
+  --gcs-green: #4cb574;
+  --gcs-amber: #c9983e;
+  --gcs-red: #c94c48;
+  --gcs-muted: #7a8c7b;
 }
 
 /* ============================================================
    ◈ 3D Piston Engine Digital Twin Card & Viewport (Military GCS)
    ============================================================ */
 .engine-twin-card {
-  background: linear-gradient(180deg, #121c14, #0b120c);
-  border: 1px solid #203524;
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+  background: linear-gradient(180deg, #0e160e, #080e09);
+  border: 1px solid #18281b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
 }
