@@ -57,9 +57,20 @@ def assess_sensor_health(telemetry: dict, twin: dict) -> dict:
             reason = "EGT channel deviates more than peer channels"
         results.append(SensorAssessment(name, score, _status(score), reason))
 
+    # CHT cross-check against other thermal channels
+    avg_egt_abs = sum(abs(z[x]) for x in egt_names) / 3
+    cht_score = 100.0
+    cht_reason = "cylinder head temperature consistent with thermal state"
+    if abs(z.get("CHT", 0.0)) > 4.0 and avg_egt_abs < 1.5 and abs(z.get("EFI_Water_Temp", 0.0)) < 1.5:
+        cht_score = 30.0
+        cht_reason = "CHT spike without corroboration in coolant or exhaust gas temps"
+    elif abs(z.get("CHT", 0.0)) > 3.0 and avg_egt_abs < 2.0:
+        cht_score = 60.0
+        cht_reason = "CHT deviation has weak thermal corroboration"
+    results.append(SensorAssessment("CHT", cht_score, _status(cht_score), cht_reason))
+
     # Cooling temperature drift check: if water temperature alone is extreme
     # while EGT and oil temperature remain close to reference, suspect sensing.
-    avg_egt_abs = sum(abs(z[x]) for x in egt_names) / 3
     water_score = 100.0
     water_reason = "thermal channels are mutually consistent"
     if abs(z["EFI_Water_Temp"]) > 4.0 and avg_egt_abs < 1.5 and abs(z["Oil_Temp"]) < 1.5:
