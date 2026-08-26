@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import struct
+import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
+from .exceptions import CANBusError
 
 
 @dataclass
@@ -22,6 +24,45 @@ class CANFrame:
             self.data = self.data.ljust(8, b"\x00")
         self.dlc = len(self.data)
 
+    @property
+    def can_id(self) -> int:
+        return self.arbitration_id
+
+    @property
+    def payload(self) -> bytes:
+        return self.data
+
+
+class CANHardwareAdapter:
+    """Hardware Abstraction Layer for CAN transceivers (SocketCAN, Simulator, USB-CAN)."""
+    def connect(self) -> bool:
+        raise NotImplementedError
+    def send(self, frame: CANFrame) -> bool:
+        raise NotImplementedError
+    def receive(self, timeout_s: float = 0.1) -> Optional[CANFrame]:
+        raise NotImplementedError
+
+
+class SimulatedCANAdapter(CANHardwareAdapter):
+    def __init__(self):
+        self.connected = False
+        self.buffer: List[CANFrame] = []
+
+    def connect(self) -> bool:
+        self.connected = True
+        return True
+
+    def send(self, frame: CANFrame) -> bool:
+        if not self.connected:
+            raise CANBusError("CAN bus disconnected.", error_code="CAN_BUS_OFF")
+        self.buffer.append(frame)
+        return True
+
+    def receive(self, timeout_s: float = 0.1) -> Optional[CANFrame]:
+        if self.buffer:
+            return self.buffer.pop(0)
+        return None
+
 
 class CANBusInterface:
     """
@@ -38,9 +79,12 @@ class CANBusInterface:
     ID_LUB_COOLANT = 0x102
     ID_ELEC_VIB = 0x103
 
-    def __init__(self):
+    def __init__(self, adapter: Optional[CANHardwareAdapter] = None):
+        self.adapter = adapter or SimulatedCANAdapter()
+        self.adapter.connect()
         self.sequence_counter: int = 0
         self.last_decoded_telemetry: Dict[str, Any] = {}
+        self.stats = {"frames_rx": 0, "crc_errors": 0, "seq_errors": 0, "dropped": 0}
 
     @staticmethod
     def _crc8(data: bytes) -> int:
@@ -61,7 +105,6 @@ class CANBusInterface:
         self.sequence_counter = (self.sequence_counter + 1) % 16
 
         # 1. 0x100 Engine Dynamics
-        # RPM (uint16, 0.25 scale), MAP (uint16, 0.01 scale), Fuel_Flow (uint16, 0.01 scale), Throttle (uint8, 0.5% scale), Counter+CRC (uint8)
         rpm_raw = int(min(65535, max(0, float(telemetry.get("Engine_RPM", 0.0)) / 0.25)))
         map_raw = int(min(65535, max(0, float(telemetry.get("MAP_Injector", 0.0)) / 0.01)))
         ff_raw = int(min(65535, max(0, float(telemetry.get("Fuel_Flow", 0.0)) / 0.01)))
@@ -71,7 +114,6 @@ class CANBusInterface:
         frames.append(CANFrame(self.ID_ENGINE_DYNAMICS, payload100 + bytes([crc100]), timestamp_ms=timestamp_ms))
 
         # 2. 0x101 Temperatures
-        # EGT1, EGT2, EGT3, CHT (uint16 each, 0.1 deg C scale)
         egt1_raw = int(min(65535, max(0, float(telemetry.get("EGT1", 0.0)) * 10.0)))
         egt2_raw = int(min(65535, max(0, float(telemetry.get("EGT2", 0.0)) * 10.0)))
         egt3_raw = int(min(65535, max(0, float(telemetry.get("EGT3", 0.0)) * 10.0)))
@@ -80,7 +122,6 @@ class CANBusInterface:
         frames.append(CANFrame(self.ID_TEMPERATURES, payload101, timestamp_ms=timestamp_ms))
 
         # 3. 0x102 Lubrication & Coolant
-        # Oil_Temp (int16, 0.1 scale), Oil_Pressure (uint16, 0.1 scale), Water_Temp (int16, 0.1 scale), Fuel_Temp (int16, 0.1 scale)
         oil_t_raw = int(max(-32768, min(32767, float(telemetry.get("Oil_Temp", 0.0)) * 10.0)))
         oil_p_raw = int(min(65535, max(0, float(telemetry.get("Oil_Pressure", 0.0)) * 10.0)))
         wat_t_raw = int(max(-32768, min(32767, float(telemetry.get("EFI_Water_Temp", 0.0)) * 10.0)))
@@ -89,7 +130,6 @@ class CANBusInterface:
         frames.append(CANFrame(self.ID_LUB_COOLANT, payload102, timestamp_ms=timestamp_ms))
 
         # 4. 0x103 Electrical & Vibration
-        # Battery_Voltage (uint16, 0.01 scale), Battery_Current (int16, 0.1 scale), Alternator_Temp (int16, 0.1 scale), Vibration (uint16, 0.001 scale)
         bat_v_raw = int(min(65535, max(0, float(telemetry.get("Battery_Voltage", 0.0)) * 100.0)))
         bat_i_raw = int(max(-32768, min(32767, float(telemetry.get("Battery_Current", 0.0)) * 10.0)))
         alt_t_raw = int(max(-32768, min(32767, float(telemetry.get("Alternator_Temp", 0.0)) * 10.0)))
@@ -101,12 +141,14 @@ class CANBusInterface:
 
     def decode_frame(self, frame: CANFrame) -> Dict[str, Any]:
         """Decodes single incoming CAN frame into telemetry fields with error validation."""
+        self.stats["frames_rx"] += 1
         if frame.arbitration_id == self.ID_ENGINE_DYNAMICS:
             if len(frame.data) >= 8:
                 payload = frame.data[:7]
                 expected_crc = self._crc8(payload)
                 actual_crc = frame.data[7]
                 if actual_crc != expected_crc:
+                    self.stats["crc_errors"] += 1
                     return {"_error": "CAN_CRC_MISMATCH", "arbitration_id": frame.arbitration_id}
                 rpm_raw, map_raw, ff_raw, thr_raw = struct.unpack("<HHHB", payload)
                 self.last_decoded_telemetry["Engine_RPM"] = round(rpm_raw * 0.25, 1)
@@ -139,3 +181,6 @@ class CANBusInterface:
                 self.last_decoded_telemetry["Vibration"] = round(vib_raw * 0.001, 3)
 
         return dict(self.last_decoded_telemetry)
+
+
+AeroPulseCANInterface = CANBusInterface

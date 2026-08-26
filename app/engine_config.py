@@ -1,13 +1,10 @@
 """Configurable Engine Parameter Schema for AeroPulse-X Propulsion Digital Twin."""
 from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Any, Dict
 
-
 @dataclass
 class EngineConfig:
-    """Configurable propulsion parameters for spark-ignited aero piston engines."""
     name: str = "AeroPiston-4C-1.35L"
     displacement_l: float = 1.352
     bore_mm: float = 84.0
@@ -29,6 +26,24 @@ class EngineConfig:
     oil_volume_l: float = 3.5
     oil_viscosity_cst: float = 14.0
     turbo_critical_alt_ft: float = 15000.0
+    volumetric_efficiency_base: float = 0.88
+    fuel_density_kg_l: float = 0.72
+
+    @property
+    def displacement_liters(self) -> float:
+        return self.displacement_l
+
+    @property
+    def fuel_lower_heating_value_mj_kg(self) -> float:
+        return self.fuel_lhv_mj_kg
+
+    @property
+    def air_fuel_ratio_stoich(self) -> float:
+        return self.afr_stoich
+
+    @property
+    def rated_power_kw(self) -> float:
+        return self.base_power_kw
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -52,3 +67,6 @@ class EngineConfig:
     @classmethod
     def custom(cls, **kwargs) -> EngineConfig:
         return cls(**kwargs)
+
+def default_engine_config() -> EngineConfig:
+    return EngineConfig.default_135l()

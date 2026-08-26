@@ -1,16 +1,16 @@
-"""Thermodynamic and Reduced-Order Physics Model V2 for MALE UAV Aero Piston Engines."""
+"""Thermodynamic Reduced-Order Piston Engine Model for AeroPulse-X Digital Twin."""
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from .engine_config import EngineConfig
+from .engine_config import EngineConfig, default_engine_config
 
 
 @dataclass
 class EngineInputs:
-    """Input operating conditions for the aero-piston engine."""
+    """Input operating vector driving the propulsion digital twin."""
     rpm: float = 3000.0
     throttle: float = 0.60
     altitude_ft: float = 3000.0
@@ -21,11 +21,12 @@ class EngineInputs:
     fuel_delivery_ratio: float = 1.0
     misfire_fraction: float = 0.0
     friction_multiplier: float = 1.0
+    cooling_airflow_factor: float = 1.0
 
 
 @dataclass
 class EngineState:
-    """Estimated internal thermodynamic state of the engine."""
+    """Internal physics state of the 4-stroke spark-ignited aero piston engine."""
     air_density_ratio: float
     ambient_pressure_kpa: float
     ambient_temp_k: float
@@ -36,59 +37,56 @@ class EngineState:
     thermal_efficiency: float
     peak_cylinder_pressure_bar: float
     bsfc_g_kwh: float
-    air_mass_flow_kg_s: float = 0.045
-    fuel_mass_flow_g_s: float = 3.06
-    heat_rejection_kw: float = 42.0
+    air_mass_flow_kg_s: float
+    fuel_mass_flow_g_s: float
+    heat_rejection_kw: float
+
+    @property
+    def density_ratio(self) -> float:
+        return self.air_density_ratio
+
+    @property
+    def mass_air_flow_kg_s(self) -> float:
+        return self.air_mass_flow_kg_s
+
+    @property
+    def fuel_flow_kg_s(self) -> float:
+        return self.fuel_mass_flow_g_s / 1000.0
 
 
 class ReducedOrderPistonEngine:
     """
-    Physics Engine V2: Parameterized, real-time, thermodynamic cycle model
-    for UAV spark-ignited piston propulsion systems.
+    First-principles, physics-informed reduced-order propulsion digital twin.
+    Implements Otto cycle thermodynamics, Bishop-Heywood friction, ISA barometric lapse,
+    and lumped-capacitance thermal rejection calibrated for MALE UAV aero-piston engines.
     """
 
     def __init__(self, config: Optional[EngineConfig] = None):
-        self.config = config or EngineConfig.default_135l()
-        self.DISPLACEMENT_L: float = self.config.displacement_l
-        self.COMPRESSION_RATIO: float = self.config.compression_ratio
-        self.NUM_CYLINDERS: int = self.config.num_cylinders
-        self.NOMINAL_RPM: float = self.config.nominal_rpm
-        self.MAX_RPM: float = self.config.max_rpm
-        self.IDLE_RPM: float = self.config.idle_rpm
-        self.BASE_POWER_KW: float = self.config.base_power_kw
-        self.TURBO_CRITICAL_ALT_FT: float = self.config.turbo_critical_alt_ft
-        self.gamma: float = self.config.gamma
-        self.fuel_lhv_mj_kg: float = self.config.fuel_lhv_mj_kg
+        self.config = config or default_engine_config()
+        self.DISPLACEMENT_L = self.config.displacement_l
+        self.NOMINAL_RPM = self.config.nominal_rpm
+        self.IDLE_RPM = self.config.idle_rpm
+        self.MAX_RPM = self.config.max_rpm
+        self.BASE_POWER_KW = self.config.base_power_kw
+        self.COMPRESSION_RATIO = self.config.compression_ratio
+        self.gamma = self.config.gamma
+        self.fuel_lhv_mj_kg = self.config.fuel_lhv_mj_kg
 
     @staticmethod
-    def _isa_atmosphere(altitude_ft: float, sea_level_temp_c: float = 15.0) -> tuple[float, float, float]:
-        """
-        Computes International Standard Atmosphere (ISA) properties.
-        Returns: (ambient_temp_k, ambient_pressure_kpa, air_density_ratio_sigma)
-        """
-        h_m = max(0.0, float(altitude_ft) * 0.3048)
-        t0_k = 273.15 + float(sea_level_temp_c)
-        p0_kpa = 101.325
-        rho0 = 1.225
-
+    def _isa_atmosphere(altitude_ft: float, ambient_c: float) -> tuple[float, float, float]:
+        """Calculates ISA atmosphere parameters: (ambient_temp_k, pressure_kpa, density_ratio_sigma)."""
+        alt_m = max(0.0, float(altitude_ft)) * 0.3048
+        t_sea_level_k = ambient_c + 273.15
+        p_sea_level_pa = 101325.0
         lapse_rate = 0.0065
-        g = 9.80665
         r_air = 287.058
+        g = 9.80665
 
-        if h_m <= 11000.0:
-            t_amb_k = t0_k - lapse_rate * h_m
-            p_amb_kpa = p0_kpa * math.pow(max(t_amb_k / t0_k, 0.05), g / (lapse_rate * r_air))
-        else:
-            t_trop_k = t0_k - lapse_rate * 11000.0
-            p_trop_kpa = p0_kpa * math.pow(t_trop_k / t0_k, g / (lapse_rate * r_air))
-            t_amb_k = t_trop_k
-            p_amb_kpa = p_trop_kpa * math.exp(-g * (h_m - 11000.0) / (r_air * t_trop_k))
-
-        rho_amb = (p_amb_kpa * 1000.0) / (r_air * max(t_amb_k, 100.0))
-        sigma = rho_amb / rho0
-        sigma = max(0.55, min(1.15, sigma))
-
-        return t_amb_k, p_amb_kpa, sigma
+        t_actual_k = max(216.65, t_sea_level_k - lapse_rate * alt_m)
+        p_pa = p_sea_level_pa * math.pow(max(0.05, 1.0 - (lapse_rate * alt_m) / max(200.0, t_sea_level_k)), (g / (r_air * lapse_rate)))
+        rho = p_pa / (r_air * t_actual_k)
+        sigma = max(0.55, min(1.15, rho / 1.225))
+        return t_actual_k, p_pa / 1000.0, sigma
 
     def estimate_state(self, inputs: EngineInputs) -> EngineState:
         """Estimates internal thermodynamic cycle parameters from first principles."""
@@ -154,7 +152,7 @@ class ReducedOrderPistonEngine:
         )
 
     def predict(self, inputs: EngineInputs) -> dict[str, float]:
-        """Calculates telemetry values matching ACES / UAV sensor channels."""
+        """Calculates telemetry values matching ACES / UAV sensor channels in native units."""
         rpm = max(self.IDLE_RPM, min(self.MAX_RPM, float(inputs.rpm)))
         throttle = float(inputs.load) if inputs.load is not None else float(inputs.throttle)
         throttle = max(0.05, min(1.0, throttle))
@@ -166,41 +164,30 @@ class ReducedOrderPistonEngine:
         thermal_load = state.indicated_power_kw / self.BASE_POWER_KW
 
         # Thermal System: First-principles heat generation vs cooling dissipation
-        cooling_factor = max(0.35, float(inputs.cooling_efficiency))
+        cooling_factor = max(0.35, float(inputs.cooling_efficiency) * float(inputs.cooling_airflow_factor))
         heat_factor = (1.0 / cooling_factor)
 
-        base_egt = (1220.0 + 80.0 * throttle + 30.0 * (altitude_ft / 10000.0) + 0.8 * ambient_c) * (0.90 + 0.10 * heat_factor)
+        base_egt = (1180.0 + 170.0 * throttle + 35.0 * (altitude_ft / 10000.0) + 1.2 * ambient_c) * (0.90 + 0.10 * heat_factor)
         misfire_egt_drop = 1.0 - (0.28 * float(inputs.misfire_fraction))
-        egt1 = (base_egt + 6.0 + 10.0 * (rpm / self.NOMINAL_RPM - 1.0) + 4.0 * math.sin(rpm * 0.01)) * misfire_egt_drop
-        egt2 = (base_egt + 18.0 + 8.0 * (rpm / self.NOMINAL_RPM - 1.0) + 3.0 * math.cos(rpm * 0.01))
-        egt3 = (base_egt + 12.0 + 9.0 * (rpm / self.NOMINAL_RPM - 1.0) - 2.0 * math.sin(rpm * 0.015))
+        egt1 = (base_egt + 12.0 * math.sin(rpm * 0.01)) * misfire_egt_drop
+        egt2 = base_egt - 8.0 + 10.0 * math.cos(rpm * 0.01)
+        egt3 = base_egt + 4.0 - 6.0 * math.sin(rpm * 0.015)
 
-        # In-cylinder CHT in deg C converted to telemetry sensor units (deg F)
-        cht_c = (76.0 + 20.0 * thermal_load + 0.3 * (ambient_c - 25.0) + 2.0 * (altitude_ft / 10000.0)) * (0.80 + 0.20 * heat_factor)
-        cht_f = cht_c * 1.8 + 32.0
+        cht = (195.0 + 16.0 * thermal_load + 0.5 * (ambient_c - 25.0) + 4.0 * (altitude_ft / 10000.0)) * (0.85 + 0.15 * heat_factor)
+        water_temp_f = (175.0 + 14.0 * thermal_load + 0.45 * (ambient_c - 25.0) + 3.0 * (altitude_ft / 10000.0)) * (0.88 + 0.12 * heat_factor)
+        oil_temp_f = (165.0 + 16.0 * thermal_load + 0.48 * (ambient_c - 25.0) + 3.5 * (altitude_ft / 10000.0)) * float(inputs.friction_multiplier) * (0.88 + 0.12 * heat_factor)
 
-        # Coolant water temperature in deg C converted to sensor units (deg F)
-        water_temp_c = (73.0 + 12.0 * thermal_load + 0.3 * (ambient_c - 25.0) + 1.5 * (altitude_ft / 10000.0)) * (0.85 + 0.15 * heat_factor)
-        water_temp_f = water_temp_c * 1.8 + 32.0
+        viscosity_factor = max(0.60, 1.0 - 0.003 * (oil_temp_f - 170.0))
+        oil_press_psi = (48.0 + 15.0 * (rpm / self.NOMINAL_RPM)) * viscosity_factor / float(inputs.friction_multiplier)
 
-        # Lubrication circuit oil temperature in deg C converted to sensor units (deg F)
-        oil_temp_c = (68.0 + 14.0 * thermal_load + 0.3 * (ambient_c - 25.0) + 2.0 * (altitude_ft / 10000.0)) * float(inputs.friction_multiplier) * (0.88 + 0.12 * heat_factor)
-        oil_temp_f = oil_temp_c * 1.8 + 32.0
+        base_ff = (12.0 + 18.0 * throttle) * (0.85 + 0.30 * (rpm / self.NOMINAL_RPM)) * float(inputs.fuel_delivery_ratio)
+        fuel_flow_l_h = base_ff * (1.0 + 0.25 * (altitude_ft / 25000.0))
+        map_injector = (state.manifold_pressure_kpa / 101.325) * 29.92
+        fuel_temp_f = max(ambient_c * 1.8 + 32.0 + 5.0, 75.0 + 0.25 * water_temp_f + 0.2 * (ambient_c * 1.8 + 32.0))
 
-        # Oil pressure with viscosity and mechanical friction coupling (PSI)
-        viscosity_factor = max(0.60, 1.0 - 0.0035 * (oil_temp_c - 80.0))
-        oil_press_psi = (48.0 + 14.0 * (rpm / self.NOMINAL_RPM)) * viscosity_factor / float(inputs.friction_multiplier)
-
-        # Fuel delivery (L/h)
-        base_ff = (14.0 + 20.0 * throttle) * (0.75 + 0.25 * (rpm / self.NOMINAL_RPM)) * float(inputs.fuel_delivery_ratio)
-        fuel_flow_l_h = base_ff * (1.0 + 0.15 * (altitude_ft / 25000.0))
-        map_injector = (state.manifold_pressure_kpa / 101.325) * 29.92 * (0.85 + 0.15 * (1.0 - altitude_ft / 30000.0))
-        fuel_temp_f = (ambient_c + 8.0) * 1.8 + 32.0
-
-        battery_voltage = 27.6 - 0.3 * (load - 0.5) - 0.01 * (ambient_c - 25.0)
-        battery_current = 0.0 + 0.8 * load + 0.2 * math.sin(rpm * 0.02)
-        alt_temp_c = 70.0 + 18.0 * (battery_current / 15.0) + 0.5 * (ambient_c - 25.0)
-        alt_temp_f = alt_temp_c * 1.8 + 32.0
+        battery_voltage = 28.2 - 0.4 * (load - 0.5) - 0.02 * (ambient_c - 25.0)
+        battery_current = 14.0 + 18.0 * load + 4.0 * math.sin(rpm * 0.02)
+        alternator_temp_f = (48.0 + 26.0 * (battery_current / 35.0) + 0.6 * ambient_c) * 1.8 + 32.0
 
         misfire_vib = 1.65 * float(inputs.misfire_fraction)
         vibration_g = 0.85 + 0.75 * math.pow(rpm / self.NOMINAL_RPM, 2.0) + 0.45 * (load - 0.5) + misfire_vib
@@ -210,13 +197,13 @@ class ReducedOrderPistonEngine:
             "EGT1": round(egt1, 1),
             "EGT2": round(egt2, 1),
             "EGT3": round(egt3, 1),
-            "CHT": round(cht_f, 1),
+            "CHT": round(cht, 1),
             "Fuel_Flow": round(fuel_flow_l_h, 2),
             "Oil_Temp": round(oil_temp_f, 1),
             "Oil_Pressure": round(oil_press_psi, 1),
             "Battery_Voltage": round(battery_voltage, 2),
             "Battery_Current": round(battery_current, 2),
-            "Alternator_Temp": round(alt_temp_f, 1),
+            "Alternator_Temp": round(alternator_temp_f, 1),
             "EFI_Fuel_Temp": round(fuel_temp_f, 1),
             "EFI_Water_Temp": round(water_temp_f, 1),
             "MAP_Injector": round(map_injector, 2),

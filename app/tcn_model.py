@@ -109,3 +109,43 @@ class LightweightTCN(nn.Module):
             pred_label = self.CLASSES[pred_idx]
             prob_dict = {self.CLASSES[i]: float(probs[i]) for i in range(len(self.CLASSES))}
             return pred_label, prob_dict
+
+
+def build_sequences(df: Any, window_size: int = 30, step: int = 10, with_physics: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+    """Extracts sequence windows strictly within flight mission boundaries (zero temporal leakage)."""
+    import pandas as pd
+    target_map = {"Normal": 0, "Watch": 1, "Warning": 1, "Degraded": 1, "Critical": 2}
+    cols = [
+        "Engine_RPM", "EGT1", "EGT2", "EGT3", "CHT", "Fuel_Flow",
+        "Oil_Temp", "Oil_Pressure", "Battery_Voltage", "Battery_Current",
+        "Alternator_Temp", "EFI_Fuel_Temp", "EFI_Water_Temp", "MAP_Injector",
+    ]
+    X_list, y_list = [], []
+    if "Flight" in df.columns:
+        flights = df["Flight"].unique()
+    else:
+        flights = ["flight_0"]
+        df = df.copy()
+        df["Flight"] = "flight_0"
+        
+    for flight in flights:
+        fdf = df[df["Flight"] == flight]
+        if len(fdf) < window_size:
+            continue
+        vals = fdf[[c for c in cols if c in fdf.columns]].fillna(0.0).values
+        lbls = fdf["Health_State"].map(lambda x: target_map.get(str(x), 0)).values if "Health_State" in fdf.columns else np.zeros(len(fdf))
+        
+        mean = np.mean(vals, axis=0, keepdims=True)
+        std = np.std(vals, axis=0, keepdims=True) + 1e-6
+        norm_vals = (vals - mean) / std
+        
+        for i in range(0, len(norm_vals) - window_size + 1, step):
+            w_x = norm_vals[i : i + window_size].T
+            w_y = int(lbls[i + window_size - 1])
+            X_list.append(w_x)
+            y_list.append(w_y)
+            
+    if not X_list:
+        return np.empty((0, len(cols), window_size), dtype=np.float32), np.empty((0,), dtype=np.int64)
+    return np.array(X_list, dtype=np.float32), np.array(y_list, dtype=np.int64)
+
