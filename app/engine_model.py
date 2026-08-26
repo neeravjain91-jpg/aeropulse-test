@@ -169,27 +169,38 @@ class ReducedOrderPistonEngine:
         cooling_factor = max(0.35, float(inputs.cooling_efficiency))
         heat_factor = (1.0 / cooling_factor)
 
-        base_egt = (1180.0 + 220.0 * throttle + 40.0 * (altitude_ft / 10000.0) + 1.2 * ambient_c) * (0.90 + 0.10 * heat_factor)
+        base_egt = (1220.0 + 80.0 * throttle + 30.0 * (altitude_ft / 10000.0) + 0.8 * ambient_c) * (0.90 + 0.10 * heat_factor)
         misfire_egt_drop = 1.0 - (0.28 * float(inputs.misfire_fraction))
-        egt1 = (base_egt + 12.0 * math.sin(rpm * 0.01)) * misfire_egt_drop
-        egt2 = base_egt - 8.0 + 10.0 * math.cos(rpm * 0.01)
-        egt3 = base_egt + 4.0 - 6.0 * math.sin(rpm * 0.015)
+        egt1 = (base_egt + 6.0 + 10.0 * (rpm / self.NOMINAL_RPM - 1.0) + 4.0 * math.sin(rpm * 0.01)) * misfire_egt_drop
+        egt2 = (base_egt + 18.0 + 8.0 * (rpm / self.NOMINAL_RPM - 1.0) + 3.0 * math.cos(rpm * 0.01))
+        egt3 = (base_egt + 12.0 + 9.0 * (rpm / self.NOMINAL_RPM - 1.0) - 2.0 * math.sin(rpm * 0.015))
 
-        cht = (195.0 + 110.0 * thermal_load + 0.9 * ambient_c + 8.0 * (altitude_ft / 10000.0)) * (0.80 + 0.20 * heat_factor)
-        water_temp_c = (78.0 + 14.0 * thermal_load + 0.35 * (ambient_c - 25.0) + 2.5 * (altitude_ft / 10000.0)) * (0.85 + 0.15 * heat_factor)
-        oil_temp_c = (82.0 + 18.0 * thermal_load + 0.38 * (ambient_c - 25.0) + 3.0 * (altitude_ft / 10000.0)) * float(inputs.friction_multiplier) * (0.88 + 0.12 * heat_factor)
+        # In-cylinder CHT in deg C converted to telemetry sensor units (deg F)
+        cht_c = (76.0 + 20.0 * thermal_load + 0.3 * (ambient_c - 25.0) + 2.0 * (altitude_ft / 10000.0)) * (0.80 + 0.20 * heat_factor)
+        cht_f = cht_c * 1.8 + 32.0
 
-        viscosity_factor = max(0.60, 1.0 - 0.0055 * (oil_temp_c - 85.0))
-        oil_press_psi = (32.0 + 38.0 * (rpm / self.NOMINAL_RPM)) * viscosity_factor / float(inputs.friction_multiplier)
+        # Coolant water temperature in deg C converted to sensor units (deg F)
+        water_temp_c = (73.0 + 12.0 * thermal_load + 0.3 * (ambient_c - 25.0) + 1.5 * (altitude_ft / 10000.0)) * (0.85 + 0.15 * heat_factor)
+        water_temp_f = water_temp_c * 1.8 + 32.0
 
-        base_ff = (12.0 + 18.0 * throttle) * (0.85 + 0.30 * (rpm / self.NOMINAL_RPM)) * float(inputs.fuel_delivery_ratio)
-        fuel_flow_l_h = base_ff * (1.0 + 0.25 * (altitude_ft / 25000.0))
-        map_injector = (state.manifold_pressure_kpa / 101.325) * 29.92
-        fuel_temp_c = max(ambient_c + 5.0, 24.0 + 0.25 * water_temp_c + 0.2 * ambient_c)
+        # Lubrication circuit oil temperature in deg C converted to sensor units (deg F)
+        oil_temp_c = (68.0 + 14.0 * thermal_load + 0.3 * (ambient_c - 25.0) + 2.0 * (altitude_ft / 10000.0)) * float(inputs.friction_multiplier) * (0.88 + 0.12 * heat_factor)
+        oil_temp_f = oil_temp_c * 1.8 + 32.0
 
-        battery_voltage = 28.2 - 0.4 * (load - 0.5) - 0.02 * (ambient_c - 25.0)
-        battery_current = 14.0 + 18.0 * load + 4.0 * math.sin(rpm * 0.02)
-        alternator_temp_c = 48.0 + 26.0 * (battery_current / 35.0) + 0.6 * ambient_c
+        # Oil pressure with viscosity and mechanical friction coupling (PSI)
+        viscosity_factor = max(0.60, 1.0 - 0.0035 * (oil_temp_c - 80.0))
+        oil_press_psi = (48.0 + 14.0 * (rpm / self.NOMINAL_RPM)) * viscosity_factor / float(inputs.friction_multiplier)
+
+        # Fuel delivery (L/h)
+        base_ff = (14.0 + 20.0 * throttle) * (0.75 + 0.25 * (rpm / self.NOMINAL_RPM)) * float(inputs.fuel_delivery_ratio)
+        fuel_flow_l_h = base_ff * (1.0 + 0.15 * (altitude_ft / 25000.0))
+        map_injector = (state.manifold_pressure_kpa / 101.325) * 29.92 * (0.85 + 0.15 * (1.0 - altitude_ft / 30000.0))
+        fuel_temp_f = (ambient_c + 8.0) * 1.8 + 32.0
+
+        battery_voltage = 27.6 - 0.3 * (load - 0.5) - 0.01 * (ambient_c - 25.0)
+        battery_current = 0.0 + 0.8 * load + 0.2 * math.sin(rpm * 0.02)
+        alt_temp_c = 70.0 + 18.0 * (battery_current / 15.0) + 0.5 * (ambient_c - 25.0)
+        alt_temp_f = alt_temp_c * 1.8 + 32.0
 
         misfire_vib = 1.65 * float(inputs.misfire_fraction)
         vibration_g = 0.85 + 0.75 * math.pow(rpm / self.NOMINAL_RPM, 2.0) + 0.45 * (load - 0.5) + misfire_vib
@@ -199,15 +210,15 @@ class ReducedOrderPistonEngine:
             "EGT1": round(egt1, 1),
             "EGT2": round(egt2, 1),
             "EGT3": round(egt3, 1),
-            "CHT": round(cht, 1),
+            "CHT": round(cht_f, 1),
             "Fuel_Flow": round(fuel_flow_l_h, 2),
-            "Oil_Temp": round(oil_temp_c, 1),
+            "Oil_Temp": round(oil_temp_f, 1),
             "Oil_Pressure": round(oil_press_psi, 1),
             "Battery_Voltage": round(battery_voltage, 2),
             "Battery_Current": round(battery_current, 2),
-            "Alternator_Temp": round(alternator_temp_c, 1),
-            "EFI_Fuel_Temp": round(fuel_temp_c, 1),
-            "EFI_Water_Temp": round(water_temp_c, 1),
+            "Alternator_Temp": round(alt_temp_f, 1),
+            "EFI_Fuel_Temp": round(fuel_temp_f, 1),
+            "EFI_Water_Temp": round(water_temp_f, 1),
             "MAP_Injector": round(map_injector, 2),
             "Vibration": round(vibration_g, 3),
             "Efficiency": round(state.thermal_efficiency, 4),
