@@ -272,13 +272,13 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
     <!-- LEFT SIDEBAR: VERTICAL 2-TAB NAVIGATION -->
     <nav class="side-nav">
       <button id="tabBtnLive" class="side-tab-btn active" onclick="switchDashboardTab('live')">
-        <span class="side-tab-icon">🛰️</span>
+        <span class="side-tab-icon">⌖</span>
         <span class="side-tab-title">LIVE MISSION</span>
         <span class="side-tab-sub">Map • 3D Twin • CAN</span>
       </button>
 
       <button id="tabBtnDiagnostics" class="side-tab-btn" onclick="switchDashboardTab('diagnostics')">
-        <span class="side-tab-icon">🩺</span>
+        <span class="side-tab-icon">⚙</span>
         <span class="side-tab-title">HEALTH & DIAGNOSTICS</span>
         <span class="side-tab-sub">Faults • Telemetry • Physics</span>
       </button>
@@ -296,7 +296,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
         <div class="card mission-control-card">
           <div class="mission-header">
             <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:18px;">🛰️</span>
+              <span style="font-size:16px;">⌖</span>
               <div>
                 <div style="font-size:14px; font-weight:800; color:#e8f0e8;">MISSION CONTROL & FLIGHT PLANNER</div>
                 <div style="font-size:10px; color:var(--muted);">
@@ -309,8 +309,8 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
               <span class="pill good" id="simModeBadge" style="font-size:10px; padding:2px 8px;">
                 SIMULATION MODE: ● AUTOMATIC
               </span>
-              <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">🛠️ MISSION DESIGN</button>
-              <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">🚀 MISSION EXECUTION</button>
+              <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">⚒ MISSION DESIGN</button>
+              <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">✈ MISSION EXECUTION</button>
             </div>
           </div>
 
@@ -352,8 +352,8 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
           <!-- PRIMARY MISSION & REPLAY ACTIONS -->
           <div class="primary-mission-actions">
-            <button id="btnStartMission" class="success" onclick="startAutomaticMission()">🚀 START SIMULATION</button>
-            <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">📼 MISSION REPLAY</button>
+            <button id="btnStartMission" class="success" onclick="startAutomaticMission()">▶ START SIMULATION</button>
+            <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">⟳ MISSION REPLAY</button>
             <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
             <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
             <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
@@ -379,10 +379,10 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
           <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
           <details style="margin-top:6px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:5px 8px;">
             <summary style="font-size:10px; font-weight:700; color:#7a8c7b; cursor:pointer;">
-              ⚙️ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
+              ⚙ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
             </summary>
             <div style="font-size:9.5px; color:#c9983e; margin:3px 0;">
-              ⚠️ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
+              ⚠ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
             </div>
             <div style="display:flex; gap:8px; align-items:center; margin-bottom:3px;">
               <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
@@ -419,7 +419,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
             <div class="map-header">
               <div>
                 <div style="font-size:13.5px; font-weight:700; color:#5eb574; display:flex; align-items:center; gap:5px;">
-                  <span>🗺️</span> UAV LIVE MISSION MAP
+                  <span>⌖</span> UAV LIVE MISSION MAP
                 </div>
                 <div style="font-size:10px; color:#7a8c7b; margin-top:1px;" id="mapModeSubtitle">
                   Real Geographic Coordinates • Multi-Layer GIS • Close UAV Proximity View
@@ -435,12 +435,12 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
                   <button id="btnLayerTerrain" class="map-btn" style="border:none; padding:2px 4px;" onclick="setMapLayer('terrain')">Terrain</button>
                 </div>
 
-                <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">🎯 Follow: ON</button>
-                <button class="map-btn" onclick="centerOnUAV()">📍 Center</button>
-                <button class="map-btn" onclick="fitMissionRoute()">🔄 Fit</button>
-                <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">🔍 HUD</button>
-                <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">👁️ Route</button>
-                <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">🚩 WPs</button>
+                <button id="btnFollow" class="map-btn active" onclick="toggleFollowUAV()">⌖ Follow: ON</button>
+                <button class="map-btn" onclick="centerOnUAV()">⦿ Center</button>
+                <button class="map-btn" onclick="fitMissionRoute()">⤢ Fit</button>
+                <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">⎇ HUD</button>
+                <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">∿ Route</button>
+                <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">⚑ WPs</button>
               </div>
             </div>
 
@@ -452,14 +452,14 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
               <div id="uavProximityOverlay" class="proximity-hud-box">
                 <div class="prox-header">
                   <span style="font-weight:800; color:#5eb574; font-size:9px; display:flex; align-items:center; gap:4px;">
-                    <span>🔍</span> UAV CLOSE PROXIMITY VIEW
+                    <span>⌖</span> UAV CLOSE PROXIMITY VIEW
                   </span>
                   <span class="pill good" id="pxHealthBadge" style="font-size:7.5px; padding:1px 4px;">NORMAL</span>
                 </div>
 
                 <!-- 1. UAV LIVE FLIGHT STATE -->
                 <div class="prox-section">
-                  <div class="prox-sec-title">✈️ UAV LIVE TELEMETRY</div>
+                  <div class="prox-sec-title">✈ UAV LIVE TELEMETRY</div>
                   <div class="prox-grid">
                     <div><span class="prox-lbl">LAT:</span> <b id="pxLat">28.4520° N</b></div>
                     <div><span class="prox-lbl">LON:</span> <b id="pxLon">77.0250° E</b></div>
@@ -474,7 +474,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
                 <!-- 2. ENVIRONMENT -->
                 <div class="prox-section">
-                  <div class="prox-sec-title">🌍 LIVE ENVIRONMENT</div>
+                  <div class="prox-sec-title">≋ LIVE ENVIRONMENT</div>
                   <div class="prox-grid">
                     <div><span class="prox-lbl">TEMP:</span> <b id="pxTemp">18.4 °C</b></div>
                     <div><span class="prox-lbl">PRESS:</span> <b id="pxPress">802 hPa</b></div>
@@ -487,7 +487,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
                 <!-- 3. DIGITAL TWIN -->
                 <div class="prox-section" style="border-bottom:none;">
-                  <div class="prox-sec-title">🧠 DIGITAL TWIN & RISK</div>
+                  <div class="prox-sec-title">⚙ DIGITAL TWIN & RISK</div>
                   <div class="prox-grid">
                     <div><span class="prox-lbl">HEALTH:</span> <b id="pxHealth" class="good">98.2%</b></div>
                     <div><span class="prox-lbl">ANOMALY:</span> <b id="pxAnomaly" class="good">0.012</b></div>
@@ -502,7 +502,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
             <!-- MAP STATUS & CURSOR COORDINATES BAR -->
             <div class="map-status-bar">
-              <div id="mapCursorCoords">📍 Cursor: 28.4520° N, 77.0250° E | Zoom: 9</div>
+              <div id="mapCursorCoords">⌖ Cursor: 28.4520° N, 77.0250° E | Zoom: 9</div>
               <div>Geodetic Datum: WGS-84 • OpenStreetMap / ESRI GIS</div>
             </div>
 
@@ -721,7 +721,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
           <div class="card" style="border-color:#18281b;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
-                <span>🌍</span> LIVE ENVIRONMENTAL CONDITIONS
+                <span>≋</span> LIVE ENVIRONMENTAL CONDITIONS
               </h2>
               <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo API)</span>
             </div>
@@ -765,7 +765,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
           <div class="card" style="border-color:#18281b;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
               <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
-                <span>⚡</span> ECU CAN BUS / FADEC TELEMETRY STREAM
+                <span>⌗</span> ECU CAN BUS / FADEC TELEMETRY STREAM
               </h2>
               <span class="pill good" style="font-size:9.5px;">● 10 Hz Synchronized</span>
             </div>
@@ -791,7 +791,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
         <div class="card" style="margin-bottom:8px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
-              <span>🧪</span> EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE
+              <span>⚒</span> EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE
             </h2>
             <span class="pill" style="color:#c9983e; border-color:#3d2f10; background:#1c1407; font-size:9.5px;">
               Testing Subsystem • Injects anomalies into simulated flight
@@ -823,7 +823,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
             </label>
 
             <div style="display:flex; align-items:flex-end; gap:4px;">
-              <button onclick="analyzeSnapshot()" style="width:100%;">⚡ Single-Point Analyze</button>
+              <button onclick="analyzeSnapshot()" style="width:100%;">⌁ Single-Point Analyze</button>
             </div>
           </div>
         </div>
@@ -944,7 +944,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
 <script>
 // ==========================================
-// 🛰️ Global State & Navigation Core
+// Global State & Navigation Core
 // ==========================================
 const $ = id => document.getElementById(id);
 
@@ -1019,7 +1019,7 @@ const hwState = {
 };
 
 // ==========================================
-// 🗺️ Leaflet Map Initialization & Multi-Layer GIS
+// Leaflet Map Initialization & Multi-Layer GIS
 // ==========================================
 function initUAVMap() {
   if (uavMap) return;
@@ -1065,7 +1065,7 @@ function initUAVMap() {
     const z = uavMap.getZoom();
     const bar = $('mapCursorCoords');
     if (bar) {
-      bar.textContent = `📍 Cursor: ${latStr}° N, ${lonStr}° E | Zoom: ${z} | Layer: ${activeBaseLayer.toUpperCase()}`;
+      bar.textContent = `⌖ Cursor: ${latStr}° N, ${lonStr}° E | Zoom: ${z} | Layer: ${activeBaseLayer.toUpperCase()}`;
     }
   });
 
@@ -1132,13 +1132,13 @@ function toggleProximityHUD() {
   if (proximityHUDEnabled) {
     if (btn) {
       btn.classList.add('active');
-      btn.textContent = '🔍 HUD: ON';
+      btn.textContent = '⎇ HUD: ON';
     }
     if (overlay) overlay.style.display = 'block';
   } else {
     if (btn) {
       btn.classList.remove('active');
-      btn.textContent = '🔍 HUD: OFF';
+      btn.textContent = '⎇ HUD: OFF';
     }
     if (overlay) overlay.style.display = 'none';
   }
@@ -1189,22 +1189,22 @@ function createWaypointIcon(type, id, isDraggable = false) {
 }
 
 // ==========================================
-// 🚀 UI Mode Switcher (Planner vs Execution)
+// UI Mode Switcher (Planner vs Execution)
 // ==========================================
 function setUIMode(mode) {
   currentUIMode = mode;
   if (mode === 'planner') {
     $('btnModePlanner').classList.add('active');
     $('btnModeExecution').classList.remove('active');
-    $('mapModeSubtitle').textContent = '🛠️ Mission Design Mode • Click on map to add waypoints, drag markers to reposition';
-    $('wpPlannerHeaderTitle').innerHTML = '🛠️ 3D Waypoint Flight Plan Editor <span style="font-size:9px; color:#7a8c7b; font-weight:normal; margin-left:5px;" id="wpPlannerHeaderSub">(Click on map to add, drag markers to reposition)</span>';
+    $('mapModeSubtitle').textContent = '⚒ Mission Design Mode • Click on map to add waypoints, drag markers to reposition';
+    $('wpPlannerHeaderTitle').innerHTML = '⚒ 3D Waypoint Flight Plan Editor <span style="font-size:9px; color:#7a8c7b; font-weight:normal; margin-left:5px;" id="wpPlannerHeaderSub">(Click on map to add, drag markers to reposition)</span>';
     $('wpPlannerActions').style.display = 'flex';
     $('wpTableActionColHeader').textContent = 'Actions';
   } else {
     $('btnModeExecution').classList.add('active');
     $('btnModePlanner').classList.remove('active');
-    $('mapModeSubtitle').textContent = '🚀 Mission Execution Mode • Live Geodesic Tracking • Autonomous Digital Twin';
-    $('wpPlannerHeaderTitle').innerHTML = '🛰️ 3D Waypoint Route & Live Execution Status <span style="font-size:9px; color:#7a8c7b; font-weight:normal; margin-left:5px;" id="wpPlannerHeaderSub">(Live waypoint sequence, altitude, speed & ETA)</span>';
+    $('mapModeSubtitle').textContent = '✈ Mission Execution Mode • Live Geodesic Tracking • Autonomous Digital Twin';
+    $('wpPlannerHeaderTitle').innerHTML = '⌖ 3D Waypoint Route & Live Execution Status <span style="font-size:9px; color:#7a8c7b; font-weight:normal; margin-left:5px;" id="wpPlannerHeaderSub">(Live waypoint sequence, altitude, speed & ETA)</span>';
     $('wpPlannerActions').style.display = 'none';
     $('wpTableActionColHeader').textContent = 'Status / ETA';
   }
@@ -1214,7 +1214,7 @@ function setUIMode(mode) {
 }
 
 // ==========================================
-// 🛰️ Presets & Waypoint Route Management
+// Presets & Waypoint Route Management
 // ==========================================
 async function loadPresetMission(presetKey) {
   try {
@@ -1460,7 +1460,7 @@ function deleteWp(index) {
 }
 
 // ==========================================
-// 🚀 Live Simulation & Mission Replay Controls
+// Live Simulation & Mission Replay Controls
 // ==========================================
 async function startAutomaticMission() {
   setUIMode('execution');
@@ -1655,7 +1655,7 @@ function toggleManualOverride(enabled) {
   if (enabled) {
     ctrls.style.opacity = '1.0';
     ctrls.style.pointerEvents = 'auto';
-    badge.textContent = 'SIMULATION MODE: ⚠️ MANUAL OVERRIDE ACTIVE';
+    badge.textContent = 'SIMULATION MODE: ⚠ MANUAL OVERRIDE ACTIVE';
     badge.className = 'pill warn';
   } else {
     ctrls.style.opacity = '0.5';
@@ -1666,7 +1666,7 @@ function toggleManualOverride(enabled) {
 }
 
 // ==========================================
-// 🛰️ Telemetry, Environment & Twin Synchronization
+// Telemetry, Environment & Twin Synchronization
 // ==========================================
 function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLevel = 'LOW', riskScore = 0) {
   if (!uav || !uavMap) return;
@@ -1697,7 +1697,7 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
 
     uavMarker.bindPopup(`
       <div style="font-family:Inter,sans-serif;">
-        <div style="font-weight:bold; font-size:11.5px; color:#4cb574;">✈️ AeroPulse-X MALE-UAV</div>
+        <div style="font-weight:bold; font-size:11.5px; color:#4cb574;">✈ AeroPulse-X MALE-UAV</div>
         <div style="font-size:10.5px; color:#7a8c7b; margin-top:2px;">Phase: <b style="color:#dbe5db;">${phase}</b></div>
         <div style="font-size:10.5px; color:#7a8c7b;">Altitude: <b style="color:#4cb574;">${Math.round(alt).toLocaleString()} ft</b></div>
         <div style="font-size:10.5px; color:#7a8c7b;">GS: <b style="color:#dbe5db;">${speed} kt</b> | TAS: <b>${airspeed} kt</b></div>
@@ -1838,11 +1838,11 @@ function toggleFollowUAV() {
   const btn = $('btnFollow');
   if (followUAV) {
     btn.classList.add('active');
-    btn.textContent = '🎯 Follow: ON';
+    btn.textContent = '⌖ Follow: ON';
     centerOnUAV();
   } else {
     btn.classList.remove('active');
-    btn.textContent = '🎯 Follow: OFF';
+    btn.textContent = '⌖ Follow: OFF';
   }
 }
 
@@ -1883,7 +1883,7 @@ function toggleWaypoints() {
 }
 
 // ==========================================
-// ⚙️ Backend API & Scenario Helpers
+// Backend API & Scenario Helpers
 // ==========================================
 function getScenarioPayload(extra = {}) {
   const isOverride = manualOverrideEnabled && $('chkManualOverride').checked;
@@ -2198,7 +2198,7 @@ function drawTimeline(items){
 }
 
 // ==========================================
-// 🚀 Live WebSocket Streaming (Path-Driven)
+// Live WebSocket Streaming (Path-Driven)
 // ==========================================
 async function startLiveStream(){
   if(liveSocket){
