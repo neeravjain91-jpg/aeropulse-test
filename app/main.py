@@ -314,11 +314,44 @@ def _build_live_engine_data(
         ),
     )
 
-    rpm = 3000.0 * (
-        0.92 + 0.12 * throttle
-    )
+    phase = str(getattr(mission_point, "mission_phase", "CRUISE")).upper()
 
-    return _ENGINE.simulate(
+    if phase in ["GROUND", "PREFLIGHT", "OFF", "STATIONARY"]:
+        run_state = "ENGINE_OFF"
+        rpm = 0.0
+    elif phase in ["STARTING", "CRANKING", "IGNITION"]:
+        run_state = "ENGINE_STARTING"
+        rpm = 800.0
+    elif phase in ["STOPPING", "COOLDOWN", "SHUTDOWN"]:
+        run_state = "ENGINE_STOPPING"
+        rpm = 400.0
+    else:
+        run_state = "ENGINE_RUNNING"
+        rpm = 3000.0 * (
+            0.92 + 0.12 * throttle
+        )
+
+    if run_state == "ENGINE_OFF":
+        data = _ENGINE.simulate(
+            rpm=0.0,
+            throttle=0.0,
+            altitude_ft=float(
+                mission_point.altitude_ft
+            ),
+            ambient_c=float(
+                mission_point.ambient_c
+            ),
+            load=0.0,
+        )
+        data["Engine_RPM"] = 0.0
+        data["Fuel_Flow"] = 0.0
+        data["Brake_Power_kW"] = 0.0
+        data["Indicated_Power_kW"] = 0.0
+        data["Vibration"] = 0.0
+        data["engine_run_state"] = "ENGINE_OFF"
+        return data
+
+    data = _ENGINE.simulate(
         rpm=rpm,
         throttle=throttle,
         altitude_ft=float(
@@ -329,6 +362,11 @@ def _build_live_engine_data(
         ),
         load=load,
     )
+    if run_state in ["ENGINE_STARTING", "ENGINE_STOPPING"]:
+        data["Engine_RPM"] = round(rpm, 1)
+        data["Brake_Power_kW"] = 0.0
+    data["engine_run_state"] = run_state
+    return data
 
 
 def _apply_live_fault(

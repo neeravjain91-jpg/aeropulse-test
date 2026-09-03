@@ -291,7 +291,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
       <!-- TAB 1: LIVE MISSION (Default Active) -->
       <!-- ========================================================================= -->
       <section id="tabContentLive" class="tab-content">
-        
+
         <!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
         <div class="card mission-control-card">
           <div class="mission-header">
@@ -358,7 +358,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
             <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
             <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
             <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
-            
+
             <select id="selReplaySpeed" style="width:auto; margin:0; padding:3px 6px; font-size:9.5px; display:none;" onchange="setReplaySpeed(+this.value)">
               <option value="1" selected>1x Speed</option>
               <option value="2">2x Speed</option>
@@ -413,7 +413,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
         <!-- 2. SIDE-BY-SIDE: UAV LIVE MISSION MAP (55%) + 3D PISTON ENGINE DIGITAL TWIN (45%) -->
         <div class="mission-twin-split-grid">
-          
+
           <!-- LEFT: UAV LIVE MISSION MAP -->
           <div class="map-card">
             <div class="map-header">
@@ -638,7 +638,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
             <div class="engine-digital-twin">
               <div class="engine-viewport">
                 <canvas id="engineCanvas" aria-label="Interactive 3D model of a four-cylinder horizontally opposed UAV aero-piston engine"></canvas>
-                
+
                 <div class="engine-thermal-field" id="engineThermalField" aria-hidden="true">
                   <div class="engine-thermal-aura engine-thermal-aura-outer"></div>
                   <div class="engine-thermal-aura engine-thermal-aura-core"></div>
@@ -652,7 +652,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 
                 <div class="engine-scanline" aria-hidden="true"></div>
                 <div class="engine-axis" aria-hidden="true"><span>X</span><span>Y</span><span>Z</span></div>
-                
+
                 <div class="engine-hud engine-hud-left">
                   <strong id="engineHudRpm">3,000 RPM</strong>
                   <span id="engineHudCht">220°F CHT</span>
@@ -1079,7 +1079,7 @@ function initUAVMap() {
       const lastWp = currentWaypoints[currentWaypoints.length - 1];
       const alt = lastWp ? lastWp.altitude_ft : 10000;
       const speed = lastWp ? lastWp.speed_kt : 135;
-      
+
       const newWp = {
         id: newId,
         name: `Recon Point ${newId}`,
@@ -1091,7 +1091,7 @@ function initUAVMap() {
         loiter_time_min: 10,
         description: 'Operator Added Waypoint'
       };
-      
+
       currentWaypoints.push(newWp);
       refreshFlightPlan();
     }
@@ -1226,11 +1226,11 @@ async function loadPresetMission(presetKey) {
     currentWaypoints = data.waypoints || [];
     currentPlannedCoords = data.planned_route || [];
     currentRiskSegments = data.route_risk_segments || [];
-    
+
     $('autoMissionName').textContent = data.mission_name || presetKey.toUpperCase();
     $('autoRouteSummary').textContent = `${data.total_waypoints} Waypoints • ${data.total_distance_km} km`;
     $('autoEstDuration').textContent = data.formatted_duration || `${Math.round(data.estimated_duration_min)}m`;
-    
+
     renderWaypointsAndPlannedRoute();
     renderWaypointsTable();
   } catch (e) {
@@ -1282,7 +1282,7 @@ function renderWaypointsAndPlannedRoute() {
       let riskCol = '#4cb574';
       if (seg.predicted_risk === 'MEDIUM') riskCol = '#c9983e';
       if (seg.predicted_risk === 'HIGH') riskCol = '#c94c48';
-      
+
       const poly = L.polyline([seg.start_coord, seg.end_coord], {
         color: riskCol,
         weight: 3.5,
@@ -1354,8 +1354,8 @@ function renderWaypointsTable(progress = 0, etaNextMin = 0) {
       if (isComplete) {
         statusHtml = `<span class="pill good" style="font-size:8px; padding:1px 5px;">COMPLETED</span>`;
       } else if (progress === 0) {
-        statusHtml = i === 0 
-          ? `<span class="pill good" style="font-size:8px; padding:1px 5px;">READY</span>` 
+        statusHtml = i === 0
+          ? `<span class="pill good" style="font-size:8px; padding:1px 5px;">READY</span>`
           : `<span class="pill" style="font-size:8px; padding:1px 5px; color:#7a8c7b;">PENDING</span>`;
       } else if (i < activeIndex) {
         statusHtml = `<span class="pill good" style="font-size:8px; padding:1px 5px;">COMPLETED</span>`;
@@ -1376,7 +1376,7 @@ function renderWaypointsTable(progress = 0, etaNextMin = 0) {
         <td>
           ${isPlanner ? `
             <select class="wp-input" onchange="updateWpField(${i}, 'type', this.value)">
-              ${['BASE','TAKEOFF','CLIMB','CRUISE','ISR','PATROL','DESCENT','RETURN','LANDING','RECOVERY'].map(t => 
+              ${['BASE','TAKEOFF','CLIMB','CRUISE','ISR','PATROL','DESCENT','RETURN','LANDING','RECOVERY'].map(t =>
                 `<option value="${t}" ${wp.type === t ? 'selected' : ''}>${t}</option>`
               ).join('')}
             </select>
@@ -1466,7 +1466,7 @@ async function startAutomaticMission() {
   setUIMode('execution');
   if (replayTimer) clearInterval(replayTimer);
   replayTimeline = [];
-  
+
   $('btnStartMission').style.display = 'none';
   $('btnStartReplay').style.display = 'none';
   $('btnPauseMission').style.display = 'inline-block';
@@ -1519,7 +1519,7 @@ async function startMissionReplay() {
     replayIndex = 0;
     isReplayPaused = false;
     $('events').innerHTML = '<div class="event"><strong>Mission Replay Initialized</strong>Replaying simulated historical mission across planned coordinates.</div>';
-    
+
     startReplayTimer();
   } catch (e) {
     alert('Replay error: ' + e.message);
@@ -1644,8 +1644,19 @@ function abortMissionSimulation() {
   $('btnRestartMission').style.display = 'none';
   $('selReplaySpeed').style.display = 'none';
   $('autoPhasePill').textContent = 'READY';
-  $('events').innerHTML = '<div class="event"><strong>Simulation Reset</strong>UAV mission reset to base fix.</div>';
+  $('events').innerHTML = '<div class="event"><strong>Simulation Reset</strong>UAV mission reset to base fix. Engine OFF.</div>';
   renderWaypointsTable(0, 0);
+  window.AeroPulseEngine3D?.setTelemetry({
+    rpm: 0,
+    throttle: 0,
+    engineState: 'ENGINE_OFF',
+    oilPressure: 0,
+    fuelFlow: 0,
+    vibration: 0,
+    fault: 'none',
+    health: 100
+  });
+  if ($('engRPM')) $('engRPM').textContent = '0 RPM';
 }
 
 function toggleManualOverride(enabled) {
@@ -1728,12 +1739,12 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   $('hudAlt').textContent = `${Math.round(alt).toLocaleString()} ft`;
   $('hudSpeed').textContent = `${speed} / ${airspeed} kt`;
   $('hudHeading').textContent = `${String(Math.round(heading)).padStart(3, '0')}° / ${String(Math.round(track)).padStart(3, '0')}°`;
-  
+
   $('hudPhase').textContent = phase;
   $('hudPhase').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
 
   $('hudProgress').textContent = `${(progress * 100).toFixed(1)}%`;
-  
+
   $('hudHealth').textContent = `${healthState}`;
   $('hudHealth').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
 
@@ -1774,7 +1785,7 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   $('pxVSI').textContent = `${vsi >= 0 ? '+' : ''}${vsi} fpm`;
   $('pxPhase').textContent = phase;
   $('pxETA').textContent = `${etaNext || 0} min`;
-  
+
   if (env) {
     $('pxTemp').textContent = `${env.ambient_c} °C`;
     $('pxPress').textContent = `${env.pressure_hpa} hPa`;
@@ -1796,9 +1807,10 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
 
 function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultName = null) {
   if (!telemetry) return;
-  const rpm = Math.round(telemetry.Engine_RPM || 3000);
-  const thr = uav && uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : Math.round(telemetry.Throttle || 60);
-  const load = uav && uav.auto_load != null ? uav.auto_load : (telemetry.Load || 0.85);
+  const runState = telemetry.engine_run_state || (telemetry.Engine_RPM > 0 ? 'ENGINE_RUNNING' : 'ENGINE_OFF');
+  const rpm = telemetry.Engine_RPM != null ? Math.round(telemetry.Engine_RPM) : (runState === 'ENGINE_OFF' ? 0 : 3000);
+  const thr = uav && uav.auto_throttle != null ? Math.round(uav.auto_throttle * 100) : Math.round(telemetry.Throttle ?? (runState === 'ENGINE_OFF' ? 0 : 60));
+  const load = uav && uav.auto_load != null ? uav.auto_load : (telemetry.Load ?? (runState === 'ENGINE_OFF' ? 0 : 0.85));
   hwState.throttle = thr;
 
   // Update Consolidated Selected Assembly Engine Telemetry Grid
@@ -1809,13 +1821,13 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
   if ($('engEGT')) $('engEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
   if ($('engOil')) $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI • ${fmt(telemetry.Oil_Temp, 0)} °C`;
   if ($('engFuel')) $('engFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
-  if ($('engVib')) $('engVib').textContent = `${fmt(telemetry.Vibration || telemetry.Vibration_RMS || 1.02, 2)} g`;
+  if ($('engVib')) $('engVib').textContent = `${fmt(telemetry.Vibration ?? telemetry.Vibration_RMS ?? (runState === 'ENGINE_OFF' ? 0 : 1.02), 2)} g`;
   if ($('engMAP')) $('engMAP').textContent = `${fmt(telemetry.MAP_Injector || 29.8, 1)} inHg`;
-  if ($('engIgn')) $('engIgn').textContent = `${(20.0 + 4.0 * (rpm / 3000)).toFixed(1)}° BTDC`;
+  if ($('engIgn')) $('engIgn').textContent = `${(runState === 'ENGINE_OFF' ? 0 : 20.0 + 4.0 * (rpm / 3000)).toFixed(1)}° BTDC`;
   if ($('engVolt')) $('engVolt').textContent = `${fmt(telemetry.Battery_Voltage || 28.2, 1)} V`;
   if ($('engAlt')) $('engAlt').textContent = `${fmt(telemetry.Alternator_Temp || 68.4, 1)} °C`;
-  if ($('engFuelPress')) $('engFuelPress').textContent = `${(38.0 + 0.22 * (telemetry.Fuel_Flow || 20)).toFixed(1)} PSI`;
-  if ($('engKnock')) $('engKnock').textContent = `${(0.01 + 0.02 * Math.max(0, ((telemetry.CHT || 220) - 220) / 40)).toFixed(2)}`;
+  if ($('engFuelPress')) $('engFuelPress').textContent = `${(runState === 'ENGINE_OFF' ? 0 : 38.0 + 0.22 * (telemetry.Fuel_Flow || 20)).toFixed(1)} PSI`;
+  if ($('engKnock')) $('engKnock').textContent = `${(runState === 'ENGINE_OFF' ? 0 : 0.01 + 0.02 * Math.max(0, ((telemetry.CHT || 220) - 220) / 40)).toFixed(2)}`;
 
   // Synchronize 3D WebGL Piston Engine Twin
   window.AeroPulseEngine3D?.setTelemetry({
@@ -1826,10 +1838,11 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
     oilPressure: telemetry.Oil_Pressure ?? hwState.oilPress,
     oilTemp: telemetry.Oil_Temp ?? hwState.oilTemp,
     fuelFlow: telemetry.Fuel_Flow ?? hwState.fuelFlow,
-    vibration: telemetry.Vibration ?? telemetry.Vibration_RMS ?? 1.02,
+    vibration: telemetry.Vibration ?? telemetry.Vibration_RMS ?? (runState === 'ENGINE_OFF' ? 0 : 1.02),
     busVoltage: telemetry.Battery_Voltage ?? telemetry.Bus_Voltage ?? 28.2,
     health: healthIndex,
-    fault: faultName || $('fault')?.value || 'none'
+    fault: faultName || $('fault')?.value || 'none',
+    engineState: runState
   });
 }
 
@@ -2226,7 +2239,7 @@ async function startLiveStream(){
       const p=m.data;
       points.push(p);
       drawTimeline(points);
-      
+
       $('health').textContent=p.health_state;
       $('health').className='kpi '+stateClass(p.health_state);
       $('healthIndex').textContent=fmt(p.health_index,1);
