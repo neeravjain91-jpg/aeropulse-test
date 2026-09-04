@@ -26,6 +26,13 @@ def inject_fault(telemetry: dict, fault: str = "none", severity: float = 0.6):
     """
     data = copy.deepcopy(telemetry)
     fault = str(fault).lower()
+    FAULT_ALIASES = {
+        "thermal": "overheating",
+        "temp": "overheating",
+        "fuel": "injector",
+        "bearing": "lubrication",
+    }
+    fault = FAULT_ALIASES.get(fault, fault)
     if fault not in FAULTS:
         raise ValueError(f"Unsupported fault '{fault}'. Allowed: {sorted(FAULTS)}")
     strength = max(0.0, min(1.0, float(severity)))

@@ -2558,7 +2558,9 @@ async function startLiveStream(){
   };
 
   liveSocket.onerror=()=>{
-    alert('WebSocket connection failed. Verify FastAPI server.');
+    console.warn('WebSocket stream unavailable. Falling back to REST mission simulation.');
+    $('events').innerHTML='<div class="event"><strong>REST Simulation Active</strong>Live WebSocket stream unavailable in serverless environment; running flight simulation via deterministic REST telemetry engine.</div>';
+    startMissionReplay();
   };
 }
 
@@ -2573,6 +2575,11 @@ function setupHardwareListeners() {
       updateCANStream();
     });
   };
+  sync('hwSliderThrottle', 'hwValThrottle', '%', 'throttle');
+  sync('hwSliderAltitude', 'hwValAltitude', ' ft', 'altitude');
+  sync('hwSliderAmbient', 'hwValAmbient', '°C', 'ambient');
+  sync('hwSliderDuration', 'hwValDuration', ' h', 'duration');
+}
 
 // ==========================================
 // Virtual Data Laboratory Interactive Engine
