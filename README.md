@@ -68,7 +68,7 @@ Ground Control Station (GCS Dashboard, 3D WebGL Twin, Replay, What-If)
 The supplied datasets originate from different platforms and sensing domains. AeroPulse-X enforces strict domain separation:
 
 ```text
-NASA ACES (173,878 rows, 14 flights) ──► Target-Domain: Real Aero-Piston Flight Telemetry (Continental TSIO-360-MB)
+NASA ACES (173,878 rows, 14 flights) ──► Altus II operational/mechanical flight telemetry (Rotax 912 piston engine)
 CWRU Bearing Dataset (120 .npz files) ──► Proxy Benchmark: 2 hp Electric Motor Test Stand (Vibration DSP only)
 ALFA UAV Dataset (47 autonomous runs) ──► Proxy Benchmark: Fixed-Wing UAV Flight Dynamics & Actuators
 NASA C-MAPSS / N-CMAPSS (708 runs)    ──► Proxy Benchmark: Turbofan Run-to-Failure RUL Methodology
@@ -76,28 +76,34 @@ AeroPulse Synthetic Simulator         ──► Target-Domain: Physics-Informed 
 ```
 
 ### Dataset Facts & Limitations:
-1. **NASA ACES**: Real turbocharged aero-piston flight data used for health classification and digital-twin calibration. **Does NOT contain run-to-failure degradation trajectories** (all flights completed safely).
+1. **NASA ACES**: Real Altus II operational/mechanical flight telemetry (four-cylinder Rotax 912 piston engine) used for operational-envelope health classification and contextual validation. **Does NOT contain run-to-failure degradation trajectories or target-engine RUL ground truth** (all flights completed safely).
 2. **CWRU Bearing**: High-frequency vibration data from a stationary electric motor rig. Used strictly for vibration DSP feature extraction benchmarking. **NOT aero-piston ground truth**.
 3. **ALFA UAV**: Real flight-control and airframe actuator failure logs from a Carbon Z T-28 UAV. Used for tactical flight risk and navigation validation. **NOT engine ground truth**.
 4. **NASA C-MAPSS**: Turbofan engine degradation simulation dataset. Used to validate prognostic regression algorithms. **NOT piston engine ground truth**.
 5. **AeroPulse Synthetic Engine**: Physics-informed ODE model of reduced-order Otto-cycle degradation kinetics. Functions as an interactive real-time GCS demonstrator.
 
-## Quick start — Windows PowerShell
+## Production Cloud Deployment (Vercel)
+
+- **Live Production URL**: [https://aeropulse-x.vercel.app](https://aeropulse-x.vercel.app)
+- **FastAPI Interactive API Docs**: [https://aeropulse-x.vercel.app/docs](https://aeropulse-x.vercel.app/docs)
+- **Deployment Status**: Continuous zero-config FastAPI serverless deployment on Vercel Fluid compute with static asset acceleration.
+
+## Quick start — Windows PowerShell (Local Development)
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
-# Run the complete test suite (146 passed)
+# Run the complete test suite (277 passed)
 pytest -v
 
 # Launch the real-time application
 python run.py
 ```
 
-Open:
+Open local dashboard:
 
 ```text
 http://127.0.0.1:8000/
@@ -111,7 +117,7 @@ http://127.0.0.1:8000/docs
 
 ## System Test Suite & CI
 
-- **Verified Test Suite**: **146 passed, 0 failed, 0 skipped, 0 xfailed** across 36 test modules.
+- **Verified Test Suite**: **277 passed, 0 failed, 0 skipped, 0 xfailed** across all test modules.
 - **Continuous Integration (CI)**: GitHub Actions workflow running on Python 3.11 with PyTorch (CPU) and scikit-learn dependency management.
 
 ## Safety and Scientific Scope
