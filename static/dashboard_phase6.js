@@ -652,7 +652,7 @@
         const lubH = calcSubHealth(['Oil_Pressure', 'Oil_Temp']);
         const fuelH = calcSubHealth(['MAP_Injector', 'Fuel_Flow']);
         const elecH = calcSubHealth(['Battery_Voltage', 'Battery_Current', 'Alternator_Temp']);
-        const combH = r.fault_candidates && r.fault_candidates.some(f => f.name.includes('Combustion') || f.name.includes('Misfire')) ? 45 : 99;
+        const combH = (Array.isArray(r.fault_candidates) && r.fault_candidates.some(f => f.name && (f.name.includes('Combustion') || f.name.includes('Misfire')))) ? 45 : 99;
         const mechH = r.telemetry && r.telemetry.Vibration > 2.0 ? 55 : 98;
 
         const updateBadge = (id, val) => {

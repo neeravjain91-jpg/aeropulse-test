@@ -138,12 +138,17 @@ def assess_sensor_health(telemetry: dict, twin: dict) -> dict:
     results.append(SensorAssessment("Fuel_Flow", ff_score, _status(ff_score), ff_reason))
 
     assessments = [item.as_dict() for item in results]
-    overall = min(item["trust_score"] for item in assessments)
+    overall = min(item["trust_score"] for item in assessments) if assessments else 100.0
     suspects = [item for item in assessments if item["status"] == "SUSPECT"]
+    overall_status = _status(overall)
 
     return {
         "overall_trust_score": overall,
+        "overall_status": overall_status,
         "sensors": assessments,
+        "channels": assessments,
         "suspect_sensors": [item["name"] for item in suspects],
+        "suspect_channels": [item["name"] for item in suspects],
         "is_sensor_fault_only": (overall < 50.0 and len(suspects) <= 2),
     }
+

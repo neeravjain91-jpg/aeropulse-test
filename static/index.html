@@ -179,6 +179,9 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 .map-wrapper{position:relative;width:100%;height:430px;min-height:430px;border-radius:6px;overflow:hidden;border:1px solid #162418;}
 #uavMap{height:100%;width:100%;background:#050906;z-index:1}
 .leaflet-container{background:#050906!important;font-family:inherit}
+.leaflet-tile-pane .tactical-dark-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(88%) contrast(92%) saturate(85%);
+}
 .leaflet-popup-content-wrapper{
   background:#0b120c;color:#dbe5db;border:1px solid #1c2b1e;border-radius:6px;font-size:11px;box-shadow:0 4px 16px rgba(0,0,0,0.85)
 }
@@ -503,7 +506,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
             <!-- MAP STATUS & CURSOR COORDINATES BAR -->
             <div class="map-status-bar">
               <div id="mapCursorCoords">⌖ Cursor: 28.4520° N, 77.0250° E | Zoom: 9</div>
-              <div>Geodetic Datum: WGS-84 • OpenStreetMap / ESRI GIS</div>
+              <div id="mapAttributionText">Geodetic Datum: WGS-84 • OpenStreetMap (Tactical Dark)</div>
             </div>
 
             <!-- Compact UAV Telemetry Strip Below Map -->
@@ -1019,6 +1022,7 @@ const hwState = {
 };
 
 // ==========================================
+// ==========================================
 // Leaflet Map Initialization & Multi-Layer GIS
 // ==========================================
 function initUAVMap() {
@@ -1029,29 +1033,44 @@ function initUAVMap() {
     attributionControl: true
   }).setView([28.65, 77.40], 9);
 
-  // 1. Standard OpenStreetMap Tile Layer
+  // 1. Standard OpenStreetMap Tile Layer (Public, Zero API Key Required)
   tileLayers.standard = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
   });
 
-  // 2. High-Contrast Dark CartoDB Layer
-  tileLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  // 2. High-Contrast Tactical Dark Map (Powered by OpenStreetMap with Tactical Dark CSS filter, Zero API Key Required)
+  tileLayers.dark = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/" target="_blank">CARTO</a>'
+    className: 'tactical-dark-tiles',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
   });
 
-  // 3. Real High-Resolution Satellite Imagery (ESRI World Imagery)
+  // 3. High-Resolution Satellite Imagery (ESRI World Imagery)
   tileLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 19,
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
   });
 
-  // 4. Real Topographic & Terrain Layer (ESRI World Topo)
-  tileLayers.terrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19,
-    attribution: 'Tiles &copy; Esri &mdash; Sources: GEBCO, NOAA, CHS, OSU, UNH, CSUMB, National Geographic, DeLorme, NAVTEQ, and Esri'
+  // 4. Topographic & Terrain Layer (OpenTopoMap / SRTM Elevation)
+  tileLayers.terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    maxZoom: 17,
+    subdomains: 'abc',
+    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org" target="_blank">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org" target="_blank">OpenTopoMap</a>'
+  });
+
+  // Attach graceful fallback handler to all tile layers
+  Object.keys(tileLayers).forEach(key => {
+    tileLayers[key].on('tileerror', function(errorEvent) {
+      const tile = errorEvent.tile;
+      if (tile && !tile.__fallback_applied) {
+        tile.__fallback_applied = true;
+        const coords = errorEvent.coords;
+        if (coords) {
+          tile.src = `https://tile.openstreetmap.org/${coords.z}/${coords.x}/${coords.y}.png`;
+        }
+      }
+    });
   });
 
   tileLayers[activeBaseLayer].addTo(uavMap);
@@ -1113,6 +1132,17 @@ function setMapLayer(layerName) {
 
   const activeBtnId = 'btnLayer' + layerName.charAt(0).toUpperCase() + layerName.slice(1);
   if ($(activeBtnId)) $(activeBtnId).classList.add('active');
+
+  const attrBar = $('mapAttributionText');
+  if (attrBar) {
+    const mapNames = {
+      standard: 'OpenStreetMap Standard',
+      dark: 'OpenStreetMap (Tactical Dark)',
+      satellite: 'Esri World Imagery',
+      terrain: 'OpenTopoMap / SRTM Elevation'
+    };
+    attrBar.textContent = `Geodetic Datum: WGS-84 • ${mapNames[layerName] || 'OpenStreetMap'}`;
+  }
 }
 
 function checkProximityHUDDisplay() {
@@ -2027,83 +2057,111 @@ function updateSubsystemBadges(zScores = {}, faultCandidates = [], telemetry = {
 }
 
 function renderAnalysis(r){
-  $('health').textContent=r.health_state;
+  if (!r) return;
+
+  $('health').textContent=r.health_state || '—';
   $('health').className='kpi '+stateClass(r.health_state);
-  $('healthSub').textContent=`ML ${r.ml_health_state||r.health_state} • ${(100*(r.health_confidence||0)).toFixed(1)}% conf`;
+  $('healthSub').textContent=`ML ${r.ml_health_state||r.health_state||'—'} • ${(100*(r.health_confidence||0)).toFixed(1)}% conf`;
 
   $('healthIndex').textContent=fmt(r.health_index,1);
   $('healthIndex').className='kpi '+(r.health_index>=75?'good':r.health_index>=50?'warn':'bad');
 
-  $('missionRisk').textContent=`${r.mission_risk.level} ${fmt(r.mission_risk.score,0)}`;
-  $('missionRisk').className='kpi '+stateClass(r.mission_risk.level);
-  $('reliability').textContent=`reliability index ${fmt(r.mission_risk.mission_reliability_index,1)}`;
+  if (r.mission_risk) {
+    $('missionRisk').textContent=`${r.mission_risk.level || '—'} ${fmt(r.mission_risk.score,0)}`;
+    $('missionRisk').className='kpi '+stateClass(r.mission_risk.level);
+    $('reliability').textContent=`reliability index ${fmt(r.mission_risk.mission_reliability_index,1)}`;
+  }
 
-  $('residual').textContent=fmt(r.twin.residual_rms,2);
+  if (r.twin) {
+    $('residual').textContent=fmt(r.twin.residual_rms,2);
+  }
   $('anomaly').textContent=`anomaly ${r.anomaly_flag?'DETECTED':'normal'} • score ${fmt(r.anomaly_score,3)}`;
   $('anomaly').className='tiny '+(r.anomaly_flag?'bad':'good');
 
-  $('advice').textContent=r.maintenance_advisory;
+  $('advice').textContent=r.maintenance_advisory || 'Nominal operation.';
 
-  $('faults').innerHTML=
-    r.fault_candidates.map(x=>`
-      <div class="diag">
-        <b>
-          ${x.name}
-          <span class="pill ${stateClass(x.severity==='high'?'HIGH':x.severity==='medium'?'MEDIUM':'LOW')}">
-            ${x.severity}
-          </span>
-        </b>
-        <div class="evidence">
-          ${x.evidence.join(' • ')}
+  const faultCandidates = (Array.isArray(r.fault_candidates) && r.fault_candidates.length > 0) ? r.fault_candidates : [];
+  if (faultCandidates.length > 0) {
+    $('faults').innerHTML=
+      faultCandidates.map(x=>`
+        <div class="diag">
+          <b>
+            ${x.name || 'Unknown Fault Candidate'}
+            <span class="pill ${stateClass(x.severity==='high'?'HIGH':x.severity==='medium'?'MEDIUM':'LOW')}">
+              ${x.severity || 'low'}
+            </span>
+          </b>
+          <div class="evidence">
+            ${Array.isArray(x.evidence) ? x.evidence.join(' • ') : (x.evidence || 'Nominal indicator match')}
+          </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
+  } else {
+    $('faults').innerHTML='<div class="diag" style="color:var(--dim);font-size:11px;padding:6px 8px;">No additional fault candidates identified.</div>';
+  }
 
-  const sh=r.sensor_health;
+  const sh = r.sensor_health || { overall_trust_score: 100, overall_status: 'TRUSTED', sensors: [], channels: [] };
+  const overallStatus = sh.overall_status || (sh.overall_trust_score >= 80 ? 'TRUSTED' : sh.overall_trust_score >= 55 ? 'CHECK' : 'SUSPECT');
   $('sensorSummary').innerHTML=
-    `Overall trust <b class="${stateClass(sh.overall_status)}">
-      ${fmt(sh.overall_trust_score,0)} / 100 • ${sh.overall_status}
+    `Overall trust <b class="${stateClass(overallStatus)}">
+      ${fmt(sh.overall_trust_score,0)} / 100 • ${overallStatus}
     </b>`;
 
-  $('sensorTable').innerHTML=
-    sh.channels.map(x=>`
-      <tr>
-        <td>${x.name}</td>
-        <td class="${stateClass(x.status)}">${fmt(x.trust_score,0)} • ${x.status}</td>
-      </tr>
-    `).join('');
+  const sensorList = Array.isArray(sh.sensors) ? sh.sensors : (Array.isArray(sh.channels) ? sh.channels : []);
+  if (sensorList.length > 0) {
+    $('sensorTable').innerHTML=
+      sensorList.map(x=>`
+        <tr>
+          <td>${x.name}</td>
+          <td class="${stateClass(x.status)}">${fmt(x.trust_score,0)} • ${x.status}</td>
+        </tr>
+      `).join('');
+  } else {
+    $('sensorTable').innerHTML='<tr><td colspan="2" style="color:var(--dim);text-align:center;">All sensors nominal</td></tr>';
+  }
 
-  $('deviationTable').innerHTML=
-    r.twin.dominant_deviations.map(x=>`
-      <tr>
-        <td>${x.parameter}</td>
-        <td class="${Math.abs(x.z_score)>=3?'bad':Math.abs(x.z_score)>=2?'warn':''}">${fmt(x.z_score,2)}</td>
-        <td>${fmt(x.percentage_deviation,1)}%</td>
-      </tr>
-    `).join('');
+  const deviations = (r.twin && Array.isArray(r.twin.dominant_deviations)) ? r.twin.dominant_deviations : [];
+  if (deviations.length > 0) {
+    $('deviationTable').innerHTML=
+      deviations.map(x=>`
+        <tr>
+          <td>${x.parameter}</td>
+          <td class="${Math.abs(x.z_score)>=3?'bad':Math.abs(x.z_score)>=2?'warn':''}">${fmt(x.z_score,2)}</td>
+          <td>${fmt(x.percentage_deviation,1)}%</td>
+        </tr>
+      `).join('');
+  } else {
+    $('deviationTable').innerHTML='<tr><td colspan="3" style="color:var(--dim);text-align:center;">No physics deviations detected</td></tr>';
+  }
 
-  $('telemetry').innerHTML=
-    Object.entries(r.telemetry).map(([k,v])=>{
-      let display;
-      if(k==='Degradation_State' && v && typeof v==='object'){
-        display=Object.entries(v).map(([name,val])=>`${name}: ${Number(val).toFixed(2)}`).join(' • ') || 'None';
-      }else{
-        display=fmt(v,2);
-      }
-      return `<tr><td>${k}</td><td>${display}</td></tr>`;
-    }).join('');
+  if (r.telemetry && typeof r.telemetry === 'object') {
+    $('telemetry').innerHTML=
+      Object.entries(r.telemetry).map(([k,v])=>{
+        let display;
+        if(k==='Degradation_State' && v && typeof v==='object'){
+          display=Object.entries(v).map(([name,val])=>`${name}: ${Number(val).toFixed(2)}`).join(' • ') || 'None';
+        }else{
+          display=fmt(v,2);
+        }
+        return `<tr><td>${k}</td><td>${display}</td></tr>`;
+      }).join('');
+  }
 
-  $('compare').innerHTML=
-    Object.keys(r.twin.expected).map(k=>`
-      <tr>
-        <td>${k}</td>
-        <td>${fmt(r.twin.expected[k],2)}</td>
-        <td>${fmt(+r.telemetry[k],2)}</td>
-        <td>${fmt(r.twin.z_scores[k],2)}</td>
-      </tr>
-    `).join('');
+  if (r.twin && r.twin.expected && r.telemetry && r.twin.z_scores) {
+    $('compare').innerHTML=
+      Object.keys(r.twin.expected).map(k=>`
+        <tr>
+          <td>${k}</td>
+          <td>${fmt(r.twin.expected[k],2)}</td>
+          <td>${fmt(+r.telemetry[k],2)}</td>
+          <td>${fmt(r.twin.z_scores[k],2)}</td>
+        </tr>
+      `).join('');
+  }
 
-  renderRisk(r.mission_risk);
+  if (r.mission_risk) {
+    renderRisk(r.mission_risk);
+  }
 
   if(r.twin && r.twin.z_scores){
     updateSubsystemBadges(r.twin.z_scores, r.fault_candidates, r.telemetry);
@@ -2130,7 +2188,7 @@ function renderAnalysis(r){
   }
 
   if (r.uav) {
-    updateUAVPosition(r.uav, r.environment, r.health_state, r.mission_risk.level, r.mission_risk.score);
+    updateUAVPosition(r.uav, r.environment, r.health_state, r.mission_risk?.level || 'LOW', r.mission_risk?.score || 0);
   }
 }
 
