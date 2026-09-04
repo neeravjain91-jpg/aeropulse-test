@@ -64,6 +64,60 @@ class SimulatedCANAdapter(CANHardwareAdapter):
         return None
 
 
+class SocketCANAdapter(CANHardwareAdapter):
+    """
+    Linux SocketCAN Hardware Adapter (ISO 11898 standard on Linux kernel).
+    Provides direct socket.AF_CAN / socket.SOCK_RAW interface on Linux UAV flight computers.
+    Falls back gracefully to interface stub / simulation mode on non-Linux platforms (Windows).
+    """
+
+    def __init__(self, interface_name: str = "vcan0", bitrate: int = 500000):
+        import socket as _socket
+        self.interface_name = interface_name
+        self.bitrate = bitrate
+        self.connected = False
+        self._socket = None
+        self._is_linux = hasattr(_socket, "AF_CAN")
+
+    def connect(self) -> bool:
+        if self._is_linux:
+            try:
+                import socket as _socket
+                self._socket = _socket.socket(_socket.AF_CAN, _socket.SOCK_RAW, _socket.CAN_RAW)
+                self._socket.bind((self.interface_name,))
+                self.connected = True
+                return True
+            except Exception:
+                self.connected = False
+                return False
+        else:
+            # Non-Linux platform: interface-ready demonstrator
+            self.connected = False
+            return False
+
+    def send(self, frame: CANFrame) -> bool:
+        if self._is_linux and self.connected and self._socket:
+            can_id = frame.arbitration_id
+            if frame.is_extended:
+                can_id |= 0x80000000
+            can_pkt = struct.pack("=IB3x8s", can_id, frame.dlc, frame.data)
+            self._socket.send(can_pkt)
+            return True
+        elif not self._is_linux:
+            return True
+        return False
+
+    def receive(self, timeout_s: float = 0.1) -> Optional[CANFrame]:
+        if self._is_linux and self.connected and self._socket:
+            import select
+            r, _, _ = select.select([self._socket], [], [], timeout_s)
+            if r:
+                can_pkt = self._socket.recv(16)
+                can_id, dlc, data = struct.unpack("=IB3x8s", can_pkt)
+                return CANFrame(arbitration_id=can_id & 0x1FFFFFFF, data=data[:dlc], dlc=dlc)
+        return None
+
+
 class CANBusInterface:
     """
     Decodes and encodes canonical UAV engine CAN frames.
@@ -105,35 +159,35 @@ class CANBusInterface:
         self.sequence_counter = (self.sequence_counter + 1) % 16
 
         # 1. 0x100 Engine Dynamics
-        rpm_raw = int(min(65535, max(0, float(telemetry.get("Engine_RPM", 0.0)) / 0.25)))
-        map_raw = int(min(65535, max(0, float(telemetry.get("MAP_Injector", 0.0)) / 0.01)))
-        ff_raw = int(min(65535, max(0, float(telemetry.get("Fuel_Flow", 0.0)) / 0.01)))
-        thr_raw = int(min(255, max(0, float(telemetry.get("Load", 0.6)) * 200)))
+        rpm_raw = int(round(min(65535, max(0, float(telemetry.get("Engine_RPM", 0.0)) / 0.25))))
+        map_raw = int(round(min(65535, max(0, float(telemetry.get("MAP_Injector", 0.0)) / 0.01))))
+        ff_raw = int(round(min(65535, max(0, float(telemetry.get("Fuel_Flow", 0.0)) / 0.01))))
+        thr_raw = int(round(min(255, max(0, float(telemetry.get("Load", 0.6)) * 200))))
         payload100 = struct.pack("<HHHB", rpm_raw, map_raw, ff_raw, thr_raw)
         crc100 = self._crc8(payload100)
         frames.append(CANFrame(self.ID_ENGINE_DYNAMICS, payload100 + bytes([crc100]), timestamp_ms=timestamp_ms))
 
         # 2. 0x101 Temperatures
-        egt1_raw = int(min(65535, max(0, float(telemetry.get("EGT1", 0.0)) * 10.0)))
-        egt2_raw = int(min(65535, max(0, float(telemetry.get("EGT2", 0.0)) * 10.0)))
-        egt3_raw = int(min(65535, max(0, float(telemetry.get("EGT3", 0.0)) * 10.0)))
-        cht_raw = int(min(65535, max(0, float(telemetry.get("CHT", 0.0)) * 10.0)))
+        egt1_raw = int(round(min(65535, max(0, float(telemetry.get("EGT1", 0.0)) * 10.0))))
+        egt2_raw = int(round(min(65535, max(0, float(telemetry.get("EGT2", 0.0)) * 10.0))))
+        egt3_raw = int(round(min(65535, max(0, float(telemetry.get("EGT3", 0.0)) * 10.0))))
+        cht_raw = int(round(min(65535, max(0, float(telemetry.get("CHT", 0.0)) * 10.0))))
         payload101 = struct.pack("<HHHH", egt1_raw, egt2_raw, egt3_raw, cht_raw)
         frames.append(CANFrame(self.ID_TEMPERATURES, payload101, timestamp_ms=timestamp_ms))
 
         # 3. 0x102 Lubrication & Coolant
-        oil_t_raw = int(max(-32768, min(32767, float(telemetry.get("Oil_Temp", 0.0)) * 10.0)))
-        oil_p_raw = int(min(65535, max(0, float(telemetry.get("Oil_Pressure", 0.0)) * 10.0)))
-        wat_t_raw = int(max(-32768, min(32767, float(telemetry.get("EFI_Water_Temp", 0.0)) * 10.0)))
-        fue_t_raw = int(max(-32768, min(32767, float(telemetry.get("EFI_Fuel_Temp", 0.0)) * 10.0)))
+        oil_t_raw = int(round(max(-32768, min(32767, float(telemetry.get("Oil_Temp", 0.0)) * 10.0))))
+        oil_p_raw = int(round(min(65535, max(0, float(telemetry.get("Oil_Pressure", 0.0)) * 10.0))))
+        wat_t_raw = int(round(max(-32768, min(32767, float(telemetry.get("EFI_Water_Temp", 0.0)) * 10.0))))
+        fue_t_raw = int(round(max(-32768, min(32767, float(telemetry.get("EFI_Fuel_Temp", 0.0)) * 10.0))))
         payload102 = struct.pack("<hHhh", oil_t_raw, oil_p_raw, wat_t_raw, fue_t_raw)
         frames.append(CANFrame(self.ID_LUB_COOLANT, payload102, timestamp_ms=timestamp_ms))
 
         # 4. 0x103 Electrical & Vibration
-        bat_v_raw = int(min(65535, max(0, float(telemetry.get("Battery_Voltage", 0.0)) * 100.0)))
-        bat_i_raw = int(max(-32768, min(32767, float(telemetry.get("Battery_Current", 0.0)) * 10.0)))
-        alt_t_raw = int(max(-32768, min(32767, float(telemetry.get("Alternator_Temp", 0.0)) * 10.0)))
-        vib_raw = int(min(65535, max(0, float(telemetry.get("Vibration", 0.0)) * 1000.0)))
+        bat_v_raw = int(round(min(65535, max(0, float(telemetry.get("Battery_Voltage", 0.0)) * 100.0))))
+        bat_i_raw = int(round(max(-32768, min(32767, float(telemetry.get("Battery_Current", 0.0)) * 10.0))))
+        alt_t_raw = int(round(max(-32768, min(32767, float(telemetry.get("Alternator_Temp", 0.0)) * 10.0))))
+        vib_raw = int(round(min(65535, max(0, float(telemetry.get("Vibration", 0.0)) * 1000.0))))
         payload103 = struct.pack("<HhhH", bat_v_raw, bat_i_raw, alt_t_raw, vib_raw)
         frames.append(CANFrame(self.ID_ELEC_VIB, payload103, timestamp_ms=timestamp_ms))
 
@@ -181,6 +235,14 @@ class CANBusInterface:
                 self.last_decoded_telemetry["Vibration"] = round(vib_raw * 0.001, 3)
 
         return dict(self.last_decoded_telemetry)
+
+    def decode_frames(self, frames: List[CANFrame]) -> Dict[str, Any]:
+        """Decodes a sequence/batch of incoming CAN frames into a unified telemetry state."""
+        result: Dict[str, Any] = {}
+        for frame in frames:
+            decoded = self.decode_frame(frame)
+            result.update(decoded)
+        return result
 
 
 AeroPulseCANInterface = CANBusInterface

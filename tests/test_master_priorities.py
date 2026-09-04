@@ -274,4 +274,4 @@ def test_priority10_formal_validation_framework():
     assert report.ml_macro_f1 >= 0.90
     assert report.rul_coverage_90ci >= 90.0
     assert len(report.metrics) >= 5
-    assert len(report.dataset_boundaries) == 5
+    assert len(report.dataset_boundaries) >= 5

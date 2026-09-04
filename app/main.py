@@ -35,6 +35,7 @@ from .simulator import FAULTS, inject_fault, mission_adjust
 from .telemetry import telemetry_from_engine
 from .uav_mission import UAVMissionSimulator
 from .vibration import VibrationAI, load_demo as load_vibration_demo
+from .validation import AeroPulseValidator
 
 
 _GPS = SimulatedGPSSource()
@@ -516,6 +517,42 @@ def reload_assets():
     return status()
 
 
+@app.get("/api/v1/validation/sil")
+def validation_sil():
+    """Runs Phase C2 Virtual Hardware and Software-in-the-Loop emulation validation suite."""
+    return AeroPulseValidator().validate_virtual_hardware_sil()
+
+
+@app.get("/api/v1/validation/master")
+def validation_master():
+    """Runs formal master validation across all project boundaries."""
+    return AeroPulseValidator().generate_master_report()
+
+
+@app.get("/api/v1/validation/engine")
+def validation_engine():
+    """Runs Phase A engine model validation harness."""
+    return AeroPulseValidator().validate_engine_model()
+
+
+@app.get("/api/v1/validation/hil")
+def validation_hil():
+    """Runs Phase B Virtual ECU/FADEC CAN HIL validation harness."""
+    return AeroPulseValidator().validate_virtual_ecu_fadec_hil()
+
+
+@app.get("/api/v1/validation/edge")
+def validation_edge():
+    """Runs Phase C edge compute deployment and benchmarking suite."""
+    return AeroPulseValidator().validate_edge_compute_embedded()
+
+
+@app.get("/api/v1/validation/rul")
+def validation_rul():
+    """Runs Phase D RUL and prognostics validation suite."""
+    return AeroPulseValidator().validate_rul_prognostics_full()
+
+
 @app.get("/api/sample")
 def sample(
     operating_state: str = "CRUISE",
@@ -810,6 +847,33 @@ def vibration_demo(
     )
 
     return result
+
+
+@app.get("/api/v1/validation/engine-model")
+def engine_model_validation():
+    """Returns formal engine model validation, provenance, sensitivity, and uncertainty metrics."""
+    from .engine_validation import EngineModelValidator
+
+    validator = EngineModelValidator(_ENGINE)
+    return validator.generate_full_validation_summary()
+
+
+@app.get("/api/v1/validation/ecu-fadec-hil")
+def ecu_fadec_hil_validation():
+    """Returns formal Virtual ECU/FADEC CAN HIL validation scenario matrix and latency statistics."""
+    from .can_hil import CANHILSimulator
+
+    simulator = CANHILSimulator()
+    return simulator.run_master_hil_validation_suite()
+
+
+@app.get("/api/v1/validation/edge")
+def edge_compute_validation():
+    """Returns edge compute deployment profile, stage latency percentiles, throughput, and hardware classification."""
+    from .edge_benchmark import run_benchmark_and_get_summary
+
+    report = run_benchmark_and_get_summary(samples=1000, warmup=100)
+    return report.to_dict()
 
 
 @app.websocket("/ws/telemetry")

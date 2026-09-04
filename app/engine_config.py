@@ -1,7 +1,10 @@
 """Configurable Engine Parameter Schema for AeroPulse-X Propulsion Digital Twin."""
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+
+from .engine_parameters import EngineParameterRegistry, get_default_parameter_registry
+
 
 @dataclass
 class EngineConfig:
@@ -45,6 +48,10 @@ class EngineConfig:
     def rated_power_kw(self) -> float:
         return self.base_power_kw
 
+    def get_registry(self) -> EngineParameterRegistry:
+        """Returns the formal parameter provenance registry for this engine configuration."""
+        return get_default_parameter_registry()
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             "name": self.name,
@@ -58,6 +65,16 @@ class EngineConfig:
             "nominal_rpm": self.nominal_rpm,
             "max_rpm": self.max_rpm,
             "idle_rpm": self.idle_rpm,
+            "gamma": self.gamma,
+            "afr_stoich": self.afr_stoich,
+            "base_friction_kw": self.base_friction_kw,
+            "cooling_area_m2": self.cooling_area_m2,
+            "cooling_coeff_w_m2k": self.cooling_coeff_w_m2k,
+            "oil_volume_l": self.oil_volume_l,
+            "oil_viscosity_cst": self.oil_viscosity_cst,
+            "turbo_critical_alt_ft": self.turbo_critical_alt_ft,
+            "volumetric_efficiency_base": self.volumetric_efficiency_base,
+            "fuel_density_kg_l": self.fuel_density_kg_l,
         }
 
     @classmethod
@@ -67,6 +84,7 @@ class EngineConfig:
     @classmethod
     def custom(cls, **kwargs) -> EngineConfig:
         return cls(**kwargs)
+
 
 def default_engine_config() -> EngineConfig:
     return EngineConfig.default_135l()
