@@ -1721,7 +1721,7 @@ async def telemetry_stream(
 # Automatically register all routes under both /api/... and /... for universal compatibility
 def _register_dual_routes():
     for route in list(app.routes):
-        if hasattr(route, "path"):
+        if hasattr(route, "path") and hasattr(route, "endpoint") and hasattr(route, "methods"):
             if route.path.startswith("/api/"):
                 alt_path = route.path[4:]
                 existing = [r.path for r in app.routes if hasattr(r, "path")]
