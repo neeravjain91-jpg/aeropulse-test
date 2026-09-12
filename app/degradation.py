@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-
 import numpy as np
 
 
@@ -9,16 +8,12 @@ def estimate_degradation_horizon(
     health_history: list[float],
     step_minutes: float,
     critical_health_index: float = 35.0,
+    max_horizon_hours: float = 2000.0,
 ) -> dict:
     """Estimate a prototype RUL horizon from recent health-index trend.
 
     This is a method demonstrator only. Operational RUL requires
     target-engine run-to-failure/degradation trajectories.
-
-    The estimator primarily expects health-index values where decreasing
-    health means degradation. A strong recent trend is nevertheless
-    classified as degrading so that the demonstrator does not incorrectly
-    report a stable state when the replay trajectory is clearly changing.
     """
 
     values = np.asarray(
@@ -87,14 +82,6 @@ def estimate_degradation_horizon(
     )
 
     current = float(window[-1])
-    previous = float(window[0])
-
-    recent_change = current - previous
-
-    # Degradation sign convention:
-    # health slope < -0.15  -> DEGRADING (health declining)
-    # -0.15 <= slope <= 0.15 -> STABLE_OR_NON_DEGRADING (stationary)
-    # health slope > 0.15   -> RECOVERY_OR_IMPROVING (health increasing)
 
     confidence = max(
         0.0,
@@ -109,7 +96,7 @@ def estimate_degradation_horizon(
 
     # 1. Active Degrading trajectory (negative slope)
     if slope_per_hour < -0.15:
-        degradation_rate = -slope_per_hour  # strictly positive rate (> 0.15 / h)
+        degradation_rate = -slope_per_hour
         hours_to_threshold = max(
             0.0,
             (current - critical_health_index) / degradation_rate,
@@ -117,7 +104,7 @@ def estimate_degradation_horizon(
 
         horizon = min(
             hours_to_threshold,
-            500.0,
+            max_horizon_hours,
         )
 
         rul_hours = (

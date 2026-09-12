@@ -308,6 +308,13 @@ class EdgeBenchmarkSuite:
         latencies = []
         errors = 0
 
+        # Warm up JIT/caches
+        for _ in range(50):
+            try:
+                _ = edge_node.process_telemetry(self.sample_telemetry)
+            except Exception:
+                pass
+
         t_start = time.perf_counter()
         for i in range(sample_count):
             try:

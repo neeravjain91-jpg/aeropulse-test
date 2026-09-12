@@ -1013,6 +1013,10 @@ def select_engine_profile(request: EngineSelectionRequest):
         new_cfg = EngineConfig.rotax_914()
     elif eng_id == "Generic-Inline4-AeroDiesel":
         new_cfg = EngineConfig.inline4_diesel()
+    elif eng_id == "Generic-2Stroke-Twin-50HP":
+        new_cfg = EngineConfig.two_stroke_twin()
+    elif eng_id == "Generic-Rotary-Wankel-40HP":
+        new_cfg = EngineConfig.rotary_wankel()
     else:
         new_cfg = EngineConfig.default_135l()
 

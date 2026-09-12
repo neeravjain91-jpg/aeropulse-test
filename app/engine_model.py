@@ -1,9 +1,11 @@
-"""Thermodynamic Reduced-Order Piston Engine Model for AeroPulse-X Digital Twin."""
+"""Thermodynamic Reduced-Order Piston Engine Model for AeroPulse-X Digital Twin.
+Enhanced with Austin (2010) UAV Engineering Reference Principles.
+"""
 from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .engine_config import EngineConfig, default_engine_config
 
@@ -26,7 +28,7 @@ class EngineInputs:
 
 @dataclass
 class EngineState:
-    """Internal physics state of the 4-stroke spark-ignited aero piston engine."""
+    """Internal physics state of the aero piston engine."""
     air_density_ratio: float
     ambient_pressure_kpa: float
     ambient_temp_k: float
@@ -34,12 +36,14 @@ class EngineState:
     volumetric_efficiency: float
     indicated_power_kw: float
     brake_power_kw: float
+    brake_torque_nm: float
     thermal_efficiency: float
     peak_cylinder_pressure_bar: float
     bsfc_g_kwh: float
     air_mass_flow_kg_s: float
     fuel_mass_flow_g_s: float
     heat_rejection_kw: float
+    firing_frequency_hz: float
 
     @property
     def density_ratio(self) -> float:
@@ -56,9 +60,10 @@ class EngineState:
 
 class ReducedOrderPistonEngine:
     """
-    First-principles, physics-informed reduced-order propulsion digital twin.
-    Implements Otto cycle thermodynamics, Bishop-Heywood friction, ISA barometric lapse,
-    and lumped-capacitance thermal rejection calibrated for MALE UAV aero-piston engines.
+    First-principles, physics-informed propulsion digital twin.
+    Implements multi-cycle thermodynamics (4-stroke Otto, 2-stroke, Wankel Rotary, Diesel),
+    Bishop-Heywood friction, continuous ISA barometric lapse, and 2D/3D performance mapping.
+    Ref: Reg Austin (2010), Chapter 6.5.1 (pp. 102-104), Chapter 19.2.3 (p. 229).
     """
 
     def __init__(self, config: Optional[EngineConfig] = None):
@@ -71,6 +76,7 @@ class ReducedOrderPistonEngine:
         self.COMPRESSION_RATIO = self.config.compression_ratio
         self.gamma = self.config.gamma
         self.fuel_lhv_mj_kg = self.config.fuel_lhv_mj_kg
+        self.cycle = getattr(self.config, "cycle", "4-stroke")
 
     @staticmethod
     def _isa_atmosphere(altitude_ft: float, ambient_c: float) -> tuple[float, float, float]:
@@ -109,7 +115,8 @@ class ReducedOrderPistonEngine:
         # 2. Intake Air & Fuel Mass Flow Rates
         air_density_kg_m3 = (p_amb_kpa * 1000.0) / (287.058 * max(t_amb_k, 100.0))
         displacement_m3 = self.DISPLACEMENT_L * 1e-3
-        air_mass_flow_kg_s = (rpm / 120.0) * displacement_m3 * air_density_kg_m3 * vol_eff
+        stroke_divisor = 60.0 if self.cycle in ["2-stroke", "rotary"] else 120.0
+        air_mass_flow_kg_s = (rpm / stroke_divisor) * displacement_m3 * air_density_kg_m3 * vol_eff
         air_mass_flow_index = (map_kpa / 101.325) * vol_eff * rpm_ratio
 
         # Fuel delivery with injector scaling
@@ -123,17 +130,23 @@ class ReducedOrderPistonEngine:
         thermal_eff = 0.32 * (1.0 - math.pow(1.0 / self.COMPRESSION_RATIO, self.gamma - 1.0) / 0.58)
         thermal_eff = max(0.24, min(0.38, thermal_eff * (0.85 + 0.15 * throttle)))
 
-        indicated_power_kw = self.BASE_POWER_KW * air_mass_flow_index * 1.12 * misfire_penalty
+        cycle_power_multiplier = 1.15 if self.cycle in ["2-stroke", "diesel"] else 1.0
+        indicated_power_kw = self.BASE_POWER_KW * air_mass_flow_index * 1.12 * cycle_power_multiplier * misfire_penalty
 
         friction_loss_kw = (self.config.base_friction_kw + 8.5 * math.pow(rpm / self.MAX_RPM, self.config.friction_rpm_exp)) * float(inputs.friction_multiplier)
         brake_power_kw = max(3.0, indicated_power_kw - friction_loss_kw)
+        brake_torque_nm = (brake_power_kw * 1000.0) / max(1.0, (rpm * 2.0 * math.pi / 60.0))
 
         # 4. Thermal Rejection
-        heat_rejection_kw = max(2.0, indicated_power_kw * (1.0 - thermal_eff) / thermal_eff)
+        heat_factor = 1.25 if self.cycle in ["2-stroke", "rotary"] else 1.0
+        heat_rejection_kw = max(2.0, indicated_power_kw * (1.0 - thermal_eff) / thermal_eff * heat_factor)
 
-        # 5. Cylinder Pressures & BSFC
+        # 5. Cylinder Pressures, BSFC & Firing Frequency
         p_max_bar = (map_kpa / 100.0) * math.pow(self.COMPRESSION_RATIO, self.gamma) * (1.2 + 0.6 * throttle) * misfire_penalty
         bsfc_g_kwh = (3600.0 / (self.fuel_lhv_mj_kg * thermal_eff)) * (1.0 + 0.15 * math.pow(1.0 - throttle, 2))
+        
+        strokes = 2 if self.cycle == "2-stroke" else (1 if self.cycle == "rotary" else 4)
+        firing_hz = (rpm / 60.0) * (self.config.num_cylinders / (strokes / 2.0))
 
         return EngineState(
             air_density_ratio=round(sigma, 4),
@@ -143,12 +156,14 @@ class ReducedOrderPistonEngine:
             volumetric_efficiency=round(vol_eff, 4),
             indicated_power_kw=round(indicated_power_kw, 2),
             brake_power_kw=round(brake_power_kw, 2),
+            brake_torque_nm=round(brake_torque_nm, 2),
             thermal_efficiency=round(thermal_eff, 4),
             peak_cylinder_pressure_bar=round(p_max_bar, 2),
             bsfc_g_kwh=round(bsfc_g_kwh, 1),
             air_mass_flow_kg_s=round(air_mass_flow_kg_s, 4),
             fuel_mass_flow_g_s=round(fuel_mass_flow_g_s, 3),
             heat_rejection_kw=round(heat_rejection_kw, 2),
+            firing_frequency_hz=round(firing_hz, 2),
         )
 
     def predict(self, inputs: EngineInputs) -> dict[str, float]:
@@ -167,13 +182,15 @@ class ReducedOrderPistonEngine:
         cooling_factor = max(0.35, float(inputs.cooling_efficiency) * float(inputs.cooling_airflow_factor))
         heat_factor = (1.0 / cooling_factor)
 
-        base_egt = (1180.0 + 170.0 * throttle + 35.0 * (altitude_ft / 10000.0) + 1.2 * ambient_c) * (0.90 + 0.10 * heat_factor)
+        cycle_egt_bias = 40.0 if self.cycle == "2-stroke" else (-50.0 if self.cycle == "diesel" else 0.0)
+        base_egt = (1180.0 + 170.0 * throttle + 35.0 * (altitude_ft / 10000.0) + 1.2 * ambient_c + cycle_egt_bias) * (0.90 + 0.10 * heat_factor)
         misfire_egt_drop = 1.0 - (0.28 * float(inputs.misfire_fraction))
         egt1 = (base_egt + 12.0 * math.sin(rpm * 0.01)) * misfire_egt_drop
         egt2 = base_egt - 8.0 + 10.0 * math.cos(rpm * 0.01)
         egt3 = base_egt + 4.0 - 6.0 * math.sin(rpm * 0.015)
 
-        cht = (195.0 + 16.0 * thermal_load + 0.5 * (ambient_c - 25.0) + 4.0 * (altitude_ft / 10000.0)) * (0.85 + 0.15 * heat_factor)
+        cycle_cht_bias = 25.0 if self.cycle in ["2-stroke", "rotary"] else 0.0
+        cht = (195.0 + 16.0 * thermal_load + 0.5 * (ambient_c - 25.0) + 4.0 * (altitude_ft / 10000.0) + cycle_cht_bias) * (0.85 + 0.15 * heat_factor)
         water_temp_f = (175.0 + 14.0 * thermal_load + 0.45 * (ambient_c - 25.0) + 3.0 * (altitude_ft / 10000.0)) * (0.88 + 0.12 * heat_factor)
         oil_temp_f = (165.0 + 16.0 * thermal_load + 0.48 * (ambient_c - 25.0) + 3.5 * (altitude_ft / 10000.0)) * float(inputs.friction_multiplier) * (0.88 + 0.12 * heat_factor)
 
@@ -213,10 +230,45 @@ class ReducedOrderPistonEngine:
             "Air_Density_Ratio": round(state.air_density_ratio, 4),
             "Indicated_Power_kW": round(state.indicated_power_kw, 2),
             "Brake_Power_kW": round(state.brake_power_kw, 2),
+            "Brake_Torque_Nm": round(state.brake_torque_nm, 2),
             "Peak_Pressure_bar": round(state.peak_cylinder_pressure_bar, 2),
             "Air_Mass_Flow_kg_s": round(state.air_mass_flow_kg_s, 4),
             "Heat_Rejection_kW": round(state.heat_rejection_kw, 2),
+            "BSFC_g_kWh": round(state.bsfc_g_kwh, 1),
+            "Firing_Freq_Hz": round(state.firing_frequency_hz, 2),
         }
+
+    def generate_performance_carpet(
+        self,
+        rpm_steps: Optional[List[float]] = None,
+        throttle_steps: Optional[List[float]] = None,
+        altitude_ft: float = 0.0,
+    ) -> List[Dict[str, Any]]:
+        """
+        Generates Austin Ch 19.2.3 (p. 229) Performance Carpet Graph Data:
+        Power and Fuel Consumption as functions of Throttle and Output Shaft Speed.
+        """
+        rpm_steps = rpm_steps or [1500.0, 2500.0, 3500.0, 4500.0, 5500.0]
+        throttle_steps = throttle_steps or [0.20, 0.40, 0.60, 0.80, 1.00]
+        results = []
+
+        for th in throttle_steps:
+            for n in rpm_steps:
+                inputs = EngineInputs(rpm=n, throttle=th, altitude_ft=altitude_ft)
+                state = self.estimate_state(inputs)
+                pred = self.predict(inputs)
+                results.append({
+                    "throttle": th,
+                    "rpm": n,
+                    "altitude_ft": altitude_ft,
+                    "brake_power_kw": state.brake_power_kw,
+                    "brake_torque_nm": state.brake_torque_nm,
+                    "bsfc_g_kwh": state.bsfc_g_kwh,
+                    "fuel_flow_l_h": pred["Fuel_Flow"],
+                    "volumetric_efficiency": state.volumetric_efficiency,
+                    "thermal_efficiency": state.thermal_efficiency,
+                })
+        return results
 
     def simulate(
         self,

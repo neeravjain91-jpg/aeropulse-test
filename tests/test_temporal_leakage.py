@@ -6,8 +6,14 @@ from app.tcn_model import build_sequences
 
 def test_zero_temporal_leakage_between_flight_missions():
     csv_path = Path("FINAL_DATASET/ACES/aces_health.csv")
+    zip_path = Path("FINAL_DATASET/ACES/aces_health.zip")
     if not csv_path.exists():
-        pytest.skip("Dataset file not available for leakage test.")
+        if zip_path.exists():
+            import zipfile
+            with zipfile.ZipFile(zip_path, 'r') as z:
+                z.extractall(Path("FINAL_DATASET/ACES"))
+        else:
+            pytest.skip("Dataset file not available for leakage test.")
     
     df = pd.read_csv(csv_path, nrows=5000)
     train_flights = ["aces1am_2002_191"]

@@ -1,31 +1,50 @@
 """Defence-Grade Autonomous Maintenance Advisory System for MALE UAV Propulsion.
-
-Provides operational flight dispatch decisions (GO / CAUTION / NO-GO) and
-multi-echelon maintenance action orders (O-Level, I-Level, D-Level) based on
-synchronized Digital Twin telemetry and predictive diagnostics.
+Structured around Austin (2010) Power-plant Failure Hierarchy & Maintenance Echelons.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional, Tuple
+
+
+# Reg Austin (2010) Power-plant Decomposition Hierarchy (Ch 5.2.1, p. 78; Ch 16.5, p. 214)
+POWERPLANT_HIERARCHY = {
+    "FUEL_SYSTEM": ["Fuel Tank", "Fuel Pump", "Injectors/Carburettor", "Fuel Lines", "Fuel Filter"],
+    "COMBUSTION_CORE": ["Cylinder Head", "Pistons", "Valves", "Spark Ignition", "Combustion Chamber"],
+    "LUBRICATION_SYSTEM": ["Oil Sump", "Oil Pump", "Oil Cooler/Radiator", "Oil Filters", "Journal Bearings"],
+    "COOLING_SYSTEM": ["Cooling Jacket", "Radiator", "Cowl Flaps", "Coolant Pump", "De-humidifier"],
+    "MECHANICAL_TRANSMISSION": ["Crankshaft", "Connecting Rods", "Reduction Gearbox", "Shafts", "Propeller Hub"],
+    "ELECTRICAL_GENERATION": ["Alternator", "Power Conditioning Unit", "Battery Assembly", "Wiring Loom"],
+    "INSTRUMENTATION_SENSORS": ["CHT Thermocouples", "EGT Probes", "MAP Transducers", "Oil Pressure Sensor", "Vibration Accelerometer"],
+}
 
 
 @dataclass
 class MaintenanceAction:
-    echelon: str  # "O-Level" (Flight-Line), "I-Level" (Field Workshop), "D-Level" (Depot Overhaul)
-    dispatch_status: str  # "GO_MISSION_READY", "CAUTION_RESTRICTED_ENVELOPE", "NO_GO_MAINTENANCE_HOLD"
+    subsystem_tier: str       # From POWERPLANT_HIERARCHY
+    subsystem_component: str
+    detected_condition: str
+    severity: str             # "LOW", "MEDIUM", "HIGH", "CRITICAL"
+    echelon: str              # "O-Level" (Flight-Line), "I-Level" (Field Workshop), "D-Level" (Depot Overhaul)
+    dispatch_status: str      # "GO_MISSION_READY", "CAUTION_RESTRICTED_ENVELOPE", "NO_GO_MAINTENANCE_HOLD"
     recommended_action: str
     technical_order: str
     urgency: str
-    subsystem: str
+    evidence: List[str]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    def __getitem__(self, key: str) -> Any:
+        return getattr(self, key)
 
 
 def fault_advisory(telemetry: dict, twin: dict, sensor_health: dict | None = None) -> list[tuple[str, str, list[str]]]:
     """
     Evaluates Digital Twin residuals, cross-channel statistics, and sensor integrity
-    to isolate failure modes and candidate root causes.
+    to isolate failure modes and candidate root causes mapped to Austin's hierarchy.
     """
-    z = twin["z_scores"]
+    z = twin.get("z_scores", {}) if isinstance(twin, dict) else {}
     findings = []
 
     # 1. Sensor Instrumentation Fault (Priority isolation)
@@ -98,136 +117,197 @@ def fault_advisory(telemetry: dict, twin: dict, sensor_health: dict | None = Non
 
     # 6. Electrical Generation & Alternator Thermal Fault
     if "Battery_Voltage" in z and "Alternator_Temp" in z:
-        if z["Battery_Voltage"] < -2.0 and (abs(z.get("Battery_Current", 0.0)) > 1.5 or z["Alternator_Temp"] > 1.5):
+        if z.get("Battery_Voltage", 0.0) < -1.8 or z.get("Alternator_Temp", 0.0) > 2.2:
             findings.append(
                 (
-                    "Dual-Bus Alternator / FADEC Electrical Degradation",
-                    "high",
-                    ["sub-nominal bus voltage residual", "alternator thermal runaway or diode rectifier failure"],
+                    "Electrical Power / Alternator Overheat",
+                    "medium",
+                    ["anomalous bus voltage drop or excessive alternator winding temperature"],
                 )
             )
 
-    # 7. Dynamic Vibration Anomaly
-    if telemetry.get("Vibration", 1.0) > 2.2:
+    # 7. Mechanical Wear & High Vibration
+    if z.get("Vibration", 0.0) > 2.0:
         findings.append(
             (
-                "Abnormal Mechanical Vibration / Dynamic Unbalance",
+                "Mechanical Wear / High Vibration Harmonics",
                 "high",
-                [f"peak vibration signature {telemetry.get('Vibration', 0.0):.2f}g exceeds structural threshold"],
+                ["elevated engine vibration exceeding 2-sigma baseline"],
             )
         )
-
-    # 8. Unclassified Digital Twin Anomaly
-    if twin.get("max_abs_z", 0.0) > 3.0 and not findings:
-        findings.append(
-            (
-                "Unclassified Aero-Piston Anomaly",
-                "medium",
-                ["broad multi-parameter deviation from healthy synchronized twin baseline"],
-            )
-        )
-
-    if not findings:
-        findings = [("Nominal Healthy Propulsion Operation", "low", ["all subsystem parameters within 1.5-sigma baseline"])]
 
     return findings
 
 
-def maintenance_advice(findings: list[tuple[str, str, list[str]]], sensor_health: dict | None = None) -> str:
-    """Generates human-readable primary operational maintenance directive."""
-    name, severity, evidence = findings[0]
+def generate_echelon_advisory(findings: list[tuple[str, str, list[str]]]) -> List[MaintenanceAction]:
+    """Translates diagnostic findings into structured Multi-Echelon Maintenance Actions."""
+    actions = []
+    
+    for cond, sev, evidence in findings:
+        s_upper = sev.upper()
+        if "Sensor" in cond:
+            actions.append(
+                MaintenanceAction(
+                    subsystem_tier="INSTRUMENTATION_SENSORS",
+                    subsystem_component="Transducer Harness / Sensor Interface",
+                    detected_condition=cond,
+                    severity=s_upper,
+                    echelon="O-Level",
+                    dispatch_status="CAUTION_RESTRICTED_ENVELOPE",
+                    recommended_action="Execute pre-flight BITE sensor calibration; inspect thermocouple connectors.",
+                    technical_order="TO-UAV-ENG-SENS-04",
+                    urgency="NEXT_SERVICE_WINDOW",
+                    evidence=evidence,
+                )
+            )
+        elif "Lubrication" in cond:
+            actions.append(
+                MaintenanceAction(
+                    subsystem_tier="LUBRICATION_SYSTEM",
+                    subsystem_component="Oil Sump / Oil Pump",
+                    detected_condition=cond,
+                    severity=s_upper,
+                    echelon="I-Level",
+                    dispatch_status="NO_GO_MAINTENANCE_HOLD",
+                    recommended_action="Drain and inspect oil filter for ferrous debris; perform oil pump pressure relief test.",
+                    technical_order="TO-UAV-ENG-LUB-02",
+                    urgency="IMMEDIATE_PRE_FLIGHT",
+                    evidence=evidence,
+                )
+            )
+        elif "Thermal" in cond:
+            actions.append(
+                MaintenanceAction(
+                    subsystem_tier="COOLING_SYSTEM",
+                    subsystem_component="Radiator / Cowl Cooling Passages",
+                    detected_condition=cond,
+                    severity=s_upper,
+                    echelon="O-Level" if s_upper == "MEDIUM" else "I-Level",
+                    dispatch_status="CAUTION_RESTRICTED_ENVELOPE" if s_upper == "MEDIUM" else "NO_GO_MAINTENANCE_HOLD",
+                    recommended_action="Inspect radiator matrix for debris; verify cowl flap servo range of motion.",
+                    technical_order="TO-UAV-ENG-COOL-01",
+                    urgency="PRIORITY_24H" if s_upper == "MEDIUM" else "IMMEDIATE_PRE_FLIGHT",
+                    evidence=evidence,
+                )
+            )
+        elif "Combustion" in cond or "Misfire" in cond:
+            actions.append(
+                MaintenanceAction(
+                    subsystem_tier="COMBUSTION_CORE",
+                    subsystem_component="Spark Plugs / Ignition Harness",
+                    detected_condition=cond,
+                    severity=s_upper,
+                    echelon="O-Level",
+                    dispatch_status="NO_GO_MAINTENANCE_HOLD" if s_upper == "HIGH" else "CAUTION_RESTRICTED_ENVELOPE",
+                    recommended_action="Perform ignition drop check; inspect and gap spark plugs; check ignition coils.",
+                    technical_order="TO-UAV-ENG-IGN-03",
+                    urgency="IMMEDIATE_PRE_FLIGHT",
+                    evidence=evidence,
+                )
+            )
+        elif "Fuel" in cond:
+            actions.append(
+                MaintenanceAction(
+                    subsystem_tier="FUEL_SYSTEM",
+                    subsystem_component="Fuel Injectors / Pressure Regulator",
+                    detected_condition=cond,
+                    severity=s_upper,
+                    echelon="I-Level",
+                    dispatch_status="CAUTION_RESTRICTED_ENVELOPE",
+                    recommended_action="Ultrasonically clean fuel injectors; replace in-line fuel filter element.",
+                    technical_order="TO-UAV-ENG-FUEL-01",
+                    urgency="PRIORITY_24H",
+                    evidence=evidence,
+                )
+            )
+        elif "Electrical" in cond:
+            actions.append(
+                MaintenanceAction(
+                    subsystem_tier="ELECTRICAL_GENERATION",
+                    subsystem_component="Alternator / Voltage Regulator",
+                    detected_condition=cond,
+                    severity=s_upper,
+                    echelon="O-Level",
+                    dispatch_status="CAUTION_RESTRICTED_ENVELOPE",
+                    recommended_action="Inspect alternator drive belt tension; check generator bus output at 3000 RPM.",
+                    technical_order="TO-UAV-ENG-ELEC-05",
+                    urgency="NEXT_SERVICE_WINDOW",
+                    evidence=evidence,
+                )
+            )
+        elif "Mechanical" in cond:
+            actions.append(
+                MaintenanceAction(
+                    subsystem_tier="MECHANICAL_TRANSMISSION",
+                    subsystem_component="Crankshaft Bearings / Reduction Drive",
+                    detected_condition=cond,
+                    severity=s_upper,
+                    echelon="D-Level",
+                    dispatch_status="NO_GO_MAINTENANCE_HOLD",
+                    recommended_action="Perform cylinder borescope inspection; dynamic propeller balancing check.",
+                    technical_order="TO-UAV-ENG-MECH-09",
+                    urgency="IMMEDIATE_PRE_FLIGHT",
+                    evidence=evidence,
+                )
+            )
 
-    if sensor_health and sensor_health.get("suspected_sensor_fault"):
-        channels = ", ".join(sensor_health.get("suspect_channels", [])) or "telemetry transducer"
-        return f"[INSTRUMENTATION DIRECTIVE] Calibrate/replace sensor channels ({channels}) before attributing engine mechanical fault."
-
-    if severity == "high":
-        return f"[NO-GO FLIGHT HOLD] Critical anomaly detected ({name}). Perform immediate I-Level technical inspection: {evidence[0]}."
-    if severity == "medium":
-        return f"[CAUTION ADVISORY] Subsystem degradation identified ({name}). Inspect affected components prior to next endurance flight."
-    return "[DISPATCH CLEARED] Propulsion parameters synchronized with Digital Twin baseline. Cleared for MALE UAV flight operations."
+    return actions
 
 
-def detailed_maintenance_action(findings: list[tuple[str, str, list[str]]], sensor_health: dict | None = None) -> MaintenanceAction:
-    """Generates structured military-grade maintenance work order."""
-    name, severity, evidence = findings[0]
+def detailed_maintenance_action(finding: Any) -> MaintenanceAction:
+    """Formats individual diagnostic finding or list of findings into structured MaintenanceAction."""
+    if isinstance(finding, list):
+        if not finding:
+            return MaintenanceAction(
+                subsystem_tier="POWERPLANT_GENERAL",
+                subsystem_component="General Engine",
+                detected_condition="Nominal Operation",
+                severity="LOW",
+                echelon="O-Level",
+                dispatch_status="GO_MISSION_READY",
+                recommended_action="Standard scheduled phase inspection.",
+                technical_order="TO-UAV-ENG-GEN-01",
+                urgency="ROUTINE",
+                evidence=["All parameters nominal"],
+            )
+        item = finding[0]
+    else:
+        item = finding
 
-    if sensor_health and sensor_health.get("suspected_sensor_fault"):
-        channels = ", ".join(sensor_health.get("suspect_channels", [])) or "transducers"
-        return MaintenanceAction(
-            echelon="O-Level (Flight Line)",
-            dispatch_status="CAUTION_RESTRICTED_ENVELOPE",
-            recommended_action=f"Hook up Ground Support Equipment (GSE). Validate sensor harnesses and recalibrate {channels}.",
-            technical_order="TO-UAV-AVIONICS-4-12",
-            urgency="PRE-FLIGHT",
-            subsystem="Sensors & Instrumentation",
-        )
+    if isinstance(item, dict):
+        cond = item.get("condition", "Unknown")
+        sev = item.get("severity", "LOW")
+        ev = item.get("evidence", [])
+    elif isinstance(item, (tuple, list)) and len(item) >= 3:
+        cond, sev, ev = item[0], item[1], item[2]
+    else:
+        cond, sev, ev = str(item), "LOW", []
 
-    if "Lubrication" in name:
-        return MaintenanceAction(
-            echelon="I-Level (Field Maintenance)",
-            dispatch_status="NO_GO_MAINTENANCE_HOLD",
-            recommended_action="Check oil scavenge screens, inspect oil filter for metal debris/spalling, test oil pump bypass relief valve.",
-            technical_order="TO-UAV-ENG-LUB-02",
-            urgency="IMMEDIATE",
-            subsystem="Lubrication Circuit",
-        )
-
-    if "Thermal" in name or "Cooling" in name:
-        return MaintenanceAction(
-            echelon="I-Level (Field Maintenance)",
-            dispatch_status="NO_GO_MAINTENANCE_HOLD",
-            recommended_action="Inspect coolant radiator for FOD/clogging, verify thermostat actuation, check coolant pump impeller integrity.",
-            technical_order="TO-UAV-ENG-THM-07",
-            urgency="IMMEDIATE",
-            subsystem="Cooling System",
-        )
-
-    if "Combustion" in name or "Misfire" in name:
-        return MaintenanceAction(
-            echelon="O-Level (Flight Line)",
-            dispatch_status="CAUTION_RESTRICTED_ENVELOPE",
-            recommended_action="Perform differential compression check across cylinders 1-4, inspect dual-spark plugs, clean fuel injector nozzles.",
-            technical_order="TO-UAV-ENG-IGN-03",
-            urgency="PRIOR_TO_NEXT_SORTIE",
-            subsystem="Ignition & Combustion",
-        )
-
-    if "Fuel" in name:
-        return MaintenanceAction(
-            echelon="O-Level (Flight Line)",
-            dispatch_status="CAUTION_RESTRICTED_ENVELOPE",
-            recommended_action="Flow-test electronic fuel injectors, inspect high-pressure fuel pump filter, verify fuel rail pressure sensor.",
-            technical_order="TO-UAV-ENG-FUEL-01",
-            urgency="PRIOR_TO_NEXT_SORTIE",
-            subsystem="Fuel Delivery",
-        )
-
-    if "Electrical" in name:
-        return MaintenanceAction(
-            echelon="O-Level (Flight Line)",
-            dispatch_status="NO_GO_MAINTENANCE_HOLD",
-            recommended_action="Test internal alternator rectifier diodes, inspect stator windings, verify FADEC dual-bus voltage regulator.",
-            technical_order="TO-UAV-ELEC-PWR-05",
-            urgency="IMMEDIATE",
-            subsystem="Electrical & FADEC",
-        )
-
-    if "Vibration" in name:
-        return MaintenanceAction(
-            echelon="I-Level (Field Maintenance)",
-            dispatch_status="NO_GO_MAINTENANCE_HOLD",
-            recommended_action="Perform dynamic propeller & crankshaft balancing check. Inspect engine isolation shock mounts for tear.",
-            technical_order="TO-UAV-ENG-DYN-09",
-            urgency="IMMEDIATE",
-            subsystem="Mechanical & Dynamics",
-        )
+    actions = generate_echelon_advisory([(cond, sev, ev)])
+    if actions:
+        return actions[0]
 
     return MaintenanceAction(
-        echelon="O-Level (Flight Line)",
+        subsystem_tier="POWERPLANT_GENERAL",
+        subsystem_component="General Engine",
+        detected_condition=cond,
+        severity=str(sev).upper(),
+        echelon="O-Level",
         dispatch_status="GO_MISSION_READY",
-        recommended_action="Routine turnaround servicing. Inspect fluid levels and check logbook signatures.",
-        technical_order="TO-UAV-ENG-ROUTINE-01",
+        recommended_action="Standard scheduled phase inspection.",
+        technical_order="TO-UAV-ENG-GEN-01",
         urgency="ROUTINE",
-        subsystem="General Propulsion",
+        evidence=ev if isinstance(ev, list) else [str(ev)],
     )
+
+
+def maintenance_advice(findings: list[tuple[str, str, list[str]]], sensor_health: dict | None = None) -> list[str]:
+    """Generates plain-language operational maintenance action recommendations."""
+    if not findings:
+        return ["All monitored engine parameters nominal. Clear for standard mission profile."]
+    
+    advice = []
+    actions = generate_echelon_advisory(findings)
+    for a in actions:
+        advice.append(f"[{a.echelon} | {a.dispatch_status}] {a.detected_condition}: {a.recommended_action} (Ref: {a.technical_order})")
+    return advice

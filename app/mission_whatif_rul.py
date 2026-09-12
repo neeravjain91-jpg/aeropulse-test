@@ -40,7 +40,7 @@ class MissionWhatIfRUL:
             degradation_rates=self.weights,
         )
         deg_sev = float(sim_telemetry.get("Degradation_Severity", 0.0))
-        health_index = max(10.0, min(100.0, 100.0 - deg_sev * 60.0))
+        health_index = max(0.0, min(100.0, 100.0 - deg_sev * 75.0))
         rul_res = self.rul_service.predict(sim_telemetry, scenario.to_dict())
         cht = float(sim_telemetry.get("CHT", 145.0))
         fuel_flow = float(sim_telemetry.get("Fuel_Flow", 30.0))
@@ -88,7 +88,7 @@ class MissionWhatIfRUL:
         thermal_severity = max(0.0, (cht - 210.0) / 100.0) + max(0.0, (oil_temp - 95.0) / 30.0)
         base_health_loss_per_h = (0.045 + 0.03 * thermal_severity) * stress
         cumulative_mission_health_loss = base_health_loss_per_h * scenario.duration_h
-        projected_health_end_of_mission = max(20.0, 100.0 - cumulative_mission_health_loss)
+        projected_health_end_of_mission = max(0.0, 100.0 - cumulative_mission_health_loss)
 
         rul_res = self.rul_service.estimate_rul(
             health_index=projected_health_end_of_mission,
