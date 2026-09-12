@@ -44,12 +44,15 @@ HEALTH_ORDER = {
 class AeroTwinAI:
     def __init__(self):
         # 1. Point Machine Learning Models (Authoritative Fallback)
-        self.health = joblib.load(
-            MODEL_DIR / "aces_health.joblib"
-        )
-        self.anomaly = joblib.load(
-            MODEL_DIR / "aces_anomaly.joblib"
-        )
+        try:
+            self.health = joblib.load(MODEL_DIR / "aces_health.joblib")
+        except Exception:
+            self.health = None
+
+        try:
+            self.anomaly = joblib.load(MODEL_DIR / "aces_anomaly.joblib")
+        except Exception:
+            self.anomaly = None
 
         # 2. Physics Reference Twin & RUL Service
         self.twin = ReferenceTwin()
@@ -97,14 +100,34 @@ class AeroTwinAI:
             raise ValueError(f"Missing telemetry fields: {missing}")
 
         # ---------------------------------------------------------
+        # 3. FIRST-PRINCIPLES DIGITAL TWIN (Physics Residuals)
+        # ---------------------------------------------------------
+        twin = self.twin.compare(telemetry, context=context)
+
+        # ---------------------------------------------------------
         # 1. POINT ML HEALTH CLASSIFICATION (Model A: HGB Baseline)
         # ---------------------------------------------------------
-        health_frame = pd.DataFrame([{column: telemetry[column] for column in columns}])
-        hgb_raw_probs = self.health.predict_proba(health_frame)[0]
-        hgb_classes = self.health.classes_
-
-        hgb_probabilities = {str(label): float(val) for label, val in zip(hgb_classes, hgb_raw_probs)}
-        raw_prediction = str(hgb_classes[int(np.argmax(hgb_raw_probs))])
+        if self.health is not None:
+            health_frame = pd.DataFrame([{column: telemetry[column] for column in columns}])
+            hgb_raw_probs = self.health.predict_proba(health_frame)[0]
+            hgb_classes = self.health.classes_
+            hgb_probabilities = {str(label): float(val) for label, val in zip(hgb_classes, hgb_raw_probs)}
+            raw_prediction = str(hgb_classes[int(np.argmax(hgb_raw_probs))])
+        else:
+            # First-principles physics-based health classification
+            max_dev = float(twin.get("max_normalized_error", 0.0))
+            if max_dev > 4.0:
+                raw_prediction = "Critical"
+                hgb_probabilities = {"Normal": 0.02, "Watch": 0.08, "Warning": 0.20, "Critical": 0.70}
+            elif max_dev > 2.5:
+                raw_prediction = "Warning"
+                hgb_probabilities = {"Normal": 0.05, "Watch": 0.15, "Warning": 0.65, "Critical": 0.15}
+            elif max_dev > 1.5:
+                raw_prediction = "Watch"
+                hgb_probabilities = {"Normal": 0.20, "Watch": 0.60, "Warning": 0.15, "Critical": 0.05}
+            else:
+                raw_prediction = "Normal"
+                hgb_probabilities = {"Normal": 0.85, "Watch": 0.10, "Warning": 0.04, "Critical": 0.01}
 
         if hgb_probabilities.get("Critical", 0.0) >= 0.25:
             hgb_prediction = "Critical"
@@ -116,13 +139,11 @@ class AeroTwinAI:
         # ---------------------------------------------------------
         # 2. POINT ANOMALY DETECTION (Model D: Isolation Forest)
         # ---------------------------------------------------------
-        anomaly_frame = pd.DataFrame([{parameter: telemetry[parameter] for parameter in PARAMS}])
-        iso_anomaly_score = float(-self.anomaly.decision_function(anomaly_frame)[0])
-
-        # ---------------------------------------------------------
-        # 3. FIRST-PRINCIPLES DIGITAL TWIN (Physics Residuals)
-        # ---------------------------------------------------------
-        twin = self.twin.compare(telemetry, context=context)
+        if self.anomaly is not None:
+            anomaly_frame = pd.DataFrame([{parameter: telemetry[parameter] for parameter in PARAMS}])
+            iso_anomaly_score = float(-self.anomaly.decision_function(anomaly_frame)[0])
+        else:
+            iso_anomaly_score = float(max(twin.get("max_normalized_error", 0.0) / 3.0, 0.0))
 
         # ---------------------------------------------------------
         # 4. SENSOR HEALTH & INTEGRITY ASSESSMENT
