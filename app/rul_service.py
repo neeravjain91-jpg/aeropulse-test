@@ -33,6 +33,8 @@ class RULService:
     CRITICAL_HEALTH_THRESHOLD: float = 35.0
     WARNING_HEALTH_THRESHOLD: float = 60.0
     DEFAULT_TBO_HOURS: float = 2000.0
+    # Maximum RUL drop fraction per evaluation step (prevents 1199→0 collapse)
+    MAX_RUL_DROP_FRACTION: float = 0.25
 
     # Engine TBO mapping (Certified specifications / published operator manuals)
     ENGINE_TBO_HOURS: Dict[str, float] = {
@@ -48,6 +50,7 @@ class RULService:
         self.weibull_beta: float = 2.4
         self.weibull_eta: float = 2200.0
         self._history_buffer: List[float] = []
+        self._prev_rul: Optional[float] = None  # rate-limiter state
 
     def get_engine_tbo(self, engine_id: Optional[str] = None) -> float:
         """Returns certified/published TBO hours for the specified engine."""
@@ -57,6 +60,7 @@ class RULService:
     def reset(self) -> None:
         """Resets internal history buffer to prevent cross-mission/cross-engine leakage."""
         self._history_buffer.clear()
+        self._prev_rul = None
 
     def calculate_mission_stress(self, context: Optional[dict] = None) -> float:
         if not context:
@@ -143,6 +147,7 @@ class RULService:
             rul_lower = 0.0
             rul_upper = 1.0
             confidence = 0.95
+            spread = 0.10
             status = "CRITICAL_MAINTENANCE_REQUIRED"
         elif current_health <= self.WARNING_HEALTH_THRESHOLD:
             remaining_points = current_health - self.CRITICAL_HEALTH_THRESHOLD
@@ -164,6 +169,26 @@ class RULService:
             rul_lower = max(0.0, rul_h * (1.0 - spread))
             rul_upper = min(tbo_hours * 1.1, rul_h * (1.0 + spread))
             status = "NOMINAL_HEALTH"
+
+        # ── Rate-of-change limiter: prevent instant RUL collapse ──
+        # Under acute faults health can drop 100→25 in one step, causing
+        # RUL to jump from ~1199h to 0h.  Cap the maximum single-step
+        # decline to MAX_RUL_DROP_FRACTION * TBO (default 25% = 300h for
+        # Rotax 914).  The RUL will converge to the true value over
+        # several evaluation steps, producing a progressive decline.
+        # Only applies during continuous mission evaluation (elapsed_hours > 0).
+        if elapsed_hours > 0.0 and self._prev_rul is not None and rul_h < self._prev_rul:
+            max_drop = self.MAX_RUL_DROP_FRACTION * tbo_hours
+            if (self._prev_rul - rul_h) > max_drop:
+                rul_h = max(0.0, self._prev_rul - max_drop)
+                rul_lower = max(0.0, rul_h * (1.0 - spread))
+                rul_upper = min(tbo_hours * 1.1, rul_h * (1.0 + spread))
+                if status == "CRITICAL_MAINTENANCE_REQUIRED":
+                    status = "EMERGENCY_ACUTE_FAULT"
+        if elapsed_hours > 0.0:
+            self._prev_rul = rul_h
+        else:
+            self._prev_rul = None
 
         return {
             "rul_hours": round(rul_h, 2),

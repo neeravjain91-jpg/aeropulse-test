@@ -3,6 +3,10 @@
     {
       "source": "/api/(.*)",
       "destination": "/api/index.py?__route__=$1"
+    },
+    {
+      "source": "/",
+      "destination": "/static/index.html"
     }
   ]
 }
