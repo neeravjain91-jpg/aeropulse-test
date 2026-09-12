@@ -703,83 +703,129 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
                 <canvas id="engineCanvas" aria-label="Interactive 3D model of an inline four-cylinder four-stroke turbocharged cutaway aero-engine"></canvas>
                 <canvas id="engineLabelsCanvas" class="engine-labels-overlay" aria-hidden="true"></canvas>
 
-                <!-- LEFT HUD: 2D KINEMATICS & PLAYBACK SCRUBBER -->
-                <div class="engine-hud-overlay-left">
-                  <div class="engine-diagram-card">
-                    <div class="engine-diagram-header">
-                      <span class="engine-diagram-title">Kinematics</span>
-                      <span id="simPhaseBadge" class="sim-phase-badge phase-intake">INTAKE</span>
+                <!-- DOWNWARD REPOSITIONED DIAGNOSTIC DIAGRAMS & CONTROLS DOCK -->
+                <div class="engine-hud-bottom-dock" id="engineHudBottomDock">
+                  <!-- HORIZONTAL TAB STRIP + FIRING ORDER RIBBON -->
+                  <div class="engine-tabs-bar">
+                    <div class="engine-tab-buttons" role="tablist" aria-label="Engine diagnostic diagrams">
+                      <button class="engine-diagram-tab-btn active" id="engTabBtnKinematics" role="tab" aria-selected="true" aria-controls="engTabPaneKinematics" onclick="switchEngineDiagramTab('kinematics')">
+                        Kinematics
+                      </button>
+                      <button class="engine-diagram-tab-btn" id="engTabBtnValve" role="tab" aria-selected="false" aria-controls="engTabPaneValve" onclick="switchEngineDiagramTab('valve')">
+                        Valve Timing &amp; Lift
+                      </button>
+                      <button class="engine-diagram-tab-btn" id="engTabBtnPressure" role="tab" aria-selected="false" aria-controls="engTabPanePressure" onclick="switchEngineDiagramTab('pressure')">
+                        P–V Indicator Diagram
+                      </button>
+                      <button class="engine-tab-toggle" id="engineTabsToggleBtn" title="Collapse / Expand Diagrams Panel" aria-label="Toggle diagram panel" onclick="toggleEngineDiagramsPanel()">▾</button>
                     </div>
-                    <canvas id="diagramKinematicsCanvas" class="engine-diagram-canvas" width="220" height="85"></canvas>
-                    <div class="sim-controls-grid" style="margin-top:5px;">
-                      <div class="sim-btn-row">
-                        <button class="sim-btn" id="simPlayBtn" title="Play/Pause Simulation">⏸</button>
-                        <button class="sim-btn" id="simStepBack" title="Step -15°">-15°</button>
-                        <button class="sim-btn" id="simStepForward" title="Step +15°">+15°</button>
-                        <select class="sim-speed-select" id="simSpeedSelect" title="Playback Speed">
-                          <option value="1.0">1.0x Real</option>
-                          <option value="0.5">0.5x</option>
-                          <option value="0.25">0.25x</option>
-                          <option value="0.1">0.10x Slow-Mo</option>
-                        </select>
+
+                    <!-- FIRING ORDER RIBBON (INTEGRATED INTO DOCK HEADER) -->
+                    <div class="engine-firing-ribbon">
+                      <span class="firing-ribbon-title">FIRING ORDER 1-3-4-2:</span>
+                      <div class="firing-cyl-node" id="firingCyl1">
+                        <span class="firing-cyl-num">CYL 1</span>
+                        <span class="cyl-phase-label">INTAKE</span>
                       </div>
-                      <div class="sim-scrubber-container">
-                        <input type="range" id="simScrubber" min="0" max="719" value="0" step="1" title="Scrub Crank Angle (0-720°)">
-                        <span class="sim-scrub-angle" id="simAngleReadout">0°</span>
+                      <div class="firing-cyl-node" id="firingCyl3">
+                        <span class="firing-cyl-num">CYL 3</span>
+                        <span class="cyl-phase-label">COMPR</span>
                       </div>
-                      <div style="display:flex; align-items:center; gap:4px;">
-                        <input type="range" id="simRpmSlider" min="0" max="6000" value="3000" step="50" style="flex:1; height:3px; accent-color:#5eb574;">
-                        <span style="font:800 9.5px/1 Inter, monospace; color:#a8bfa9; min-width:48px;" id="simRpmVal">3000 RPM</span>
-                        <button class="sim-btn active" id="simSyncRpmBtn" style="font-size:9px; padding:2px 4px;" title="Sync with Flight Telemetry">SYNC</button>
+                      <div class="firing-cyl-node" id="firingCyl4">
+                        <span class="firing-cyl-num">CYL 4</span>
+                        <span class="cyl-phase-label">POWER</span>
+                      </div>
+                      <div class="firing-cyl-node" id="firingCyl2">
+                        <span class="firing-cyl-num">CYL 2</span>
+                        <span class="cyl-phase-label">EXHAUST</span>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- RIGHT HUD: CYLINDER SELECTOR & SYNCHRONIZED DIAGRAMS -->
-                <div class="engine-hud-overlay-right">
-                  <div class="cyl-selector-bar">
-                    <button class="cyl-btn active" data-cylinder-focus="0">CYL 1</button>
-                    <button class="cyl-btn" data-cylinder-focus="1">CYL 2</button>
-                    <button class="cyl-btn" data-cylinder-focus="2">CYL 3</button>
-                    <button class="cyl-btn" data-cylinder-focus="3">CYL 4</button>
-                  </div>
-
-                  <div class="engine-diagram-card">
-                    <div class="engine-diagram-header">
-                      <span class="engine-diagram-title">Valve Timing & Lift</span>
-                      <span style="font:700 7.5px/1 Inter, monospace; color:#889c8a;">0–720°</span>
+                  <!-- ACTIVE TAB CONTENT DRAWER -->
+                  <div class="engine-tabs-content" id="engineTabsContent">
+                    <!-- TAB 1: KINEMATICS -->
+                    <div class="engine-tab-pane" id="engTabPaneKinematics" role="tabpanel" aria-labelledby="engTabBtnKinematics" style="display:block;">
+                      <div class="engine-diagram-panel-flex">
+                        <div class="engine-canvas-wrap">
+                          <canvas id="diagramKinematicsCanvas" class="engine-diagram-canvas" width="220" height="85" aria-label="2D Kinematics and Velocity Vector Diagram"></canvas>
+                        </div>
+                        <div class="sim-controls-grid" style="flex:1; min-width:210px;">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                            <span class="engine-diagram-title">Kinematics &amp; Velocity</span>
+                            <span id="simPhaseBadge" class="sim-phase-badge phase-intake">INTAKE</span>
+                          </div>
+                          <div class="sim-btn-row">
+                            <button class="sim-btn" id="simPlayBtn" title="Play/Pause Simulation">⏸</button>
+                            <button class="sim-btn" id="simStepBack" title="Step -15°">-15°</button>
+                            <button class="sim-btn" id="simStepForward" title="Step +15°">+15°</button>
+                            <select class="sim-speed-select" id="simSpeedSelect" title="Playback Speed">
+                              <option value="1.0">1.0x Real</option>
+                              <option value="0.5">0.5x</option>
+                              <option value="0.25">0.25x</option>
+                              <option value="0.1">0.10x Slow-Mo</option>
+                            </select>
+                          </div>
+                          <div class="sim-scrubber-container">
+                            <input type="range" id="simScrubber" min="0" max="719" value="0" step="1" title="Scrub Crank Angle (0-720°)">
+                            <span class="sim-scrub-angle" id="simAngleReadout">0°</span>
+                          </div>
+                          <div style="display:flex; align-items:center; gap:4px;">
+                            <input type="range" id="simRpmSlider" min="0" max="6000" value="3000" step="50" style="flex:1; height:3px; accent-color:#5eb574;">
+                            <span style="font:800 9.5px/1 Inter, monospace; color:#a8bfa9; min-width:48px;" id="simRpmVal">3000 RPM</span>
+                            <button class="sim-btn active" id="simSyncRpmBtn" style="font-size:9px; padding:2px 4px;" title="Sync with Flight Telemetry">SYNC</button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <canvas id="diagramValveCanvas" class="engine-diagram-canvas" width="220" height="70"></canvas>
-                  </div>
 
-                  <div class="engine-diagram-card">
-                    <div class="engine-diagram-header">
-                      <span class="engine-diagram-title">P-V Indicator Diagram</span>
-                      <span style="font:700 7.5px/1 Inter, monospace; color:#889c8a;">Pressure / Vol</span>
+                    <!-- TAB 2: VALVE TIMING & LIFT -->
+                    <div class="engine-tab-pane" id="engTabPaneValve" role="tabpanel" aria-labelledby="engTabBtnValve" style="display:none;">
+                      <div class="engine-diagram-panel-flex">
+                        <div class="engine-canvas-wrap">
+                          <canvas id="diagramValveCanvas" class="engine-diagram-canvas" width="220" height="70" aria-label="Valve Timing and Cam Lift Curve (0 to 720 degrees)"></canvas>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; min-width:180px;">
+                          <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="engine-diagram-title">Valve Timing &amp; Cam Lift</span>
+                            <span style="font:700 9px/1 Inter, monospace; color:#889c8a;">0–720° Cycle</span>
+                          </div>
+                          <div class="cyl-selector-bar">
+                            <button class="cyl-btn active" data-cylinder-focus="0">CYL 1</button>
+                            <button class="cyl-btn" data-cylinder-focus="1">CYL 2</button>
+                            <button class="cyl-btn" data-cylinder-focus="2">CYL 3</button>
+                            <button class="cyl-btn" data-cylinder-focus="3">CYL 4</button>
+                          </div>
+                          <div style="font:700 9px/1.3 Inter, sans-serif; color:#7a8c7b;">
+                            <span style="color:#5eb574;">■</span> Intake (0–180°) · <span style="color:#e85d3a;">■</span> Exhaust (540–720°) · <span style="color:#c2d1c5;">---</span> Piston Stroke
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <canvas id="diagramPressureCanvas" class="engine-diagram-canvas" width="220" height="70"></canvas>
-                  </div>
-                </div>
 
-                <!-- BOTTOM CENTER: FIRING ORDER RIBBON -->
-                <div class="engine-firing-ribbon">
-                  <span class="firing-ribbon-title">FIRING ORDER 1-3-4-2:</span>
-                  <div class="firing-cyl-node" id="firingCyl1">
-                    <span class="firing-cyl-num">CYL 1</span>
-                    <span class="cyl-phase-label">INTAKE</span>
-                  </div>
-                  <div class="firing-cyl-node" id="firingCyl3">
-                    <span class="firing-cyl-num">CYL 3</span>
-                    <span class="cyl-phase-label">COMPR</span>
-                  </div>
-                  <div class="firing-cyl-node" id="firingCyl4">
-                    <span class="firing-cyl-num">CYL 4</span>
-                    <span class="cyl-phase-label">POWER</span>
-                  </div>
-                  <div class="firing-cyl-node" id="firingCyl2">
-                    <span class="firing-cyl-num">CYL 2</span>
-                    <span class="cyl-phase-label">EXHAUST</span>
+                    <!-- TAB 3: P-V INDICATOR DIAGRAM -->
+                    <div class="engine-tab-pane" id="engTabPanePressure" role="tabpanel" aria-labelledby="engTabBtnPressure" style="display:none;">
+                      <div class="engine-diagram-panel-flex">
+                        <div class="engine-canvas-wrap">
+                          <canvas id="diagramPressureCanvas" class="engine-diagram-canvas" width="220" height="70" aria-label="P-V Pressure Volume Indicator Work Loop Diagram"></canvas>
+                        </div>
+                        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:6px; min-width:180px;">
+                          <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="engine-diagram-title">P–V Indicator Diagram</span>
+                            <span style="font:700 9px/1 Inter, monospace; color:#889c8a;">Pressure / Vol</span>
+                          </div>
+                          <div class="cyl-selector-bar">
+                            <button class="cyl-btn active" data-cylinder-focus="0">CYL 1</button>
+                            <button class="cyl-btn" data-cylinder-focus="1">CYL 2</button>
+                            <button class="cyl-btn" data-cylinder-focus="2">CYL 3</button>
+                            <button class="cyl-btn" data-cylinder-focus="3">CYL 4</button>
+                          </div>
+                          <div style="font:700 9px/1.3 Inter, sans-serif; color:#7a8c7b;">
+                            Thermodynamic Otto/Four-Stroke Work Loop · Real-Time Combustion Pressure Marker
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1340,6 +1386,66 @@ function switchDashboardTab(tabId) {
     fetchDataCatalogUI();
   }
 }
+
+function switchEngineDiagramTab(tabName) {
+  const tabs = ['kinematics', 'valve', 'pressure'];
+  const content = document.getElementById('engineTabsContent');
+  const toggleBtn = document.getElementById('engineTabsToggleBtn');
+  const targetBtn = document.getElementById('engTabBtn' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+
+  // If clicking already-active tab and content is open, toggle collapse/expand
+  if (targetBtn && targetBtn.classList.contains('active') && content && content.style.display !== 'none') {
+    toggleEngineDiagramsPanel();
+    return;
+  }
+
+  if (content) content.style.display = 'block';
+  if (toggleBtn) {
+    toggleBtn.textContent = '▾';
+    toggleBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  tabs.forEach(t => {
+    const btn = document.getElementById('engTabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+    const pane = document.getElementById('engTabPane' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (t === tabName) {
+      if (btn) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+      }
+      if (pane) pane.style.display = 'block';
+    } else {
+      if (btn) {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      }
+      if (pane) pane.style.display = 'none';
+    }
+  });
+}
+
+function toggleEngineDiagramsPanel() {
+  const content = document.getElementById('engineTabsContent');
+  const toggleBtn = document.getElementById('engineTabsToggleBtn');
+  if (!content) return;
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? 'block' : 'none';
+  if (toggleBtn) {
+    toggleBtn.textContent = isHidden ? '▾' : '▴';
+    toggleBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+  }
+}
+
+// Keep all cylinder focus buttons in sync across tabs
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-cylinder-focus]');
+  if (btn) {
+    const focus = btn.dataset.cylinderFocus;
+    document.querySelectorAll('[data-cylinder-focus]').forEach(b => {
+      b.classList.toggle('active', b.dataset.cylinderFocus === focus);
+    });
+  }
+});
 
 let uavMap = null;
 let uavMarker = null;
