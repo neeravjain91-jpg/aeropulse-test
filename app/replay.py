@@ -52,47 +52,48 @@ def _replay_rul(
     health_history: list[float],
     fallback: dict,
     step_minutes: float,
+    elapsed_hours: float = 0.0,
+    stress: float = 1.0,
+    tbo_hours: float = 1200.0,
+    current_health: float = 100.0,
 ) -> dict:
 
     trend = estimate_degradation_horizon(
         health_history,
         step_minutes,
+        max_horizon_hours=tbo_hours,
     )
 
-    if trend.get("rul_hours") is not None:
+    consumed_life = elapsed_hours * stress
+    max_achievable = max(0.0, tbo_hours - consumed_life)
 
-        confidence = float(
-            trend["confidence"]
-        )
-
-        horizon = float(
-            trend["rul_hours"]
-        )
-
-        spread = 0.25 * (
-            1.0 - confidence
-        )
+    if trend.get("rul_hours") is not None and trend.get("status") == "DEGRADING":
+        confidence = float(trend.get("confidence", 0.75))
+        horizon = float(trend["rul_hours"])
+        spread = 0.25 * (1.0 - confidence) + 0.05
+        bounded = max(0.0, min(max_achievable, horizon))
 
         return {
-            "rul_hours": round(
-                horizon,
-                2,
-            ),
-            "rul_lower_hours": max(
-                0.0,
-                round(
-                    horizon * (1.0 - spread),
-                    2,
-                ),
-            ),
-            "rul_upper_hours": round(
-                horizon * (1.0 + spread),
-                2,
-            ),
-            "rul_confidence": round(
-                confidence,
-                2,
-            ),
+            "rul_hours": round(bounded, 2),
+            "rul_lower_hours": max(0.0, round(bounded * (1.0 - spread), 2)),
+            "rul_upper_hours": round(bounded * (1.0 + spread), 2),
+            "rul_confidence": round(confidence, 2),
+            "confidence": round(confidence, 2),
+            "status": "ACTIVE_DEGRADATION",
+            "degradation_rate_per_hour": round(float(trend.get("trend_per_hour", 0.5)), 3),
+        }
+
+    # If fallback is provided and has rul_hours, ensure elapsed hours are accounted for
+    if fallback and fallback.get("rul_hours") is not None:
+        fb_rul = float(fallback["rul_hours"])
+        bounded = max(0.0, min(max_achievable, fb_rul))
+        conf = float(fallback.get("rul_confidence", fallback.get("confidence", 0.75)))
+        spread = 0.25 * (1.0 - conf) + 0.05
+        return {
+            **fallback,
+            "rul_hours": round(bounded, 2),
+            "rul_lower_hours": max(0.0, round(bounded * (1.0 - spread), 2)),
+            "rul_upper_hours": round(bounded * (1.0 + spread), 2),
         }
 
     return fallback
@@ -387,18 +388,22 @@ def run_replay(
         )
 
         # ---------------------------------------------------------
-        # Feature-based fallback RUL
+        # Feature-based fallback RUL and dynamic trend estimation
         # ---------------------------------------------------------
+        elapsed_hours = (i * step_minutes) / 60.0
+        eid = scenario.get("engine_id", "Rotax-914-Turbo-115HP")
+        tbo_hours = _RUL.get_engine_tbo(eid)
+        stress = _RUL.calculate_mission_stress(scenario)
 
         fallback = _RUL.predict(
             point,
             context={
-                "mission_hours": float(
-                    scenario.get(
-                        "duration_h",
-                        4,
-                    )
-                )
+                "engine_id": eid,
+                "elapsed_hours": elapsed_hours,
+                "stress": stress,
+                "mission_hours": float(scenario.get("duration_h", 4)),
+                "ambient_c": float(scenario.get("ambient_c", 25)),
+                "altitude_ft": float(scenario.get("altitude_ft", 3000)),
             },
         )
 
@@ -406,6 +411,10 @@ def run_replay(
             health_history,
             fallback,
             step_minutes,
+            elapsed_hours=elapsed_hours,
+            stress=stress,
+            tbo_hours=tbo_hours,
+            current_health=replay_health,
         )
 
         timeline.append(
@@ -481,6 +490,8 @@ def run_replay(
                     ][
                         "overall_trust_score"
                     ],
+
+                "rul": rul,
 
                 "rul_hours":
                     rul.get("rul_hours"),

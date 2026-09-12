@@ -39,6 +39,8 @@ class RULService:
         "AeroPiston-4C-1.35L": 2000.0,
         "Rotax-914-Turbo-115HP": 1200.0,
         "Generic-Inline4-AeroDiesel": 1500.0,
+        "Generic-2Stroke-Twin-50HP": 500.0,
+        "Generic-Rotary-Wankel-40HP": 1000.0,
     }
 
     def __init__(self, default_engine_id: str = "AeroPiston-4C-1.35L"):
@@ -89,6 +91,14 @@ class RULService:
         current_health = max(0.0, min(100.0, float(health_index)))
         stress = self.calculate_mission_stress(context)
 
+        # Elapsed operating time in hours
+        elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
+        if elapsed_hours == 0.0 and "mission_time_min" in context:
+            elapsed_hours = float(context["mission_time_min"]) / 60.0
+
+        consumed_life = elapsed_hours * stress
+        max_achievable_life = max(0.0, tbo_hours - consumed_life)
+
         # 1. Trajectory Trend Extrapolation (when >= 6 history points available)
         if health_history and len(health_history) >= 6:
             trend_res = estimate_degradation_horizon(
@@ -100,6 +110,7 @@ class RULService:
 
             if trend_res.get("rul_hours") is not None and trend_res.get("status") == "DEGRADING":
                 base_rul = float(trend_res["rul_hours"])
+                base_rul = min(max_achievable_life, base_rul)
                 confidence = float(trend_res.get("confidence", 0.75))
                 # Empirical uncertainty spread: wider for low confidence / noisy fits
                 spread = max(0.05, min(0.40, (1.0 - confidence) * 0.45 + 0.05))
@@ -119,6 +130,7 @@ class RULService:
                     "stress_multiplier": stress,
                     "engine_id": eid,
                     "tbo_hours": tbo_hours,
+                    "elapsed_hours": round(elapsed_hours, 3),
                     "method": "Physics-Stress Weighted Trend Extrapolation",
                 }
 
@@ -135,7 +147,8 @@ class RULService:
         elif current_health <= self.WARNING_HEALTH_THRESHOLD:
             remaining_points = current_health - self.CRITICAL_HEALTH_THRESHOLD
             effective_rate = max(nominal_deg_rate * 2.0, 0.05)
-            rul_h = min(tbo_hours, remaining_points / effective_rate)
+            health_rul = remaining_points / effective_rate
+            rul_h = max(0.0, min(max_achievable_life, health_rul))
             confidence = 0.80
             spread = 0.25
             rul_lower = max(0.0, rul_h * (1.0 - spread))
@@ -143,7 +156,9 @@ class RULService:
             status = "WARNING_ELEVATED_WEAR"
         else:
             remaining_points = current_health - self.CRITICAL_HEALTH_THRESHOLD
-            rul_h = min(tbo_hours, remaining_points / max(nominal_deg_rate, 0.01))
+            health_fraction = remaining_points / (100.0 - self.CRITICAL_HEALTH_THRESHOLD)
+            health_rul = max_achievable_life * health_fraction
+            rul_h = max(0.0, min(max_achievable_life, health_rul))
             confidence = 0.70
             spread = 0.30
             rul_lower = max(0.0, rul_h * (1.0 - spread))
@@ -162,6 +177,7 @@ class RULService:
             "stress_multiplier": stress,
             "engine_id": eid,
             "tbo_hours": tbo_hours,
+            "elapsed_hours": round(elapsed_hours, 3),
             "method": "Physics-Stress Weighted Trend Extrapolation",
         }
 
@@ -191,16 +207,24 @@ class RULService:
         base_health = max(0.0, min(100.0, 100.0 - mech_sev * 75.0))
 
         slope = context.get("degradation_slope")
+        elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
+        if elapsed_hours == 0.0 and "mission_time_min" in context:
+            elapsed_hours = float(context["mission_time_min"]) / 60.0
+
+        stress = self.calculate_mission_stress(context)
+        max_achievable = max(0.0, tbo_hours - elapsed_hours * stress)
+
         if slope is not None:
             slope_val = float(slope)
             remaining = base_health - self.CRITICAL_HEALTH_THRESHOLD
             if slope_val >= -0.01:
-                rul_val = tbo_hours
+                rul_val = max_achievable
                 status = "STABLE_OR_NON_DEGRADING"
                 deg_rate_h = 0.0
             else:
-                deg_rate_h = abs(slope_val)
-                rul_val = 0.0 if base_health <= self.CRITICAL_HEALTH_THRESHOLD else max(0.0, min(tbo_hours, remaining / max(0.001, deg_rate_h)))
+                deg_rate_h = abs(slope_val) * stress
+                health_rul = remaining / max(0.001, deg_rate_h)
+                rul_val = 0.0 if base_health <= self.CRITICAL_HEALTH_THRESHOLD else max(0.0, min(max_achievable, health_rul))
                 status = "SLOPE_EXTRAPOLATED"
 
             spread = 0.25
@@ -216,9 +240,10 @@ class RULService:
                 "sensor_fault_severity": round(sensor_sev, 3),
                 "status": status,
                 "failure_mode_risk": self._diagnose_risk_tier(base_health),
-                "stress_multiplier": 1.0,
+                "stress_multiplier": stress,
                 "engine_id": eid,
                 "tbo_hours": tbo_hours,
+                "elapsed_hours": round(elapsed_hours, 3),
                 "method": "Explicit Slope Estimation",
             }
 

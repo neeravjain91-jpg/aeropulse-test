@@ -1894,10 +1894,22 @@ function startReplayTimer() {
     $('anomaly').textContent = `replay • t=${fmt(p.time_min, 0)} min • ${p.primary_fault || 'Normal'}`;
     $('anomaly').className = 'tiny ' + (p.anomaly_score > 0.05 ? 'bad' : 'good');
 
-    if (p.rul && p.rul_hours != null) {
-      $('rul').textContent = `${p.rul_hours} h`;
-      $('rul').className = 'kpi ' + (p.rul_hours < 10 ? 'bad' : p.rul_hours < 50 ? 'warn' : 'good');
-      $('rulSub').textContent = `90% CI: [${p.rul_lower_hours || 0}h - ${p.rul_upper_hours || 0}h]`;
+    const rulVal = (p.rul && p.rul.rul_hours != null) ? p.rul.rul_hours : (p.rul_hours != null ? p.rul_hours : null);
+    if (rulVal != null) {
+      const lower = (p.rul && p.rul.rul_lower_hours != null) ? p.rul.rul_lower_hours : (p.rul_lower_hours || 0);
+      const upper = (p.rul && p.rul.rul_upper_hours != null) ? p.rul.rul_upper_hours : (p.rul_upper_hours || 0);
+      const statusRisk = (p.rul && (p.rul.failure_mode_risk || p.rul.status)) ? ` • ${p.rul.failure_mode_risk || p.rul.status}` : '';
+      if ($('rul')) {
+        $('rul').textContent = `${Number(rulVal).toFixed(1)} h`;
+        $('rul').className = 'kpi ' + (rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good');
+      }
+      if ($('rulSub')) {
+        $('rulSub').textContent = `90% CI: [${Number(lower).toFixed(1)}h - ${Number(upper).toFixed(1)}h]${statusRisk}`;
+      }
+      if ($('pxRUL')) {
+        $('pxRUL').textContent = `${Number(rulVal).toFixed(1)} h`;
+        $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
+      }
     }
 
     if (p.uav) {
@@ -2486,10 +2498,23 @@ function renderAnalysis(r){
     updateLiveEnginePanel(r.telemetry, r.uav, r.health_index, r.fault_candidates?.[0]?.name);
   }
 
-  if(r.rul && r.rul.rul_hours!=null){
-    $('rul').textContent = `${r.rul.rul_hours} h`;
-    $('rul').className = 'kpi ' + (r.rul.rul_hours < 10 ? 'bad' : r.rul.rul_hours < 50 ? 'warn' : 'good');
-    $('rulSub').textContent = `90% CI: [${r.rul.rul_lower_hours}h - ${r.rul.rul_upper_hours}h] • ${r.rul.failure_mode_risk||r.rul.status}`;
+  const rulObj = r.rul;
+  const rulVal = (rulObj && rulObj.rul_hours != null) ? rulObj.rul_hours : (r.rul_hours != null ? r.rul_hours : null);
+  if (rulVal != null) {
+    const lower = (rulObj && rulObj.rul_lower_hours != null) ? rulObj.rul_lower_hours : (r.rul_lower_hours || 0);
+    const upper = (rulObj && rulObj.rul_upper_hours != null) ? rulObj.rul_upper_hours : (r.rul_upper_hours || 0);
+    const statusRisk = (rulObj && (rulObj.failure_mode_risk || rulObj.status)) ? ` • ${rulObj.failure_mode_risk || rulObj.status}` : '';
+    if ($('rul')) {
+      $('rul').textContent = `${Number(rulVal).toFixed(1)} h`;
+      $('rul').className = 'kpi ' + (rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good');
+    }
+    if ($('rulSub')) {
+      $('rulSub').textContent = `90% CI: [${Number(lower).toFixed(1)}h - ${Number(upper).toFixed(1)}h]${statusRisk}`;
+    }
+    if ($('pxRUL')) {
+      $('pxRUL').textContent = `${Number(rulVal).toFixed(1)} h`;
+      $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
+    }
   }
 
   if (r.uav) {
@@ -2610,6 +2635,24 @@ async function startLiveStream(){
       $('missionRisk').className='kpi '+stateClass(p.risk_level);
       $('residual').textContent=fmt(p.residual_rms,2);
       $('anomaly').textContent=`streaming • t=${fmt(p.time_min,0)} min • ${p.primary_fault}`;
+
+      const rulVal = (p.rul && p.rul.rul_hours != null) ? p.rul.rul_hours : (p.rul_hours != null ? p.rul_hours : null);
+      if (rulVal != null) {
+        const lower = (p.rul && p.rul.rul_lower_hours != null) ? p.rul.rul_lower_hours : (p.rul_lower_hours || 0);
+        const upper = (p.rul && p.rul.rul_upper_hours != null) ? p.rul.rul_upper_hours : (p.rul_upper_hours || 0);
+        const statusRisk = (p.rul && (p.rul.failure_mode_risk || p.rul.status)) ? ` • ${p.rul.failure_mode_risk || p.rul.status}` : '';
+        if ($('rul')) {
+          $('rul').textContent = `${Number(rulVal).toFixed(1)} h`;
+          $('rul').className = 'kpi ' + (rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good');
+        }
+        if ($('rulSub')) {
+          $('rulSub').textContent = `90% CI: [${Number(lower).toFixed(1)}h - ${Number(upper).toFixed(1)}h]${statusRisk}`;
+        }
+        if ($('pxRUL')) {
+          $('pxRUL').textContent = `${Number(rulVal).toFixed(1)} h`;
+          $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
+        }
+      }
 
       if(p.uav){
         updateUAVPosition(p.uav, p.environment, p.health_state, p.risk_level, p.risk_score);

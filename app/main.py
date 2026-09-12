@@ -37,10 +37,12 @@ from .simulator import FAULTS, inject_fault, mission_adjust
 from .telemetry import telemetry_from_engine
 from .uav_mission import UAVMissionSimulator
 from .vibration import VibrationAI, load_demo as load_vibration_demo
+from .rul_service import RULService
 from .validation import AeroPulseValidator
 
 
 _GPS = SimulatedGPSSource()
+_RUL = RULService()
 
 
 import urllib.parse
@@ -1504,6 +1506,23 @@ async def telemetry_stream(
 
                 primary_fault = "None"
 
+            # Dynamic RUL estimation based on elapsed operating hours, health history, and stress
+            elapsed_hours = float(telemetry_packet.Mission_Time_Min) / 60.0
+            eid = getattr(live_config, "engine_id", "Rotax-914-Turbo-115HP") if hasattr(live_config, "engine_id") else "Rotax-914-Turbo-115HP"
+            step_min = float(live_config.duration_h * 60.0 / max(1, total_steps))
+
+            rul = _RUL.estimate_rul(
+                health_index=float(analysis["health_index"]),
+                health_history=health_history,
+                context={
+                    **context,
+                    "elapsed_hours": elapsed_hours,
+                    "engine_id": eid,
+                },
+                step_minutes=step_min,
+                engine_id=eid,
+            )
+
             point = {
                 "step": step,
 
@@ -1620,6 +1639,24 @@ async def telemetry_stream(
                     ][
                         "overall_trust_score"
                     ]
+                ),
+
+                "rul": rul,
+
+                "rul_hours": (
+                    rul.get("rul_hours")
+                ),
+
+                "rul_lower_hours": (
+                    rul.get("rul_lower_hours")
+                ),
+
+                "rul_upper_hours": (
+                    rul.get("rul_upper_hours")
+                ),
+
+                "rul_confidence": (
+                    rul.get("rul_confidence", rul.get("confidence", 0.75))
                 ),
 
                 "fault_severity": round(
