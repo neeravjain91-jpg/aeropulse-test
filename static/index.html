@@ -81,7 +81,7 @@ body{
 }
 .side-tab-icon{font-size:16px;margin-bottom:2px}
 .side-tab-title{font-size:10.5px;font-weight:800;letter-spacing:.04em;line-height:1.2}
-.side-tab-sub{font-size:8.5px;color:#7a8c7b;line-height:1.2}
+.side-tab-sub{font-size:9.5px;color:#7a8c7b;line-height:1.2}
 
 .main-pane{
   flex:1;
@@ -156,7 +156,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
   background:#060a06;border:1px solid #142016;border-radius:6px;padding:6px 8px;margin-bottom:6px
 }
 .auto-item{display:flex;flex-direction:column}
-.auto-label{font-size:8.5px;text-transform:uppercase;color:#6e806f;font-weight:700;letter-spacing:.05em}
+.auto-label{font-size:9.5px;text-transform:uppercase;color:#6e806f;font-weight:700;letter-spacing:.05em}
 .auto-val{font-size:12px;font-weight:800;color:#dbe5db;margin-top:1px}
 .primary-mission-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .primary-mission-actions button{width:auto;min-width:115px;margin:0;padding:5px 10px;}
@@ -196,9 +196,9 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
 }
 .prox-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;padding-bottom:3px;border-bottom:1px solid #142016}
 .prox-section{padding:3px 0;border-bottom:1px solid #101a11}
-.prox-sec-title{font-size:8px;text-transform:uppercase;color:#5eb574;font-weight:700;letter-spacing:.06em;margin-bottom:2px}
+.prox-sec-title{font-size:9px;text-transform:uppercase;color:#5eb574;font-weight:700;letter-spacing:.06em;margin-bottom:2px}
 .prox-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 5px}
-.prox-lbl{color:#6e806f;font-size:8.5px}
+.prox-lbl{color:#6e806f;font-size:9.5px}
 .prox-grid b{color:#dbe5db;font-size:9.5px}
 
 /* Map Status Bar */
@@ -213,7 +213,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
   background:#060a06;border:1px solid #142016;border-radius:6px;padding:5px 8px;margin-top:6px
 }
 .hud-item{display:flex;flex-direction:column}
-.hud-label{font-size:8px;text-transform:uppercase;color:#647565;font-weight:700;letter-spacing:.05em}
+.hud-label{font-size:9px;text-transform:uppercase;color:#647565;font-weight:700;letter-spacing:.05em}
 .hud-val{font-size:11px;font-weight:800;color:#dbe5db;margin-top:1px}
 
 /* Compact Waypoint Editor Table */
@@ -289,6 +289,12 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+/* === ACCESSIBILITY: FOCUS-VISIBLE RING === */
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 2px solid #4caf50;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 </style>
 </head>
 
@@ -318,21 +324,21 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
   <div class="app-container">
 
     <!-- LEFT SIDEBAR: VERTICAL 3-TAB NAVIGATION -->
-    <nav class="side-nav">
-      <button id="tabBtnLive" class="side-tab-btn active" onclick="switchDashboardTab('live')">
-        <span class="side-tab-icon">⌖</span>
+    <nav class="side-nav" role="tablist" aria-label="Dashboard sections">
+      <button id="tabBtnLive" class="side-tab-btn active" role="tab" aria-selected="true" aria-controls="tabContentLive" onclick="switchDashboardTab('live')">
+        <span class="side-tab-icon" aria-hidden="true">⌖</span>
         <span class="side-tab-title">LIVE MISSION</span>
         <span class="side-tab-sub">Map • 3D Twin • CAN</span>
       </button>
 
-      <button id="tabBtnDiagnostics" class="side-tab-btn" onclick="switchDashboardTab('diagnostics')">
-        <span class="side-tab-icon">⚙</span>
+      <button id="tabBtnDiagnostics" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentDiagnostics" onclick="switchDashboardTab('diagnostics')">
+        <span class="side-tab-icon" aria-hidden="true">⚙</span>
         <span class="side-tab-title">HEALTH & DIAGNOSTICS</span>
         <span class="side-tab-sub">Faults • Telemetry • Physics</span>
       </button>
 
-      <button id="tabBtnDatalab" class="side-tab-btn" onclick="switchDashboardTab('datalab')">
-        <span class="side-tab-icon">🗄</span>
+      <button id="tabBtnDatalab" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentDatalab" onclick="switchDashboardTab('datalab')">
+        <span class="side-tab-icon" aria-hidden="true">🗄</span>
         <span class="side-tab-title">VIRTUAL DATA LAB</span>
         <span class="side-tab-sub">Data Gen • Replay • Causal</span>
       </button>
@@ -388,19 +394,19 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
             </div>
             <div class="auto-item">
               <span class="auto-label">Current Altitude</span>
-              <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+              <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
             </div>
             <div class="auto-item">
               <span class="auto-label">Ground Speed</span>
-              <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+              <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
             </div>
             <div class="auto-item">
               <span class="auto-label">Auto Throttle</span>
-              <span class="auto-val" id="autoThrottle">58% <small style="font-size:8.5px; color:#4cb574;">AUTO</small></span>
+              <span class="auto-val" id="autoThrottle">58% <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
             </div>
             <div class="auto-item">
               <span class="auto-label">Ambient Temp</span>
-              <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:8.5px; color:#4cb574;">AUTO (ISA)</small></span>
+              <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:9.5px; color:#4cb574;">AUTO (ISA)</small></span>
             </div>
           </div>
 
@@ -508,7 +514,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
                   <span style="font-weight:800; color:#5eb574; font-size:9px; display:flex; align-items:center; gap:4px;">
                     <span>⌖</span> UAV CLOSE PROXIMITY VIEW
                   </span>
-                  <span class="pill good" id="pxHealthBadge" style="font-size:7.5px; padding:1px 4px;">NORMAL</span>
+                  <span class="pill good" id="pxHealthBadge" style="font-size:9px; padding:1px 4px;">NORMAL</span>
                 </div>
 
                 <!-- 1. UAV LIVE FLIGHT STATE -->
@@ -675,8 +681,8 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
               <!-- LIVE ENGINE PARAMETERS CONSOLIDATED INSIDE SELECTED ASSEMBLY -->
               <div class="assembly-telemetry-grid">
                 <div class="asm-param"><span class="asm-lbl">Engine RPM</span><b class="asm-val info" id="engRPM">3,000 RPM</b></div>
-                <div class="asm-param"><span class="asm-lbl">Auto Throttle</span><b class="asm-val" id="engThrottle">58% <small style="font-size:7.5px; color:#4cb574;">AUTO</small></b></div>
-                <div class="asm-param"><span class="asm-lbl">Engine Load</span><b class="asm-val" id="engLoad">0.84 <small style="font-size:7.5px; color:#4cb574;">AUTO</small></b></div>
+                <div class="asm-param"><span class="asm-lbl">Auto Throttle</span><b class="asm-val" id="engThrottle">58% <small style="font-size:9px; color:#4cb574;">AUTO</small></b></div>
+                <div class="asm-param"><span class="asm-lbl">Engine Load</span><b class="asm-val" id="engLoad">0.84 <small style="font-size:9px; color:#4cb574;">AUTO</small></b></div>
                 <div class="asm-param"><span class="asm-lbl">CHT Temp</span><b class="asm-val" id="engCHT">220.4 °F</b></div>
                 <div class="asm-param"><span class="asm-lbl">EGT Max</span><b class="asm-val" id="engEGT">1,205 °F</b></div>
                 <div class="asm-param"><span class="asm-lbl">Oil Press / Temp</span><b class="asm-val" id="engOil">60.2 PSI • 89.6 °C</b></div>
@@ -723,8 +729,8 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
                       </div>
                       <div style="display:flex; align-items:center; gap:4px;">
                         <input type="range" id="simRpmSlider" min="0" max="6000" value="3000" step="50" style="flex:1; height:3px; accent-color:#5eb574;">
-                        <span style="font:800 8.5px/1 Inter, monospace; color:#a8bfa9; min-width:48px;" id="simRpmVal">3000 RPM</span>
-                        <button class="sim-btn active" id="simSyncRpmBtn" style="font-size:7.5px; padding:2px 4px;" title="Sync with Flight Telemetry">SYNC</button>
+                        <span style="font:800 9.5px/1 Inter, monospace; color:#a8bfa9; min-width:48px;" id="simRpmVal">3000 RPM</span>
+                        <button class="sim-btn active" id="simSyncRpmBtn" style="font-size:9px; padding:2px 4px;" title="Sync with Flight Telemetry">SYNC</button>
                       </div>
                     </div>
                   </div>
@@ -870,7 +876,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
               </div>
               <div class="auto-item">
                 <span class="auto-label">Pressure</span>
-                <span class="auto-val" id="envPress">802 hPa <small style="font-size:8.5px; color:#7a8c7b;">(23.7 inHg)</small></span>
+                <span class="auto-val" id="envPress">802 hPa <small style="font-size:9.5px; color:#7a8c7b;">(23.7 inHg)</small></span>
               </div>
               <div class="auto-item">
                 <span class="auto-label">Density Ratio (σ)</span>
@@ -1003,7 +1009,7 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
         <div class="grid two" style="margin-bottom:8px;">
           <div class="card">
             <h2>Mission Replay & Anomaly Health Timeline</h2>
-            <canvas id="timeline" width="800" height="200"></canvas>
+            <canvas id="timeline" width="800" height="200" aria-label="Engine health and risk timeline chart"></canvas>
             <div id="events"></div>
           </div>
 
@@ -1185,61 +1191,61 @@ canvas#timeline{width:100%;height:200px;background:#060a06;border:1px solid #142
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode1">
               <div class="s-name">1. Fault Onset</div>
               <div class="s-score" style="font-size:11px; color:#e2ece2;" id="ccVal1">Thermal</div>
-              <div class="pill good" style="font-size:8px;" id="ccPill1">Cooling Deficit</div>
+              <div class="pill good" style="font-size:9px;" id="ccPill1">Cooling Deficit</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode2">
               <div class="s-name">2. Physics</div>
               <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal2">CHT ↑ 138°C</div>
-              <div class="pill warn" style="font-size:8px;" id="ccPill2">Heat Accumulation</div>
+              <div class="pill warn" style="font-size:9px;" id="ccPill2">Heat Accumulation</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode3">
               <div class="s-name">3. Sensor Array</div>
               <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal3">Trust 96.5%</div>
-              <div class="pill good" style="font-size:8px;" id="ccPill3">Transducer Valid</div>
+              <div class="pill good" style="font-size:9px;" id="ccPill3">Transducer Valid</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode4">
               <div class="s-name">4. CAN Bus</div>
               <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal4">CRC VALID</div>
-              <div class="pill good" style="font-size:8px;" id="ccPill4">0x100..0x104</div>
+              <div class="pill good" style="font-size:9px;" id="ccPill4">0x100..0x104</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode5">
               <div class="s-name">5. Twin Residual</div>
               <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal5">ΔCHT +24°C</div>
-              <div class="pill warn" style="font-size:8px;" id="ccPill5">Anomaly Trig</div>
+              <div class="pill warn" style="font-size:9px;" id="ccPill5">Anomaly Trig</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode6">
               <div class="s-name">6. Diagnosis</div>
               <div class="s-score" style="font-size:11px; color:#c94c48;" id="ccVal6">OVERHEATING</div>
-              <div class="pill bad" style="font-size:8px;" id="ccPill6">Confidence 94%</div>
+              <div class="pill bad" style="font-size:9px;" id="ccPill6">Confidence 94%</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode7">
               <div class="s-name">7. Health (H)</div>
               <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal7">H = 58.2</div>
-              <div class="pill warn" style="font-size:8px;" id="ccPill7">Moderate Wear</div>
+              <div class="pill warn" style="font-size:9px;" id="ccPill7">Moderate Wear</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode8">
               <div class="s-name">8. RUL Forecast</div>
               <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal8">14.2 h (True: 13.8)</div>
-              <div class="pill good" style="font-size:8px;" id="ccPill8">90% CI: [10, 18]</div>
+              <div class="pill good" style="font-size:9px;" id="ccPill8">90% CI: [10, 18]</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode9">
               <div class="s-name">9. FADEC Derate</div>
               <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal9">DERATE 80%</div>
-              <div class="pill warn" style="font-size:8px;" id="ccPill9">Throttle Cap</div>
+              <div class="pill warn" style="font-size:9px;" id="ccPill9">Throttle Cap</div>
             </div>
             <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
             <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode10">
               <div class="s-name">10. Mission Impact</div>
               <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal10">RTB SAFE</div>
-              <div class="pill good" style="font-size:8px;" id="ccPill10">Endurance Ok</div>
+              <div class="pill good" style="font-size:9px;" id="ccPill10">Endurance Ok</div>
             </div>
           </div>
         </div>
@@ -1317,10 +1323,10 @@ function switchDashboardTab(tabId) {
     const btn = $('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
     const content = $('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
     if (t === tabId) {
-      if (btn) btn.classList.add('active');
-      if (content) content.style.display = 'block';
+      if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); }
+      if (content) { content.style.display = 'block'; content.setAttribute('role', 'tabpanel'); }
     } else {
-      if (btn) btn.classList.remove('active');
+      if (btn) { btn.classList.remove('active'); btn.setAttribute('aria-selected', 'false'); }
       if (content) content.style.display = 'none';
     }
   });
@@ -1562,7 +1568,7 @@ function createWaypointIcon(type, id, isDraggable = false) {
 
   const html = `
     <div style="text-align: center;">
-      <div style="background: #070d08; border: 1.5px solid ${color}; color: #ffffff; font-weight: 800; font-size: 8.5px; padding: 1px 4px; border-radius: 999px; box-shadow: 0 3px 8px rgba(0,0,0,0.85); white-space: nowrap;">
+      <div style="background: #070d08; border: 1.5px solid ${color}; color: #ffffff; font-weight: 800; font-size: 9.5px; padding: 1px 4px; border-radius: 999px; box-shadow: 0 3px 8px rgba(0,0,0,0.85); white-space: nowrap;">
         ${id}
       </div>
       <div style="width: 2px; height: 6px; background: ${color}; margin: auto;"></div>
@@ -1735,26 +1741,26 @@ function renderWaypointsTable(progress = 0, etaNextMin = 0) {
     let statusHtml = '';
     if (isPlanner) {
       statusHtml = `
-        <button class="map-btn" style="padding:1px 3px; font-size:8.5px;" onclick="moveWp(${i}, -1)">▲</button>
-        <button class="map-btn" style="padding:1px 3px; font-size:8.5px;" onclick="moveWp(${i}, 1)">▼</button>
-        <button class="map-btn" style="padding:1px 3px; font-size:8.5px; background:#2b1010; color:#d9534f;" onclick="deleteWp(${i})">✕</button>
+        <button class="map-btn" style="padding:1px 3px; font-size:9.5px;" onclick="moveWp(${i}, -1)">▲</button>
+        <button class="map-btn" style="padding:1px 3px; font-size:9.5px;" onclick="moveWp(${i}, 1)">▼</button>
+        <button class="map-btn" style="padding:1px 3px; font-size:9.5px; background:#2b1010; color:#d9534f;" onclick="deleteWp(${i})">✕</button>
       `;
     } else {
       if (isComplete) {
-        statusHtml = `<span class="pill good" style="font-size:8px; padding:1px 5px;">COMPLETED</span>`;
+        statusHtml = `<span class="pill good" style="font-size:9px; padding:1px 5px;">COMPLETED</span>`;
       } else if (progress === 0) {
         statusHtml = i === 0
-          ? `<span class="pill good" style="font-size:8px; padding:1px 5px;">READY</span>`
-          : `<span class="pill" style="font-size:8px; padding:1px 5px; color:#7a8c7b;">PENDING</span>`;
+          ? `<span class="pill good" style="font-size:9px; padding:1px 5px;">READY</span>`
+          : `<span class="pill" style="font-size:9px; padding:1px 5px; color:#7a8c7b;">PENDING</span>`;
       } else if (i < activeIndex) {
-        statusHtml = `<span class="pill good" style="font-size:8px; padding:1px 5px;">COMPLETED</span>`;
+        statusHtml = `<span class="pill good" style="font-size:9px; padding:1px 5px;">COMPLETED</span>`;
       } else if (i === activeIndex) {
         const etaStr = etaNextMin > 0 ? `${etaNextMin}m` : 'EN ROUTE';
-        statusHtml = `<span class="pill good" style="background:#16351b; border-color:#488755; color:#8ee0a3; font-size:8px; padding:1px 5px; font-weight:800;">CURRENT (${etaStr})</span>`;
+        statusHtml = `<span class="pill good" style="background:#16351b; border-color:#488755; color:#8ee0a3; font-size:9px; padding:1px 5px; font-weight:800;">CURRENT (${etaStr})</span>`;
       } else if (i === activeIndex + 1) {
-        statusHtml = `<span class="pill info" style="font-size:8px; padding:1px 5px;">NEXT</span>`;
+        statusHtml = `<span class="pill info" style="font-size:9px; padding:1px 5px;">NEXT</span>`;
       } else {
-        statusHtml = `<span class="pill" style="font-size:8px; padding:1px 5px; color:#7a8c7b;">PENDING</span>`;
+        statusHtml = `<span class="pill" style="font-size:9px; padding:1px 5px; color:#7a8c7b;">PENDING</span>`;
       }
     }
 
@@ -1769,7 +1775,7 @@ function renderWaypointsTable(progress = 0, etaNextMin = 0) {
                 `<option value="${t}" ${wp.type === t ? 'selected' : ''}>${t}</option>`
               ).join('')}
             </select>
-          ` : `<span class="pill" style="font-size:8px; padding:1px 5px;">${wp.type}</span>`}
+          ` : `<span class="pill" style="font-size:9px; padding:1px 5px;">${wp.type}</span>`}
         </td>
         <td>${isPlanner ? `<input class="wp-input" type="number" step="500" value="${wp.altitude_ft}" onchange="updateWpField(${i}, 'altitude_ft', +this.value)">` : `${Math.round(wp.altitude_ft).toLocaleString()} ft`}</td>
         <td>${isPlanner ? `<input class="wp-input" type="number" step="5" value="${wp.speed_kt || 135}" onchange="updateWpField(${i}, 'speed_kt', +this.value)">` : `${wp.speed_kt || 135} kt`}</td>
@@ -2154,10 +2160,10 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   $('hudRisk').className = 'pill ' + (riskLevel === 'LOW' ? 'good' : riskLevel === 'MEDIUM' ? 'warn' : 'bad');
 
   // Update Top Mission Control Automatic Readouts
-  $('autoAltitude').innerHTML = `${Math.round(alt).toLocaleString()} ft <small style="font-size:8.5px; color:#4cb574;">AUTO</small>`;
-  $('autoSpeed').innerHTML = `${speed} kt <small style="font-size:8.5px; color:#4cb574;">AUTO</small>`;
-  $('autoThrottle').innerHTML = `${throttle}% <small style="font-size:8.5px; color:#4cb574;">AUTO</small>`;
-  $('autoAmbient').innerHTML = `${amb.toFixed(1)}°C <small style="font-size:8.5px; color:#4cb574;">AUTO (ISA)</small>`;
+  $('autoAltitude').innerHTML = `${Math.round(alt).toLocaleString()} ft <small style="font-size:9.5px; color:#4cb574;">AUTO</small>`;
+  $('autoSpeed').innerHTML = `${speed} kt <small style="font-size:9.5px; color:#4cb574;">AUTO</small>`;
+  $('autoThrottle').innerHTML = `${throttle}% <small style="font-size:9.5px; color:#4cb574;">AUTO</small>`;
+  $('autoAmbient').innerHTML = `${amb.toFixed(1)}°C <small style="font-size:9.5px; color:#4cb574;">AUTO (ISA)</small>`;
   $('autoPhasePill').textContent = phase;
 
   // Update Live Waypoint Execution Table with Real-Time ETA & Status
@@ -2169,7 +2175,7 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
     $('envSourceBadge').textContent = env.source === 'live' ? '● LIVE (Open-Meteo API)' : '● SIMULATED (ISA Model)';
     $('envSourceBadge').className = 'pill ' + (env.source === 'live' ? 'good' : 'warn');
     $('envTemp').textContent = `${env.ambient_c} °C`;
-    $('envPress').innerHTML = `${env.pressure_hpa} hPa <small style="font-size:8.5px; color:#7a8c7b;">(${env.pressure_inhg} inHg)</small>`;
+    $('envPress').innerHTML = `${env.pressure_hpa} hPa <small style="font-size:9.5px; color:#7a8c7b;">(${env.pressure_inhg} inHg)</small>`;
     $('envDensity').textContent = `${env.air_density_ratio}`;
     $('envWind').textContent = `${env.wind_speed_kt} kt @ ${env.wind_direction_deg}°`;
     $('envHeadwind').innerHTML = `<span style="color:${env.headwind_kt>0?'#c9983e':'#4cb574'}">HW: ${env.headwind_kt} kt</span> • CW: ${env.crosswind_kt} kt`;
@@ -2217,8 +2223,8 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
 
   // Update Consolidated Selected Assembly Engine Telemetry Grid
   if ($('engRPM')) $('engRPM').textContent = `${rpm.toLocaleString()} RPM`;
-  if ($('engThrottle')) $('engThrottle').innerHTML = `${thr}% <small style="font-size:7.5px; color:#4cb574;">AUTO</small>`;
-  if ($('engLoad')) $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:7.5px; color:#4cb574;">AUTO</small>`;
+  if ($('engThrottle')) $('engThrottle').innerHTML = `${thr}% <small style="font-size:9px; color:#4cb574;">AUTO</small>`;
+  if ($('engLoad')) $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:9px; color:#4cb574;">AUTO</small>`;
   if ($('engCHT')) $('engCHT').textContent = `${fmt(telemetry.CHT, 1)} °F`;
   if ($('engEGT')) $('engEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
   if ($('engOil')) $('engOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI • ${fmt(telemetry.Oil_Temp, 0)} °C`;
@@ -2871,8 +2877,8 @@ async function fetchDataCatalogUI() {
           <div style="display:flex; justify-content:space-between; font-weight:bold; color:#e8f0e8;">
             <span>${ds.name}</span>
             <div>
-              <span class="pill good" style="font-size:8px;">${ds.real_or_synthetic}</span>
-              <span class="pill ${gtPillClass}" style="font-size:8px; margin-left:2px;">${gtLabel}</span>
+              <span class="pill good" style="font-size:9px;">${ds.real_or_synthetic}</span>
+              <span class="pill ${gtPillClass}" style="font-size:9px; margin-left:2px;">${gtLabel}</span>
             </div>
           </div>
           <div style="color:#7a8c7b; font-size:9.5px; margin-top:2px;">${ds.purpose}</div>
