@@ -295,6 +295,67 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* === COCKPIT STATUS RIBBON & MAP HEADING TAPE === */
+.cockpit-status-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(8, 16, 10, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  font: 700 10.5px/1.2 Inter, monospace;
+  color: #889c8a;
+  flex-wrap: wrap;
+  backdrop-filter: blur(10px);
+}
+
+.cockpit-status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cockpit-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5eb574;
+  box-shadow: 0 0 8px #5eb574;
+}
+
+.map-heading-tape-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: rgba(6, 12, 8, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  margin-bottom: 6px;
+  font: 700 9.5px/1 Inter, monospace;
+  color: #6a806c;
+}
+
+.hdg-active-badge {
+  background: rgba(94, 181, 116, 0.18);
+  border: 1px solid rgba(94, 181, 116, 0.45);
+  color: #a3e635;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.hdg-tick {
+  color: #6a806c;
+  font-size: 9px;
+}
 </style>
 </head>
 
@@ -323,17 +384,23 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   <!-- APPLICATION CONTAINER: LEFT SIDEBAR NAVIGATION + MAIN CONTENT PANE -->
   <div class="app-container">
 
-    <!-- LEFT SIDEBAR: VERTICAL 3-TAB NAVIGATION -->
+    <!-- LEFT SIDEBAR: VERTICAL 4-TAB NAVIGATION -->
     <nav class="side-nav" role="tablist" aria-label="Dashboard sections">
-      <button id="tabBtnLive" class="side-tab-btn active" role="tab" aria-selected="true" aria-controls="tabContentLive" onclick="switchDashboardTab('live')">
+      <button id="tabBtnCockpit" class="side-tab-btn active" role="tab" aria-selected="true" aria-controls="tabContentCockpit" onclick="switchDashboardTab('cockpit')">
         <span class="side-tab-icon" aria-hidden="true">⌖</span>
-        <span class="side-tab-title">LIVE MISSION</span>
-        <span class="side-tab-sub">Map • 3D Twin • CAN</span>
+        <span class="side-tab-title">TACTICAL COCKPIT</span>
+        <span class="side-tab-sub">Dual-Split • Flight &amp; Twin</span>
+      </button>
+
+      <button id="tabBtnLive" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentLive" onclick="switchDashboardTab('live')">
+        <span class="side-tab-icon" aria-hidden="true">🗺</span>
+        <span class="side-tab-title">MISSION PLANNER</span>
+        <span class="side-tab-sub">Waypoints • Planner • RTH</span>
       </button>
 
       <button id="tabBtnDiagnostics" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentDiagnostics" onclick="switchDashboardTab('diagnostics')">
         <span class="side-tab-icon" aria-hidden="true">⚙</span>
-        <span class="side-tab-title">HEALTH & DIAGNOSTICS</span>
+        <span class="side-tab-title">HEALTH &amp; DIAGNOSTICS</span>
         <span class="side-tab-sub">Faults • Telemetry • Physics</span>
       </button>
 
@@ -348,9 +415,41 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
     <main class="main-pane">
 
       <!-- ========================================================================= -->
-      <!-- TAB 1: LIVE MISSION (Default Active) -->
+      <!-- TAB 1: TACTICAL COCKPIT (Default Active Full Dual-Split) -->
       <!-- ========================================================================= -->
-      <section id="tabContentLive" class="tab-content">
+      <section id="tabContentCockpit" class="tab-content" role="tabpanel" aria-labelledby="tabBtnCockpit">
+        <div id="cockpitViewSlot">
+          <!-- TOP COCKPIT STATUS RIBBON -->
+          <div class="cockpit-status-ribbon">
+            <div class="cockpit-status-item">
+              <span class="cockpit-status-dot"></span>
+              <b style="color:#ffffff;">UAV-01 MALE-TWIN</b>
+              <span class="pill good" style="font-size:9.5px; padding:1px 6px;">ROTAX 914 TURBO</span>
+            </div>
+            <div class="cockpit-status-item">
+              <span>MISSION:</span>
+              <b style="color:#a3e635;" id="cockpitMissionName">ISR BORDER PATROL ALPHA</b>
+            </div>
+            <div class="cockpit-status-item">
+              <span>LINK:</span>
+              <b style="color:#44d7b6;">99.8% MIL-1553</b>
+            </div>
+            <div class="cockpit-status-item">
+              <span>FADEC / ECU:</span>
+              <b style="color:#5eb574;">ACTIVE HIL (NOMINAL)</b>
+            </div>
+            <div class="cockpit-status-item" style="margin-left:auto;">
+              <span>GPS RTK:</span>
+              <b style="color:#5eb574;">14 SATS (FIXED)</b>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: MISSION PLANNER (Formerly Live Mission) -->
+      <!-- ========================================================================= -->
+      <section id="tabContentLive" class="tab-content" role="tabpanel" aria-labelledby="tabBtnLive" style="display:none;">
 
         <!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
         <div class="card mission-control-card">
@@ -471,8 +570,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
           </details>
         </div>
 
+        <!-- PLANNER VIEW DOCKING SLOT -->
+        <div id="plannerViewSlot"></div>
+
         <!-- 2. SIDE-BY-SIDE: UAV LIVE MISSION MAP (55%) + 3D PISTON ENGINE DIGITAL TWIN (45%) -->
-        <div class="mission-twin-split-grid">
+        <div class="mission-twin-split-grid" id="sharedSplitGrid">
 
           <!-- LEFT: UAV LIVE MISSION MAP -->
           <div class="map-card">
@@ -501,11 +603,22 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
                 <button id="btnProxToggle" class="map-btn active" onclick="toggleProximityHUD()">⎇ HUD</button>
                 <button id="btnRouteToggle" class="map-btn active" onclick="togglePlannedRoute()">∿ Route</button>
                 <button id="btnWpToggle" class="map-btn active" onclick="toggleWaypoints()">⚑ WPs</button>
+                <button id="btnGeofenceToggle" class="map-btn active" onclick="toggleGeofence()">⛉ Geofence</button>
+                <button id="btnGlideToggle" class="map-btn active" onclick="toggleGlideCone()">⌖ Glide</button>
+                <button id="btnRingsToggle" class="map-btn active" onclick="toggleRangeRings()">◎ Rings</button>
               </div>
             </div>
 
             <!-- Leaflet Map Container Wrapper -->
             <div class="map-wrapper">
+              <!-- TOP COMPASS HEADING TAPE -->
+              <div class="map-heading-tape-bar" id="mapHeadingTape">
+                <span class="hdg-tick">015</span>
+                <span class="hdg-tick">030</span>
+                <div class="hdg-active-badge"><span id="mapHdgValue">084°</span> <small id="mapHdgCardinal">E</small></div>
+                <span class="hdg-tick">060</span>
+                <span class="hdg-tick">075</span>
+              </div>
               <div id="uavMap"></div>
 
               <!-- CLOSE UAV PROXIMITY VIEW GLASS OVERLAY -->
@@ -872,7 +985,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
         </div>
 
         <!-- 3. 6-SUBSYSTEM HEALTH STATUS CARDS -->
-        <div class="subsystem-grid">
+        <div class="subsystem-grid" id="sharedSubsystemGrid">
           <div class="subsystem-card">
             <div class="s-name">Thermal Subsys</div>
             <div class="s-score good" id="subScoreThermal">98%</div>
@@ -1360,11 +1473,39 @@ function showToast(msg, type = 'info', duration = 5000) {
 // ==========================================
 const $ = id => document.getElementById(id);
 
-let currentTab = 'live';
+let currentTab = 'cockpit';
+
+function reparentCockpitViews(targetTab) {
+  const splitGrid = document.getElementById('sharedSplitGrid');
+  const subsysGrid = document.getElementById('sharedSubsystemGrid');
+  const cockpitSlot = document.getElementById('cockpitViewSlot');
+  const plannerSlot = document.getElementById('plannerViewSlot');
+
+  if (!splitGrid) return;
+
+  if (targetTab === 'cockpit' && cockpitSlot) {
+    if (splitGrid.parentElement !== cockpitSlot) {
+      cockpitSlot.appendChild(splitGrid);
+    }
+    if (subsysGrid && subsysGrid.parentElement !== cockpitSlot) {
+      cockpitSlot.appendChild(subsysGrid);
+    }
+  } else if (targetTab === 'live' && plannerSlot) {
+    if (splitGrid.parentElement !== plannerSlot) {
+      plannerSlot.appendChild(splitGrid);
+    }
+    if (subsysGrid && subsysGrid.parentElement !== plannerSlot) {
+      plannerSlot.appendChild(subsysGrid);
+    }
+  }
+}
 
 function switchDashboardTab(tabId) {
   currentTab = tabId;
-  const tabs = ['live', 'diagnostics', 'datalab'];
+  const tabs = ['cockpit', 'live', 'diagnostics', 'datalab'];
+
+  reparentCockpitViews(tabId);
+
   tabs.forEach(t => {
     const btn = $('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
     const content = $('tabContent' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1377,7 +1518,7 @@ function switchDashboardTab(tabId) {
     }
   });
 
-  if (tabId === 'live') {
+  if (tabId === 'cockpit' || tabId === 'live') {
     setTimeout(() => {
       if (uavMap) uavMap.invalidateSize();
       window.AeroPulseEngine3D?.resize();
@@ -1453,6 +1594,12 @@ let plannedRoutePolyline = null;
 let flightTrailPolyline = null;
 let waypointLayerGroup = null;
 let riskSegmentsLayerGroup = null;
+let geofenceLayerGroup = null;
+let glideConeLayerGroup = null;
+let rangeRingsLayerGroup = null;
+let geofenceEnabled = true;
+let glideConeEnabled = true;
+let rangeRingsEnabled = true;
 
 let currentWaypoints = [];
 let currentPlannedCoords = [];
@@ -1548,6 +1695,10 @@ function initUAVMap() {
 
   waypointLayerGroup = L.layerGroup().addTo(uavMap);
   riskSegmentsLayerGroup = L.layerGroup().addTo(uavMap);
+  geofenceLayerGroup = L.layerGroup().addTo(uavMap);
+  glideConeLayerGroup = L.layerGroup().addTo(uavMap);
+  rangeRingsLayerGroup = L.layerGroup().addTo(uavMap);
+  updateGeofenceBoundary();
 
   uavMap.on('mousemove', e => {
     const latStr = e.latlng.lat.toFixed(4);
@@ -1643,6 +1794,108 @@ function toggleProximityHUD() {
     }
     if (overlay) overlay.style.display = 'none';
   }
+}
+
+function updateGeofenceBoundary() {
+  if (!geofenceLayerGroup) return;
+  geofenceLayerGroup.clearLayers();
+  let minLat = 28.25, maxLat = 29.05, minLon = 77.05, maxLon = 77.85;
+  if (currentPlannedCoords && currentPlannedCoords.length > 0) {
+    const lats = currentPlannedCoords.map(c => c[0]);
+    const lons = currentPlannedCoords.map(c => c[1]);
+    minLat = Math.min(...lats) - 0.12;
+    maxLat = Math.max(...lats) + 0.12;
+    minLon = Math.min(...lons) - 0.15;
+    maxLon = Math.max(...lons) + 0.15;
+  }
+  const geofenceCoords = [
+    [minLat, minLon],
+    [maxLat, minLon],
+    [maxLat, maxLon],
+    [minLat, maxLon]
+  ];
+  L.polygon(geofenceCoords, {
+    color: '#e0b343',
+    dashArray: '6, 6',
+    fillColor: '#e0b343',
+    fillOpacity: 0.03,
+    weight: 1.5
+  }).bindTooltip('⚠ RESTRICTED AIRSPACE GEOFENCE // 500 FT BUFFER', { permanent: false })
+    .addTo(geofenceLayerGroup);
+}
+
+function updateTacticalRangeRings(lat, lon) {
+  if (!rangeRingsLayerGroup || !rangeRingsEnabled) return;
+  rangeRingsLayerGroup.clearLayers();
+  [9260, 18520, 27780].forEach((meters, idx) => {
+    const nm = [5, 10, 15][idx];
+    L.circle([lat, lon], {
+      radius: meters,
+      color: '#1a3b22',
+      weight: 1,
+      dashArray: '3, 4',
+      fill: false,
+      interactive: false
+    }).bindTooltip(`${nm} NM`, { permanent: false }).addTo(rangeRingsLayerGroup);
+  });
+}
+
+function updateGlideFootprint(lat, lon, alt_ft) {
+  if (!glideConeLayerGroup || !glideConeEnabled) return;
+  glideConeLayerGroup.clearLayers();
+  const glideDistMeters = Math.max(1200, (alt_ft || 8000) * 0.3048 * 12);
+  L.circle([lat, lon], {
+    radius: glideDistMeters,
+    color: '#44d7b6',
+    weight: 1.5,
+    dashArray: '4, 4',
+    fillColor: '#44d7b6',
+    fillOpacity: 0.05
+  }).bindTooltip(`ENGINE-OUT GLIDE CONE (L/D 12:1 · ${Math.round(alt_ft || 8000)}' AGL)`, { permanent: false })
+    .addTo(glideConeLayerGroup);
+}
+
+function toggleGeofence() {
+  geofenceEnabled = !geofenceEnabled;
+  if (!uavMap || !geofenceLayerGroup) return;
+  if (geofenceEnabled) uavMap.addLayer(geofenceLayerGroup);
+  else uavMap.removeLayer(geofenceLayerGroup);
+  const btn = $('btnGeofenceToggle');
+  if (btn) btn.classList.toggle('active', geofenceEnabled);
+}
+
+function toggleGlideCone() {
+  glideConeEnabled = !glideConeEnabled;
+  if (!uavMap || !glideConeLayerGroup) return;
+  if (glideConeEnabled) {
+    uavMap.addLayer(glideConeLayerGroup);
+    if (uavMarker) {
+      const pos = uavMarker.getLatLng();
+      const alt = parseFloat($('pxAlt')?.textContent) || 8000;
+      updateGlideFootprint(pos.lat, pos.lng, alt);
+    }
+  } else {
+    uavMap.removeLayer(glideConeLayerGroup);
+  }
+  const btn = $('btnGlideToggle');
+  if (btn) btn.classList.toggle('active', glideConeEnabled);
+}
+
+function toggleRangeRings() {
+  rangeRingsEnabled = !rangeRingsEnabled;
+  if (!uavMap || !rangeRingsLayerGroup) return;
+  if (rangeRingsEnabled) {
+    uavMap.addLayer(rangeRingsLayerGroup);
+    if (uavMarker) {
+      const pos = uavMarker.getLatLng();
+      updateTacticalRangeRings(pos.lat, pos.lng);
+    }
+  } else {
+    rangeRingsLayerGroup.clearLayers();
+    uavMap.removeLayer(rangeRingsLayerGroup);
+  }
+  const btn = $('btnRingsToggle');
+  if (btn) btn.classList.toggle('active', rangeRingsEnabled);
 }
 
 function createUAVIcon(headingDeg, healthColor = '#4cb574') {
@@ -2253,6 +2506,20 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
   $('hudAlt').textContent = `${Math.round(alt).toLocaleString()} ft`;
   $('hudSpeed').textContent = `${speed} / ${airspeed} kt`;
   $('hudHeading').textContent = `${String(Math.round(heading)).padStart(3, '0')}° / ${String(Math.round(track)).padStart(3, '0')}°`;
+
+  // Update Top Compass Heading Tape
+  const hdgVal = Math.round(((heading % 360) + 360) % 360);
+  const tapeVal = $('mapHdgValue');
+  const tapeCard = $('mapHdgCardinal');
+  if (tapeVal) tapeVal.textContent = `${hdgVal}°`;
+  if (tapeCard) {
+    const cardinals = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    tapeCard.textContent = cardinals[Math.round(hdgVal / 45) % 8];
+  }
+
+  // Update Tactical Range Rings & Engine-Out Glide Footprint
+  updateTacticalRangeRings(lat, lon);
+  updateGlideFootprint(lat, lon, alt);
 
   $('hudPhase').textContent = phase;
   $('hudPhase').className = 'pill ' + (healthState === 'Normal' ? 'good' : healthState === 'Watch' ? 'warn' : 'bad');
@@ -3171,6 +3438,7 @@ initUAVMap();
 setupHardwareListeners();
 checkStatus();
 loadPresetMission('border_patrol_alpha');
+switchDashboardTab('cockpit');
 </script>
 <script src="/static/engine-3d.js?v=20260909_003"></script>
 </body>
