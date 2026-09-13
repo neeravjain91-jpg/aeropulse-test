@@ -449,10 +449,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 
     <!-- LEFT SIDEBAR: VERTICAL 4-TAB NAVIGATION -->
     <nav class="side-nav" role="tablist" aria-label="Dashboard sections">
-      <button id="tabBtnCockpit" class="side-tab-btn active" role="tab" aria-selected="true" aria-controls="tabContentCockpit" onclick="switchDashboardTab('cockpit')">
-        <span class="side-tab-icon" aria-hidden="true">⌖</span>
-        <span class="side-tab-title">TACTICAL COCKPIT</span>
-        <span class="side-tab-sub">Flight Ops • Planning • RUL</span>
+      <button id="tabBtnLive" class="side-tab-btn active" role="tab" aria-selected="true" aria-controls="tabContentLive" onclick="switchDashboardTab('live')">
+        <span class="side-tab-icon" aria-hidden="true">🗺</span>
+        <span class="side-tab-title">MISSION PLANNER</span>
+        <span class="side-tab-sub">Waypoints • Planner • RTH</span>
       </button>
 
       <button id="tabBtnEngine" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentEngine" onclick="switchDashboardTab('engine')">
@@ -472,9 +472,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
     <main class="main-pane">
 
       <!-- ========================================================================= -->
-      <!-- TAB 1: TACTICAL COCKPIT (Complete UAV Operational Workspace) -->
+      <!-- TAB 1: MISSION PLANNER (Unified Mission Planning & Tactical Cockpit) -->
       <!-- ========================================================================= -->
-      <section id="tabContentCockpit" class="tab-content" role="tabpanel" aria-labelledby="tabBtnCockpit">
+      <section id="tabContentLive" class="tab-content" role="tabpanel" aria-labelledby="tabBtnLive">
 
         <div class="cockpit-status-ribbon">
             <div class="cockpit-status-item">
@@ -494,11 +494,134 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
               <span>FADEC / ECU:</span>
               <b style="color:#5eb574;">ACTIVE HIL (NOMINAL)</b>
             </div>
+            <div class="cockpit-status-item">
+              <span>HDG:</span>
+              <b style="color:#5eb574;" id="cockpitRibbonHdg">084°</b>
+            </div>
             <div class="cockpit-status-item" style="margin-left:auto;">
               <span>GPS RTK:</span>
               <b style="color:#5eb574;">14 SATS (FIXED)</b>
             </div>
           </div>
+
+<!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
+        <div class="card mission-control-card">
+          <div class="mission-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:16px;">⌖</span>
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#e8f0e8;">MISSION CONTROL & FLIGHT PLANNER</div>
+                <div style="font-size:10px; color:var(--muted);">
+                  Path-Driven Flight Simulation • Real Geographic Map • Dynamic Propulsion Demand
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <span class="pill good" id="simModeBadge" style="font-size:10px; padding:2px 8px;">
+                SIMULATION MODE: ● AUTOMATIC
+              </span>
+              <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">⚒ MISSION DESIGN</button>
+              <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">✈ MISSION EXECUTION</button>
+            </div>
+          </div>
+
+          <!-- AUTOMATIC PARAMETER READOUT STRIP -->
+          <div class="auto-flight-strip">
+            <div class="auto-item">
+              <span class="auto-label">Active Mission</span>
+              <span class="auto-val info" id="autoMissionName">ISR Border Patrol Alpha</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Route Envelope</span>
+              <span class="auto-val" id="autoRouteSummary">9 Waypoints • 215.1 km</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Est. Flight Duration</span>
+              <span class="auto-val" id="autoEstDuration">1h 45m</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Mission Phase</span>
+              <span class="auto-val"><span id="autoPhasePill" class="pill good">READY</span></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Current Altitude</span>
+              <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Ground Speed</span>
+              <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Auto Throttle</span>
+              <span class="auto-val" id="autoThrottle">58% <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Ambient Temp</span>
+              <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:9.5px; color:#4cb574;">AUTO (ISA)</small></span>
+            </div>
+          </div>
+
+          <!-- PRIMARY MISSION & REPLAY ACTIONS -->
+          <div class="primary-mission-actions">
+            <button id="btnStartMission" class="success" onclick="startAutomaticMission()">▶ START SIMULATION</button>
+            <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">⟳ MISSION REPLAY</button>
+            <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
+            <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
+            <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
+            <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
+
+            <select id="selReplaySpeed" style="width:auto; margin:0; padding:3px 6px; font-size:9.5px; display:none;" onchange="setReplaySpeed(+this.value)">
+              <option value="1" selected>1x Speed</option>
+              <option value="2">2x Speed</option>
+              <option value="5">5x Speed</option>
+            </select>
+
+            <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+              <span style="font-size:10.5px; color:#7a8c7b; font-weight:600;">Mission Preset:</span>
+              <select id="selMissionPreset" style="width:auto; margin:0; padding:3px 6px; font-size:10.5px;" onchange="loadPresetMission(this.value)">
+                <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
+                <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
+                <option value="coastal_maritime">Coastal & Maritime Patrol Charlie (7 WPs)</option>
+                <option value="custom">Custom Interactive Route</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
+          <details style="margin-top:6px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:5px 8px;">
+            <summary style="font-size:10px; font-weight:700; color:#7a8c7b; cursor:pointer;">
+              ⚙ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
+            </summary>
+            <div style="font-size:9.5px; color:#c9983e; margin:3px 0;">
+              ⚠ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:3px;">
+              <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
+                <span style="color:#dbe5db; font-weight:bold;">Enable Manual Parameter Override</span>
+              </label>
+            </div>
+            <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
+              <div class="hw-group">
+                <label><span>Manual Throttle Lever</span><span id="hwValThrottle">60%</span></label>
+                <input type="range" id="hwSliderThrottle" min="10" max="100" value="60">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
+                <input type="range" id="hwSliderAltitude" min="0" max="30000" step="500" value="8000">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
+                <input type="range" id="hwSliderAmbient" min="-20" max="50" value="35">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
+                <input type="range" id="hwSliderDuration" min="1" max="24" step="0.5" value="6">
+              </div>
+            </div>
+          </details>
+        </div>
 
         <!-- PRIMARY COCKPIT FLIGHT DECK (MAP 58% + PROPULSION HEALTH & PROGNOSTICS 42%) -->
         <div class="cockpit-flight-grid">
@@ -737,125 +860,6 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
               </div>
             </div>
           </div>
-        </div>
-
-<!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
-        <div class="card mission-control-card">
-          <div class="mission-header">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:16px;">⌖</span>
-              <div>
-                <div style="font-size:14px; font-weight:800; color:#e8f0e8;">MISSION CONTROL & FLIGHT PLANNER</div>
-                <div style="font-size:10px; color:var(--muted);">
-                  Path-Driven Flight Simulation • Real Geographic Map • Dynamic Propulsion Demand
-                </div>
-              </div>
-            </div>
-
-            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-              <span class="pill good" id="simModeBadge" style="font-size:10px; padding:2px 8px;">
-                SIMULATION MODE: ● AUTOMATIC
-              </span>
-              <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">⚒ MISSION DESIGN</button>
-              <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">✈ MISSION EXECUTION</button>
-            </div>
-          </div>
-
-          <!-- AUTOMATIC PARAMETER READOUT STRIP -->
-          <div class="auto-flight-strip">
-            <div class="auto-item">
-              <span class="auto-label">Active Mission</span>
-              <span class="auto-val info" id="autoMissionName">ISR Border Patrol Alpha</span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Route Envelope</span>
-              <span class="auto-val" id="autoRouteSummary">9 Waypoints • 215.1 km</span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Est. Flight Duration</span>
-              <span class="auto-val" id="autoEstDuration">1h 45m</span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Mission Phase</span>
-              <span class="auto-val"><span id="autoPhasePill" class="pill good">READY</span></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Current Altitude</span>
-              <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Ground Speed</span>
-              <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Auto Throttle</span>
-              <span class="auto-val" id="autoThrottle">58% <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Ambient Temp</span>
-              <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:9.5px; color:#4cb574;">AUTO (ISA)</small></span>
-            </div>
-          </div>
-
-          <!-- PRIMARY MISSION & REPLAY ACTIONS -->
-          <div class="primary-mission-actions">
-            <button id="btnStartMission" class="success" onclick="startAutomaticMission()">▶ START SIMULATION</button>
-            <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">⟳ MISSION REPLAY</button>
-            <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
-            <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
-            <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
-            <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
-
-            <select id="selReplaySpeed" style="width:auto; margin:0; padding:3px 6px; font-size:9.5px; display:none;" onchange="setReplaySpeed(+this.value)">
-              <option value="1" selected>1x Speed</option>
-              <option value="2">2x Speed</option>
-              <option value="5">5x Speed</option>
-            </select>
-
-            <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
-              <span style="font-size:10.5px; color:#7a8c7b; font-weight:600;">Mission Preset:</span>
-              <select id="selMissionPreset" style="width:auto; margin:0; padding:3px 6px; font-size:10.5px;" onchange="loadPresetMission(this.value)">
-                <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
-                <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
-                <option value="coastal_maritime">Coastal & Maritime Patrol Charlie (7 WPs)</option>
-                <option value="custom">Custom Interactive Route</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
-          <details style="margin-top:6px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:5px 8px;">
-            <summary style="font-size:10px; font-weight:700; color:#7a8c7b; cursor:pointer;">
-              ⚙ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
-            </summary>
-            <div style="font-size:9.5px; color:#c9983e; margin:3px 0;">
-              ⚠ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:3px;">
-              <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
-                <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
-                <span style="color:#dbe5db; font-weight:bold;">Enable Manual Parameter Override</span>
-              </label>
-            </div>
-            <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
-              <div class="hw-group">
-                <label><span>Manual Throttle Lever</span><span id="hwValThrottle">60%</span></label>
-                <input type="range" id="hwSliderThrottle" min="10" max="100" value="60">
-              </div>
-              <div class="hw-group">
-                <label><span>Manual Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
-                <input type="range" id="hwSliderAltitude" min="0" max="30000" step="500" value="8000">
-              </div>
-              <div class="hw-group">
-                <label><span>Manual Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
-                <input type="range" id="hwSliderAmbient" min="-20" max="50" value="35">
-              </div>
-              <div class="hw-group">
-                <label><span>Manual Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
-                <input type="range" id="hwSliderDuration" min="1" max="24" step="0.5" value="6">
-              </div>
-            </div>
-          </details>
         </div>
 
 <!-- 3D WAYPOINT ROUTE & LIVE MISSION STATUS TABLE -->
@@ -1709,11 +1713,11 @@ function reparentCockpitViews(targetTab) {
 }
 
 function switchDashboardTab(tabId) {
-  if (tabId === 'live') tabId = 'cockpit';
+  if (tabId === 'cockpit' || tabId === 'mission') tabId = 'live';
   if (tabId === 'diagnostics' || tabId === 'datalab') tabId = 'analytics';
 
   currentTab = tabId;
-  const tabs = ['cockpit', 'engine', 'analytics'];
+  const tabs = ['live', 'engine', 'analytics'];
 
   tabs.forEach(t => {
     const btn = $('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1727,7 +1731,7 @@ function switchDashboardTab(tabId) {
     }
   });
 
-  if (tabId === 'cockpit') {
+  if (tabId === 'live') {
     setTimeout(() => {
       if (uavMap) uavMap.invalidateSize();
     }, 60);
@@ -2744,6 +2748,9 @@ function updateUAVPosition(uav, envData = null, healthState = 'Normal', riskLeve
     uavMap.panTo([lat, lon], { animate: true, duration: 0.25 });
   }
 
+  // Update Ribbon Heading
+  if ($('cockpitRibbonHdg')) $('cockpitRibbonHdg').textContent = `${Math.round(heading).toString().padStart(3, '0')}°`;
+
   // Update Compact HUD Strip Below Map
   $('hudLat').textContent = `${lat.toFixed(4)}° N`;
   $('hudLon').textContent = `${lon.toFixed(4)}° E`;
@@ -3699,7 +3706,7 @@ initUAVMap();
 setupHardwareListeners();
 checkStatus();
 loadPresetMission('border_patrol_alpha');
-switchDashboardTab('cockpit');
+switchDashboardTab('live');
 </script>
 <script src="/static/engine-3d.js?v=20260909_003"></script>
 </body>
