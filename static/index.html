@@ -356,6 +356,68 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   color: #6a806c;
   font-size: 9px;
 }
+
+/* === COCKPIT OPERATIONAL WORKSPACE LAYOUT === */
+.cockpit-flight-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 10px;
+  align-items: stretch;
+  margin-bottom: 8px;
+}
+@media (max-width: 1200px) {
+  .cockpit-flight-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cockpit-hero-rul-card {
+  background: linear-gradient(135deg, rgba(14, 30, 18, 0.75), rgba(8, 16, 10, 0.95));
+  border: 1px solid rgba(94, 181, 116, 0.35);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.badge.drdo-badge {
+  background: linear-gradient(90deg, #101c12, #0d2615);
+  border-color: #2c6136;
+  color: #a3e635;
+  font-weight: 700;
+  cursor: help;
+}
+
+/* === ENGINE DIGITAL TWIN PERFORMANCE CARPET === */
+.engine-carpet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+.carpet-card {
+  background: rgba(8, 16, 10, 0.85);
+  border: 1px solid #18281b;
+  border-radius: 5px;
+  padding: 6px 8px;
+}
+.carpet-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #7a8c7b;
+  text-transform: uppercase;
+}
+.carpet-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: #5eb574;
+  margin-top: 2px;
+  font-family: Inter, monospace;
+}
+.carpet-sub {
+  font-size: 9px;
+  color: #6a806c;
+  margin-top: 1px;
+}
 </style>
 </head>
 
@@ -375,6 +437,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
       <span id="serverBadge" class="badge">Checking system…</span>
       <span id="gpsBadge" class="badge live">● OPENSTREETMAP GIS</span>
       <span id="envBadge" class="badge live">● LIVE WEATHER / METAR</span>
+      <span class="badge drdo-badge" title="Architecture and propulsion telemetry aligned with DRDO / ADE UAV piston-engine health monitoring specifications (Academic research reference)">🇮🇳 Aligned with DRDO / ADE Specs</span>
       <span class="badge">Research Benchmark</span>
     </div>
   </div>
@@ -389,38 +452,31 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
       <button id="tabBtnCockpit" class="side-tab-btn active" role="tab" aria-selected="true" aria-controls="tabContentCockpit" onclick="switchDashboardTab('cockpit')">
         <span class="side-tab-icon" aria-hidden="true">⌖</span>
         <span class="side-tab-title">TACTICAL COCKPIT</span>
-        <span class="side-tab-sub">Dual-Split • Flight &amp; Twin</span>
+        <span class="side-tab-sub">Flight Ops • Planning • RUL</span>
       </button>
 
-      <button id="tabBtnLive" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentLive" onclick="switchDashboardTab('live')">
-        <span class="side-tab-icon" aria-hidden="true">🗺</span>
-        <span class="side-tab-title">MISSION PLANNER</span>
-        <span class="side-tab-sub">Waypoints • Planner • RTH</span>
-      </button>
-
-      <button id="tabBtnDiagnostics" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentDiagnostics" onclick="switchDashboardTab('diagnostics')">
+      <button id="tabBtnEngine" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentEngine" onclick="switchDashboardTab('engine')">
         <span class="side-tab-icon" aria-hidden="true">⚙</span>
-        <span class="side-tab-title">HEALTH &amp; DIAGNOSTICS</span>
-        <span class="side-tab-sub">Faults • Telemetry • Physics</span>
+        <span class="side-tab-title">ENGINE DIGITAL TWIN</span>
+        <span class="side-tab-sub">3D Cutaway • Kinematics • P-V</span>
       </button>
 
-      <button id="tabBtnDatalab" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentDatalab" onclick="switchDashboardTab('datalab')">
-        <span class="side-tab-icon" aria-hidden="true">🗄</span>
-        <span class="side-tab-title">VIRTUAL DATA LAB</span>
-        <span class="side-tab-sub">Data Gen • Replay • Causal</span>
+      <button id="tabBtnAnalytics" class="side-tab-btn" role="tab" aria-selected="false" aria-controls="tabContentAnalytics" onclick="switchDashboardTab('analytics')">
+        <span class="side-tab-icon" aria-hidden="true">📊</span>
+        <span class="side-tab-title">MISSION &amp; ANALYTICS</span>
+        <span class="side-tab-sub">Faults • FFT • Data Lab</span>
       </button>
     </nav>
 
-    <!-- MAIN DASHBOARD CONTENT PANE -->
+        <!-- MAIN DASHBOARD CONTENT PANE -->
     <main class="main-pane">
 
       <!-- ========================================================================= -->
-      <!-- TAB 1: TACTICAL COCKPIT (Default Active Full Dual-Split) -->
+      <!-- TAB 1: TACTICAL COCKPIT (Complete UAV Operational Workspace) -->
       <!-- ========================================================================= -->
       <section id="tabContentCockpit" class="tab-content" role="tabpanel" aria-labelledby="tabBtnCockpit">
-        <div id="cockpitViewSlot">
-          <!-- TOP COCKPIT STATUS RIBBON -->
-          <div class="cockpit-status-ribbon">
+
+        <div class="cockpit-status-ribbon">
             <div class="cockpit-status-item">
               <span class="cockpit-status-dot"></span>
               <b style="color:#ffffff;">UAV-01 MALE-TWIN</b>
@@ -443,140 +499,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
               <b style="color:#5eb574;">14 SATS (FIXED)</b>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- ========================================================================= -->
-      <!-- TAB 2: MISSION PLANNER (Formerly Live Mission) -->
-      <!-- ========================================================================= -->
-      <section id="tabContentLive" class="tab-content" role="tabpanel" aria-labelledby="tabBtnLive" style="display:none;">
+        <!-- PRIMARY COCKPIT FLIGHT DECK (MAP 58% + PROPULSION HEALTH & PROGNOSTICS 42%) -->
+        <div class="cockpit-flight-grid">
 
-        <!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
-        <div class="card mission-control-card">
-          <div class="mission-header">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:16px;">⌖</span>
-              <div>
-                <div style="font-size:14px; font-weight:800; color:#e8f0e8;">MISSION CONTROL & FLIGHT PLANNER</div>
-                <div style="font-size:10px; color:var(--muted);">
-                  Path-Driven Flight Simulation • Real Geographic Map • Dynamic Propulsion Demand
-                </div>
-              </div>
-            </div>
-
-            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-              <span class="pill good" id="simModeBadge" style="font-size:10px; padding:2px 8px;">
-                SIMULATION MODE: ● AUTOMATIC
-              </span>
-              <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">⚒ MISSION DESIGN</button>
-              <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">✈ MISSION EXECUTION</button>
-            </div>
-          </div>
-
-          <!-- AUTOMATIC PARAMETER READOUT STRIP -->
-          <div class="auto-flight-strip">
-            <div class="auto-item">
-              <span class="auto-label">Active Mission</span>
-              <span class="auto-val info" id="autoMissionName">ISR Border Patrol Alpha</span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Route Envelope</span>
-              <span class="auto-val" id="autoRouteSummary">9 Waypoints • 215.1 km</span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Est. Flight Duration</span>
-              <span class="auto-val" id="autoEstDuration">1h 45m</span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Mission Phase</span>
-              <span class="auto-val"><span id="autoPhasePill" class="pill good">READY</span></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Current Altitude</span>
-              <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Ground Speed</span>
-              <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Auto Throttle</span>
-              <span class="auto-val" id="autoThrottle">58% <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
-            </div>
-            <div class="auto-item">
-              <span class="auto-label">Ambient Temp</span>
-              <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:9.5px; color:#4cb574;">AUTO (ISA)</small></span>
-            </div>
-          </div>
-
-          <!-- PRIMARY MISSION & REPLAY ACTIONS -->
-          <div class="primary-mission-actions">
-            <button id="btnStartMission" class="success" onclick="startAutomaticMission()">▶ START SIMULATION</button>
-            <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">⟳ MISSION REPLAY</button>
-            <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
-            <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
-            <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
-            <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
-
-            <select id="selReplaySpeed" style="width:auto; margin:0; padding:3px 6px; font-size:9.5px; display:none;" onchange="setReplaySpeed(+this.value)">
-              <option value="1" selected>1x Speed</option>
-              <option value="2">2x Speed</option>
-              <option value="5">5x Speed</option>
-            </select>
-
-            <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
-              <span style="font-size:10.5px; color:#7a8c7b; font-weight:600;">Mission Preset:</span>
-              <select id="selMissionPreset" style="width:auto; margin:0; padding:3px 6px; font-size:10.5px;" onchange="loadPresetMission(this.value)">
-                <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
-                <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
-                <option value="coastal_maritime">Coastal & Maritime Patrol Charlie (7 WPs)</option>
-                <option value="custom">Custom Interactive Route</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
-          <details style="margin-top:6px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:5px 8px;">
-            <summary style="font-size:10px; font-weight:700; color:#7a8c7b; cursor:pointer;">
-              ⚙ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
-            </summary>
-            <div style="font-size:9.5px; color:#c9983e; margin:3px 0;">
-              ⚠ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:3px;">
-              <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
-                <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
-                <span style="color:#dbe5db; font-weight:bold;">Enable Manual Parameter Override</span>
-              </label>
-            </div>
-            <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
-              <div class="hw-group">
-                <label><span>Manual Throttle Lever</span><span id="hwValThrottle">60%</span></label>
-                <input type="range" id="hwSliderThrottle" min="10" max="100" value="60">
-              </div>
-              <div class="hw-group">
-                <label><span>Manual Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
-                <input type="range" id="hwSliderAltitude" min="0" max="30000" step="500" value="8000">
-              </div>
-              <div class="hw-group">
-                <label><span>Manual Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
-                <input type="range" id="hwSliderAmbient" min="-20" max="50" value="35">
-              </div>
-              <div class="hw-group">
-                <label><span>Manual Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
-                <input type="range" id="hwSliderDuration" min="1" max="24" step="0.5" value="6">
-              </div>
-            </div>
-          </details>
-        </div>
-
-        <!-- PLANNER VIEW DOCKING SLOT -->
-        <div id="plannerViewSlot"></div>
-
-        <!-- 2. SIDE-BY-SIDE: UAV LIVE MISSION MAP (55%) + 3D PISTON ENGINE DIGITAL TWIN (45%) -->
-        <div class="mission-twin-split-grid" id="sharedSplitGrid">
-
-          <!-- LEFT: UAV LIVE MISSION MAP -->
+<!-- LEFT: UAV LIVE MISSION MAP -->
           <div class="map-card">
             <div class="map-header">
               <div>
@@ -718,8 +645,220 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
                 <span class="hud-val"><span id="hudRisk" class="pill good">LOW (12)</span></span>
               </div>
             </div>
+          </div>
 
-            <!-- 3D WAYPOINT ROUTE & LIVE MISSION STATUS TABLE -->
+          <!-- RIGHT (42%): LIVE PROPULSION HEALTH & PROGNOSTICS CONSOLE -->
+          <div class="propulsion-health-card card" style="display:flex; flex-direction:column; justify-content:space-between; margin-bottom:0;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="font-size:13.5px; font-weight:700; color:#5eb574; display:flex; align-items:center; gap:5px;">
+                  <span>⚙</span> LIVE PROPULSION HEALTH &amp; PROGNOSTICS
+                </div>
+                <span class="pill good" id="cockpitGoBadge" style="font-weight:800; font-size:10px; padding:2px 8px;">● GO FOR MISSION</span>
+              </div>
+
+              <!-- HERO PROGNOSTICS CARD -->
+              <div class="cockpit-hero-rul-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <div>
+                    <div style="font-size:9.5px; font-weight:700; color:#7a8c7b; text-transform:uppercase; letter-spacing:0.05em;">Remaining Useful Life (RUL)</div>
+                    <div style="display:flex; align-items:baseline; gap:8px; margin:2px 0;">
+                      <span style="font-size:24px; font-weight:900; color:#5eb574; font-family:Inter,monospace;" id="cockpitRulVal">1,842 h</span>
+                      <span style="font-size:11px; color:#a3e635; font-weight:700;" id="cockpitTboPercent">92% TBO</span>
+                    </div>
+                    <div style="font-size:9.5px; color:#7a8c7b;" id="cockpitRulSub">95% CI: [1,720h – 1,960h] • Normal Degradation</div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+                    <div style="font-size:9.5px; color:#7a8c7b;">MISSION RISK</div>
+                    <div class="pill good" id="cockpitRiskBadge" style="font-size:11px; font-weight:800;">LOW (12)</div>
+                    <div style="font-size:9px; color:#7a8c7b;" id="cockpitHealthSummary">State: Normal • ML Conf: 98.2%</div>
+                  </div>
+                </div>
+                <div style="margin-top:6px; padding-top:6px; border-top:1px solid #142016; font-size:10px; color:#b2c2b4; display:flex; align-items:center; gap:6px;">
+                  <span style="color:#5eb574; font-weight:bold;">ADVISORY:</span>
+                  <span id="cockpitAdvisoryText">Propulsion operating within nominal envelope. All cylinders balanced.</span>
+                </div>
+              </div>
+
+              <!-- LIVE PROPULSION TELEMETRY GRID -->
+              <div class="assembly-telemetry-grid" style="margin-top:8px;">
+                <div class="asm-param"><span class="asm-lbl">Engine RPM</span><b class="asm-val info" id="cockpitRPM">3,000 RPM</b></div>
+                <div class="asm-param"><span class="asm-lbl">Auto Throttle</span><b class="asm-val" id="cockpitThrottle">58% <small style="font-size:9px; color:#4cb574;">AUTO</small></b></div>
+                <div class="asm-param"><span class="asm-lbl">Engine Load</span><b class="asm-val" id="cockpitLoad">0.84 <small style="font-size:9px; color:#4cb574;">AUTO</small></b></div>
+                <div class="asm-param"><span class="asm-lbl">CHT Temp</span><b class="asm-val" id="cockpitCHT">220.4 °F</b></div>
+                <div class="asm-param"><span class="asm-lbl">EGT Max</span><b class="asm-val" id="cockpitEGT">1,205 °F</b></div>
+                <div class="asm-param"><span class="asm-lbl">Oil Press / Temp</span><b class="asm-val" id="cockpitOil">60.2 PSI • 89.6 °C</b></div>
+                <div class="asm-param"><span class="asm-lbl">Fuel Flow</span><b class="asm-val" id="cockpitFuel">20.4 L/h</b></div>
+                <div class="asm-param"><span class="asm-lbl">Vibration RMS</span><b class="asm-val good" id="cockpitVib">1.02 g</b></div>
+                <div class="asm-param"><span class="asm-lbl">Manifold (MAP)</span><b class="asm-val" id="cockpitMAP">29.8 inHg</b></div>
+                <div class="asm-param"><span class="asm-lbl">Battery / Bus</span><b class="asm-val" id="cockpitVolt">28.2 V</b></div>
+                <div class="asm-param"><span class="asm-lbl">Alternator Temp</span><b class="asm-val" id="cockpitAlt">68.4 °C</b></div>
+                <div class="asm-param"><span class="asm-lbl">Fuel Rail Press</span><b class="asm-val" id="cockpitFuelPress">42.4 PSI</b></div>
+                <div class="asm-param"><span class="asm-lbl">Knock Index</span><b class="asm-val good" id="cockpitKnock">0.02</b></div>
+              </div>
+            </div>
+
+            <!-- 6 SUBSYSTEM HEALTH STATUS CARDS -->
+            <div style="margin-top:8px;">
+              <div style="font-size:10px; font-weight:700; color:#7a8c7b; margin-bottom:4px; letter-spacing:0.04em;">
+                PROPULSION SUBSYSTEM INTEGRITY (FADEC HIL)
+              </div>
+              <div class="subsystem-grid" id="sharedSubsystemGrid">
+                <div class="subsystem-card">
+                  <div class="s-name">Thermal Subsys</div>
+                  <div class="s-score good" id="subScoreThermal">98%</div>
+                  <div class="pill good" id="subPillThermal" style="font-size:9px;">CHT / EGT / Coolant</div>
+                </div>
+                <div class="subsystem-card">
+                  <div class="s-name">Lubrication</div>
+                  <div class="s-score good" id="subScoreLubrication">99%</div>
+                  <div class="pill good" id="subPillLubrication" style="font-size:9px;">Oil P/T &amp; Viscosity</div>
+                </div>
+                <div class="subsystem-card">
+                  <div class="s-name">Fuel Injection</div>
+                  <div class="s-score good" id="subScoreFuel">97%</div>
+                  <div class="pill good" id="subPillFuel" style="font-size:9px;">MAP &amp; Injectors</div>
+                </div>
+                <div class="subsystem-card">
+                  <div class="s-name">Combustion / Ign</div>
+                  <div class="s-score good" id="subScoreCombustion">99%</div>
+                  <div class="pill good" id="subPillCombustion" style="font-size:9px;">Balance &amp; Stability</div>
+                </div>
+                <div class="subsystem-card">
+                  <div class="s-name">Electrical / FADEC</div>
+                  <div class="s-score good" id="subScoreElectrical">98%</div>
+                  <div class="pill good" id="subPillElectrical" style="font-size:9px;">Dual-Bus 28V</div>
+                </div>
+                <div class="subsystem-card">
+                  <div class="s-name">Mechanical / Vib</div>
+                  <div class="s-score good" id="subScoreMechanical">99%</div>
+                  <div class="pill good" id="subPillMechanical" style="font-size:9px;">Bearings &amp; Shaft</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+<!-- 1. PRIMARY MISSION CONTROL & FLIGHT PLANNER BANNER -->
+        <div class="card mission-control-card">
+          <div class="mission-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:16px;">⌖</span>
+              <div>
+                <div style="font-size:14px; font-weight:800; color:#e8f0e8;">MISSION CONTROL & FLIGHT PLANNER</div>
+                <div style="font-size:10px; color:var(--muted);">
+                  Path-Driven Flight Simulation • Real Geographic Map • Dynamic Propulsion Demand
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <span class="pill good" id="simModeBadge" style="font-size:10px; padding:2px 8px;">
+                SIMULATION MODE: ● AUTOMATIC
+              </span>
+              <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">⚒ MISSION DESIGN</button>
+              <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">✈ MISSION EXECUTION</button>
+            </div>
+          </div>
+
+          <!-- AUTOMATIC PARAMETER READOUT STRIP -->
+          <div class="auto-flight-strip">
+            <div class="auto-item">
+              <span class="auto-label">Active Mission</span>
+              <span class="auto-val info" id="autoMissionName">ISR Border Patrol Alpha</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Route Envelope</span>
+              <span class="auto-val" id="autoRouteSummary">9 Waypoints • 215.1 km</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Est. Flight Duration</span>
+              <span class="auto-val" id="autoEstDuration">1h 45m</span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Mission Phase</span>
+              <span class="auto-val"><span id="autoPhasePill" class="pill good">READY</span></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Current Altitude</span>
+              <span class="auto-val" id="autoAltitude">8,000 ft <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Ground Speed</span>
+              <span class="auto-val" id="autoSpeed">142 kt <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Auto Throttle</span>
+              <span class="auto-val" id="autoThrottle">58% <small style="font-size:9.5px; color:#4cb574;">AUTO</small></span>
+            </div>
+            <div class="auto-item">
+              <span class="auto-label">Ambient Temp</span>
+              <span class="auto-val" id="autoAmbient">18.2°C <small style="font-size:9.5px; color:#4cb574;">AUTO (ISA)</small></span>
+            </div>
+          </div>
+
+          <!-- PRIMARY MISSION & REPLAY ACTIONS -->
+          <div class="primary-mission-actions">
+            <button id="btnStartMission" class="success" onclick="startAutomaticMission()">▶ START SIMULATION</button>
+            <button id="btnStartReplay" class="map-btn" style="background:#17361d; border-color:#2c6136; color:#dbe5db; font-size:11px; font-weight:700; padding:5px 10px;" onclick="startMissionReplay()">⟳ MISSION REPLAY</button>
+            <button id="btnPauseMission" class="secondary" style="display:none;" onclick="toggleMissionPause()">⏸ Pause</button>
+            <button id="btnResumeMission" style="display:none; background:#143b1e;" onclick="toggleMissionPause()">▶ Resume</button>
+            <button id="btnRestartMission" class="secondary" style="display:none;" onclick="restartMissionSimulation()">↺ Restart</button>
+            <button id="btnAbortMission" class="danger" style="display:none;" onclick="abortMissionSimulation()">⏹ Abort / Reset</button>
+
+            <select id="selReplaySpeed" style="width:auto; margin:0; padding:3px 6px; font-size:9.5px; display:none;" onchange="setReplaySpeed(+this.value)">
+              <option value="1" selected>1x Speed</option>
+              <option value="2">2x Speed</option>
+              <option value="5">5x Speed</option>
+            </select>
+
+            <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
+              <span style="font-size:10.5px; color:#7a8c7b; font-weight:600;">Mission Preset:</span>
+              <select id="selMissionPreset" style="width:auto; margin:0; padding:3px 6px; font-size:10.5px;" onchange="loadPresetMission(this.value)">
+                <option value="border_patrol_alpha" selected>ISR Border Patrol Alpha (9 WPs)</option>
+                <option value="high_alt_surveillance">High-Altitude Recon Bravo (8 WPs, 24k ft)</option>
+                <option value="coastal_maritime">Coastal & Maritime Patrol Charlie (7 WPs)</option>
+                <option value="custom">Custom Interactive Route</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- COLLAPSIBLE ADVANCED SIMULATION OVERRIDES (FOR BENCHMARK TESTING) -->
+          <details style="margin-top:6px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:5px 8px;">
+            <summary style="font-size:10px; font-weight:700; color:#7a8c7b; cursor:pointer;">
+              ⚙ ADVANCED SIMULATION OVERRIDES (MANUAL INJECTION FOR BENCHMARK TESTING — DEFAULT: OFF)
+            </summary>
+            <div style="font-size:9.5px; color:#c9983e; margin:3px 0;">
+              ⚠ SIMULATION OVERRIDE — NOT NORMAL FLIGHT INPUT. Use only to force specific edge-case test conditions.
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:3px;">
+              <label style="display:flex; align-items:center; gap:5px; cursor:pointer;">
+                <input type="checkbox" id="chkManualOverride" style="width:auto; margin:0;" onchange="toggleManualOverride(this.checked)">
+                <span style="color:#dbe5db; font-weight:bold;">Enable Manual Parameter Override</span>
+              </label>
+            </div>
+            <div id="manualOverrideControls" class="hw-controls" style="opacity:0.5; pointer-events:none;">
+              <div class="hw-group">
+                <label><span>Manual Throttle Lever</span><span id="hwValThrottle">60%</span></label>
+                <input type="range" id="hwSliderThrottle" min="10" max="100" value="60">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Flight Altitude</span><span id="hwValAltitude">8,000 ft</span></label>
+                <input type="range" id="hwSliderAltitude" min="0" max="30000" step="500" value="8000">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Ambient Temp</span><span id="hwValAmbient">35°C</span></label>
+                <input type="range" id="hwSliderAmbient" min="-20" max="50" value="35">
+              </div>
+              <div class="hw-group">
+                <label><span>Manual Mission Duration</span><span id="hwValDuration">6.0 hrs</span></label>
+                <input type="range" id="hwSliderDuration" min="1" max="24" step="0.5" value="6">
+              </div>
+            </div>
+          </details>
+        </div>
+
+<!-- 3D WAYPOINT ROUTE & LIVE MISSION STATUS TABLE -->
             <div id="waypointPlannerBox" class="wp-table-box">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                 <div style="font-size:11px; font-weight:700; color:#5eb574;" id="wpPlannerHeaderTitle">
@@ -752,9 +891,84 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
                 </table>
               </div>
             </div>
+
+<!-- 4. LIVE ENVIRONMENT & CAN BUS MONITOR -->
+        <div class="grid two" style="margin-bottom:8px;">
+          <!-- LIVE ENVIRONMENT PANEL -->
+          <div class="card" style="border-color:#18281b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
+                <span>≋</span> LIVE ENVIRONMENTAL CONDITIONS
+              </h2>
+              <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo API)</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:5px; font-size:10.5px;">
+              <div class="auto-item">
+                <span class="auto-label">Ambient Temp</span>
+                <span class="auto-val info" id="envTemp">18.4 °C</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Pressure</span>
+                <span class="auto-val" id="envPress">802 hPa <small style="font-size:9.5px; color:#7a8c7b;">(23.7 inHg)</small></span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Density Ratio (σ)</span>
+                <span class="auto-val" id="envDensity">0.824</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Wind Speed / Dir</span>
+                <span class="auto-val" id="envWind">12.5 kt @ 240°</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Headwind / Crosswind</span>
+                <span class="auto-val" id="envHeadwind"><span style="color:#c9983e;">HW: 5.8 kt</span> • CW: 11.0 kt</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Relative Humidity</span>
+                <span class="auto-val" id="envHumidity">45%</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Visibility</span>
+                <span class="auto-val" id="envVisibility">10.0 km</span>
+              </div>
+              <div class="auto-item">
+                <span class="auto-label">Weather Condition</span>
+                <span class="auto-val good" id="envCondition">Clear Sky</span>
+              </div>
+            </div>
           </div>
 
-          <!-- RIGHT: 3D PISTON ENGINE DIGITAL TWIN -->
+          <!-- RAW CAN BUS MONITOR -->
+          <div class="card" style="border-color:#18281b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
+                <span>⌗</span> ECU CAN BUS / FADEC TELEMETRY STREAM
+              </h2>
+              <span class="pill good" style="font-size:9.5px;">● 10 Hz Synchronized</span>
+            </div>
+            <div class="can-box" id="canBusStream">
+              [CAN 0x201] RPM: 3000 | THROTTLE: 60.0% | MAP: 29.8 inHg | TIME: 00:14:22<br>
+              [CAN 0x202] CHT: 220.4 F | EGT1: 1205 F | EGT2: 1200 F | EGT3: 1198 F<br>
+              [CAN 0x203] OIL_PRESS: 60.2 PSI | OIL_TEMP: 89.6 C | STATUS: NORMAL<br>
+              [CAN 0x204] FUEL_FLOW: 20.4 L/h | RAIL_PRESS: 42.1 PSI | FUEL_TEMP: 32.1 C<br>
+              [CAN 0x205] BUS_VOLT: 28.20 V | ALT_CURR: 18.2 A | ALT_TEMP: 68.4 C<br>
+              [CAN 0x206] VIBRATION_RMS: 1.02 g | KNOCK_IDX: 0.02 | STATUS: HEALTHY
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: ENGINE DIGITAL TWIN (Dedicated Mechanical & Thermodynamic Visualization) -->
+      <!-- ========================================================================= -->
+      <section id="tabContentEngine" class="tab-content" role="tabpanel" aria-labelledby="tabBtnEngine" style="display:none;">
+
+<!-- RIGHT: 3D PISTON ENGINE DIGITAL TWIN -->
           <div class="engine-twin-card">
             <div class="engine-card-heading">
               <div>
@@ -982,103 +1196,52 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 3. 6-SUBSYSTEM HEALTH STATUS CARDS -->
-        <div class="subsystem-grid" id="sharedSubsystemGrid">
-          <div class="subsystem-card">
-            <div class="s-name">Thermal Subsys</div>
-            <div class="s-score good" id="subScoreThermal">98%</div>
-            <div class="pill good" id="subPillThermal">CHT / EGT / Coolant</div>
+        <!-- ROTAX 914 TURBO ENGINEERING PERFORMANCE CARPET -->
+        <div class="card" style="margin-top:8px; border-color:#18281b;">
+          <div style="font-size:11px; font-weight:800; color:#5eb574; margin-bottom:4px; letter-spacing:0.04em;">
+            ROTAX 914 TURBO PROPULSION PERFORMANCE CARPET &amp; SPECIFICATIONS
           </div>
-          <div class="subsystem-card">
-            <div class="s-name">Lubrication</div>
-            <div class="s-score good" id="subScoreLubrication">99%</div>
-            <div class="pill good" id="subPillLubrication">Oil P/T & Viscosity</div>
-          </div>
-          <div class="subsystem-card">
-            <div class="s-name">Fuel Injection</div>
-            <div class="s-score good" id="subScoreFuel">97%</div>
-            <div class="pill good" id="subPillFuel">MAP & Injectors</div>
-          </div>
-          <div class="subsystem-card">
-            <div class="s-name">Combustion / Ign</div>
-            <div class="s-score good" id="subScoreCombustion">99%</div>
-            <div class="pill good" id="subPillCombustion">Balance & Stability</div>
-          </div>
-          <div class="subsystem-card">
-            <div class="s-name">Electrical / FADEC</div>
-            <div class="s-score good" id="subScoreElectrical">98%</div>
-            <div class="pill good" id="subPillElectrical">Dual-Bus 28V</div>
-          </div>
-          <div class="subsystem-card">
-            <div class="s-name">Mechanical / Vib</div>
-            <div class="s-score good" id="subScoreMechanical">99%</div>
-            <div class="pill good" id="subPillMechanical">Bearings & Shaft</div>
-          </div>
-        </div>
-
-        <!-- 4. LIVE ENVIRONMENT & CAN BUS MONITOR -->
-        <div class="grid two" style="margin-bottom:8px;">
-          <!-- LIVE ENVIRONMENT PANEL -->
-          <div class="card" style="border-color:#18281b;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
-                <span>≋</span> LIVE ENVIRONMENTAL CONDITIONS
-              </h2>
-              <span class="pill good" id="envSourceBadge">● LIVE (Open-Meteo API)</span>
+          <div class="engine-carpet-grid">
+            <div class="carpet-card">
+              <div class="carpet-title">Takeoff Power</div>
+              <div class="carpet-val">115 HP</div>
+              <div class="carpet-sub">@ 5,800 RPM (5 min limit)</div>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:5px; font-size:10.5px;">
-              <div class="auto-item">
-                <span class="auto-label">Ambient Temp</span>
-                <span class="auto-val info" id="envTemp">18.4 °C</span>
-              </div>
-              <div class="auto-item">
-                <span class="auto-label">Pressure</span>
-                <span class="auto-val" id="envPress">802 hPa <small style="font-size:9.5px; color:#7a8c7b;">(23.7 inHg)</small></span>
-              </div>
-              <div class="auto-item">
-                <span class="auto-label">Density Ratio (σ)</span>
-                <span class="auto-val" id="envDensity">0.824</span>
-              </div>
-              <div class="auto-item">
-                <span class="auto-label">Wind Speed / Dir</span>
-                <span class="auto-val" id="envWind">12.5 kt @ 240°</span>
-              </div>
-              <div class="auto-item">
-                <span class="auto-label">Headwind / Crosswind</span>
-                <span class="auto-val" id="envHeadwind"><span style="color:#c9983e;">HW: 5.8 kt</span> • CW: 11.0 kt</span>
-              </div>
-              <div class="auto-item">
-                <span class="auto-label">Relative Humidity</span>
-                <span class="auto-val" id="envHumidity">45%</span>
-              </div>
-              <div class="auto-item">
-                <span class="auto-label">Visibility</span>
-                <span class="auto-val" id="envVisibility">10.0 km</span>
-              </div>
-              <div class="auto-item">
-                <span class="auto-label">Weather Condition</span>
-                <span class="auto-val good" id="envCondition">Clear Sky</span>
-              </div>
+            <div class="carpet-card">
+              <div class="carpet-title">Max Continuous</div>
+              <div class="carpet-val">100 HP</div>
+              <div class="carpet-sub">@ 5,500 RPM (Cruise)</div>
             </div>
-          </div>
-
-          <!-- RAW CAN BUS MONITOR -->
-          <div class="card" style="border-color:#18281b;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
-                <span>⌗</span> ECU CAN BUS / FADEC TELEMETRY STREAM
-              </h2>
-              <span class="pill good" style="font-size:9.5px;">● 10 Hz Synchronized</span>
+            <div class="carpet-card">
+              <div class="carpet-title">Max Torque</div>
+              <div class="carpet-val">144 Nm</div>
+              <div class="carpet-sub">@ 4,900 RPM</div>
             </div>
-            <div class="can-box" id="canBusStream">
-              [CAN 0x201] RPM: 3000 | THROTTLE: 60.0% | MAP: 29.8 inHg | TIME: 00:14:22<br>
-              [CAN 0x202] CHT: 220.4 F | EGT1: 1205 F | EGT2: 1200 F | EGT3: 1198 F<br>
-              [CAN 0x203] OIL_PRESS: 60.2 PSI | OIL_TEMP: 89.6 C | STATUS: NORMAL<br>
-              [CAN 0x204] FUEL_FLOW: 20.4 L/h | RAIL_PRESS: 42.1 PSI | FUEL_TEMP: 32.1 C<br>
-              [CAN 0x205] BUS_VOLT: 28.20 V | ALT_CURR: 18.2 A | ALT_TEMP: 68.4 C<br>
-              [CAN 0x206] VIBRATION_RMS: 1.02 g | KNOCK_IDX: 0.02 | STATUS: HEALTHY
+            <div class="carpet-card">
+              <div class="carpet-title">BSFC (Efficiency)</div>
+              <div class="carpet-val">285 g/kWh</div>
+              <div class="carpet-sub">Cruise fuel consumption</div>
+            </div>
+            <div class="carpet-card">
+              <div class="carpet-title">Turbo Boost PR</div>
+              <div class="carpet-val">1.28 PR</div>
+              <div class="carpet-sub">MAP 39.9 inHg max</div>
+            </div>
+            <div class="carpet-card">
+              <div class="carpet-title">Thermal Efficiency</div>
+              <div class="carpet-val">34.8%</div>
+              <div class="carpet-sub">Indicated thermodynamic</div>
+            </div>
+            <div class="carpet-card">
+              <div class="carpet-title">Firing Frequency</div>
+              <div class="carpet-val">50.0 Hz</div>
+              <div class="carpet-sub">Order 2.0X @ 3,000 RPM</div>
+            </div>
+            <div class="carpet-card">
+              <div class="carpet-title">Compression Ratio</div>
+              <div class="carpet-val">9.0 : 1</div>
+              <div class="carpet-sub">Knock margin 0.88</div>
             </div>
           </div>
         </div>
@@ -1086,11 +1249,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
       </section>
 
       <!-- ========================================================================= -->
-      <!-- TAB 2: FAULT & HEALTH DIAGNOSTICS -->
+      <!-- TAB 3: MISSION & ANALYTICS (Fault Injection, FFT, Health & Virtual Data Lab) -->
       <!-- ========================================================================= -->
-      <section id="tabContentDiagnostics" class="tab-content" style="display:none;">
+      <section id="tabContentAnalytics" class="tab-content" role="tabpanel" aria-labelledby="tabBtnAnalytics" style="display:none;">
 
-        <!-- EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE -->
+<!-- EXPERIMENTAL FAULT INJECTION & DIAGNOSTIC CONSOLE -->
         <div class="card" style="margin-bottom:8px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <h2 style="margin:0; font-size:13px; color:#5eb574; display:flex; align-items:center; gap:5px;">
@@ -1236,11 +1399,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
       </section>
 
       <!-- ========================================================================= -->
-      <!-- TAB 3: VIRTUAL DATA LABORATORY & REPLAY ENGINE -->
-      <!-- ========================================================================= -->
-      <section id="tabContentDatalab" class="tab-content" style="display:none;">
 
-        <!-- 1. DATA LAB CONTROL BANNER -->
+<!-- 1. DATA LAB CONTROL BANNER -->
         <div class="card mission-control-card">
           <div class="mission-header">
             <div style="display:flex; align-items:center; gap:8px;">
@@ -1446,6 +1606,75 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
           </div>
         </div>
 
+        <!-- DUAL PERFORMANCE ENVELOPE VALIDATION MATRIX -->
+        <div class="card" style="margin-bottom:8px; border-color:#18281b;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <h2 style="font-size:13px; color:#5eb574; margin:0; display:flex; align-items:center; gap:5px;">
+              <span>⚖</span> DUAL-DOMAIN PERFORMANCE ENVELOPE (VALIDATION BENCHMARK)
+            </h2>
+            <span class="pill good" style="font-size:9.5px;">Empirically Validated</span>
+          </div>
+          <div style="font-size:10px; color:#7a8c7b; margin-bottom:6px;">
+            Comparative verification matrix across deterministic physics fault trajectories vs real NASA ACES Altus II flight telemetry.
+          </div>
+          <div class="scroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Validation Metric</th>
+                  <th>Synthetic Fault Trajectories (Rotax 914 Turbo)</th>
+                  <th>Real NASA ACES Flights (Altus II MALE)</th>
+                  <th>Operational Domain Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>Overall Accuracy</b></td>
+                  <td style="color:#5eb574; font-weight:bold;">99.81%</td>
+                  <td style="color:#a3e635; font-weight:bold;">89.47%</td>
+                  <td style="color:#7a8c7b;">Synthetic deterministic vs real-world flight envelope noise</td>
+                </tr>
+                <tr>
+                  <td><b>Balanced Accuracy</b></td>
+                  <td style="color:#5eb574; font-weight:bold;">99.20%</td>
+                  <td style="color:#a3e635; font-weight:bold;">89.29%</td>
+                  <td style="color:#7a8c7b;">Balanced across healthy, watch, and critical regimes</td>
+                </tr>
+                <tr>
+                  <td><b>Critical Recall</b></td>
+                  <td style="color:#5eb574; font-weight:bold;">99.42%</td>
+                  <td style="color:#5eb574; font-weight:bold;">95.68%</td>
+                  <td style="color:#7a8c7b;">Catastrophic failure / exceedance catch rate</td>
+                </tr>
+                <tr>
+                  <td><b>Critical Precision</b></td>
+                  <td style="color:#5eb574; font-weight:bold;">98.84%</td>
+                  <td style="color:#c9983e; font-weight:bold;">63.88%</td>
+                  <td style="color:#7a8c7b;">Real ACES has zero engine failures (exceedances only)</td>
+                </tr>
+                <tr>
+                  <td><b>Critical F1 Score</b></td>
+                  <td style="color:#5eb574; font-weight:bold;">0.991</td>
+                  <td style="color:#a3e635; font-weight:bold;">0.766</td>
+                  <td style="color:#7a8c7b;">Harmonic mean of precision and recall</td>
+                </tr>
+                <tr>
+                  <td><b>Anomaly AUROC</b></td>
+                  <td style="color:#5eb574; font-weight:bold;">0.991</td>
+                  <td style="color:#5eb574; font-weight:bold;">0.960</td>
+                  <td style="color:#7a8c7b;">Discrimination power across all operating thresholds</td>
+                </tr>
+                <tr>
+                  <td><b>False Alarm Rate</b></td>
+                  <td style="color:#5eb574; font-weight:bold;">0.40%</td>
+                  <td style="color:#c9983e; font-weight:bold;">5.79%</td>
+                  <td style="color:#7a8c7b;">Nominal operations false positives</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </section>
 
     </main>
@@ -1476,35 +1705,15 @@ const $ = id => document.getElementById(id);
 let currentTab = 'cockpit';
 
 function reparentCockpitViews(targetTab) {
-  const splitGrid = document.getElementById('sharedSplitGrid');
-  const subsysGrid = document.getElementById('sharedSubsystemGrid');
-  const cockpitSlot = document.getElementById('cockpitViewSlot');
-  const plannerSlot = document.getElementById('plannerViewSlot');
-
-  if (!splitGrid) return;
-
-  if (targetTab === 'cockpit' && cockpitSlot) {
-    if (splitGrid.parentElement !== cockpitSlot) {
-      cockpitSlot.appendChild(splitGrid);
-    }
-    if (subsysGrid && subsysGrid.parentElement !== cockpitSlot) {
-      cockpitSlot.appendChild(subsysGrid);
-    }
-  } else if (targetTab === 'live' && plannerSlot) {
-    if (splitGrid.parentElement !== plannerSlot) {
-      plannerSlot.appendChild(splitGrid);
-    }
-    if (subsysGrid && subsysGrid.parentElement !== plannerSlot) {
-      plannerSlot.appendChild(subsysGrid);
-    }
-  }
+  // No-op in 3-tab architecture (views have permanent home tabs)
 }
 
 function switchDashboardTab(tabId) {
-  currentTab = tabId;
-  const tabs = ['cockpit', 'live', 'diagnostics', 'datalab'];
+  if (tabId === 'live') tabId = 'cockpit';
+  if (tabId === 'diagnostics' || tabId === 'datalab') tabId = 'analytics';
 
-  reparentCockpitViews(tabId);
+  currentTab = tabId;
+  const tabs = ['cockpit', 'engine', 'analytics'];
 
   tabs.forEach(t => {
     const btn = $('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1518,13 +1727,47 @@ function switchDashboardTab(tabId) {
     }
   });
 
-  if (tabId === 'cockpit' || tabId === 'live') {
+  if (tabId === 'cockpit') {
     setTimeout(() => {
       if (uavMap) uavMap.invalidateSize();
+    }, 60);
+  } else if (tabId === 'engine') {
+    setTimeout(() => {
       window.AeroPulseEngine3D?.resize();
     }, 60);
-  } else if (tabId === 'datalab') {
+  } else if (tabId === 'analytics') {
+    setTimeout(() => {
+      if (typeof replayTimeline !== 'undefined' && replayTimeline && replayTimeline.length > 0) {
+        drawTimeline(replayTimeline.slice(0, replayIndex + 1));
+      }
+    }, 60);
     fetchDataCatalogUI();
+  }
+}
+
+function updateCockpitPrognostics(rulVal, lower, upper, healthState, riskLevel, riskScore, advisory) {
+  if ($('cockpitRulVal') && rulVal != null) {
+    $('cockpitRulVal').textContent = `${Number(rulVal).toFixed(1)} h`;
+    $('cockpitRulVal').style.color = rulVal < 10 ? '#c94c48' : rulVal < 50 ? '#c9983e' : '#5eb574';
+  }
+  if ($('cockpitRulSub') && lower != null && upper != null) {
+    $('cockpitRulSub').textContent = `90% CI: [${Number(lower).toFixed(1)}h – ${Number(upper).toFixed(1)}h] • ${healthState || 'Normal'} State`;
+  }
+  if ($('cockpitRiskBadge') && riskLevel) {
+    $('cockpitRiskBadge').textContent = `${riskLevel} (${Math.round(riskScore || 0)})`;
+    $('cockpitRiskBadge').className = 'pill ' + (riskLevel === 'LOW' ? 'good' : riskLevel === 'MEDIUM' ? 'warn' : 'bad');
+  }
+  if ($('cockpitGoBadge')) {
+    const isGo = (riskLevel === 'LOW' || !riskLevel) && (rulVal == null || rulVal >= 10);
+    const isCaution = riskLevel === 'MEDIUM' || (rulVal != null && rulVal < 50 && rulVal >= 10);
+    $('cockpitGoBadge').textContent = isGo ? '● GO FOR MISSION' : isCaution ? '⚠ CAUTION - MONITOR' : '⏹ NO-GO / RTB REQUIRED';
+    $('cockpitGoBadge').className = 'pill ' + (isGo ? 'good' : isCaution ? 'warn' : 'bad');
+  }
+  if ($('cockpitHealthSummary')) {
+    $('cockpitHealthSummary').textContent = `State: ${healthState || 'Normal'} • Risk: ${riskLevel || 'LOW'}`;
+  }
+  if ($('cockpitAdvisoryText') && advisory) {
+    $('cockpitAdvisoryText').textContent = advisory;
   }
 }
 
@@ -2329,6 +2572,7 @@ function startReplayTimer() {
         $('pxRUL').textContent = `${Number(rulVal).toFixed(1)} h`;
         $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
       }
+      updateCockpitPrognostics(rulVal, lower, upper, p.health_state, p.risk_level, p.risk_score, p.maintenance_advisory);
     }
 
     if (p.uav) {
@@ -2594,7 +2838,7 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
   const load = uav && uav.auto_load != null ? uav.auto_load : (telemetry.Load ?? (runState === 'ENGINE_OFF' ? 0 : 0.85));
   hwState.throttle = thr;
 
-  // Update Consolidated Selected Assembly Engine Telemetry Grid
+  // Update Consolidated Selected Assembly Engine Telemetry Grid (Tab 2)
   if ($('engRPM')) $('engRPM').textContent = `${rpm.toLocaleString()} RPM`;
   if ($('engThrottle')) $('engThrottle').innerHTML = `${thr}% <small style="font-size:9px; color:#4cb574;">AUTO</small>`;
   if ($('engLoad')) $('engLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:9px; color:#4cb574;">AUTO</small>`;
@@ -2609,6 +2853,21 @@ function updateLiveEnginePanel(telemetry, uav = null, healthIndex = 98, faultNam
   if ($('engAlt')) $('engAlt').textContent = `${fmt(telemetry.Alternator_Temp || 68.4, 1)} °C`;
   if ($('engFuelPress')) $('engFuelPress').textContent = `${(runState === 'ENGINE_OFF' ? 0 : 38.0 + 0.22 * (telemetry.Fuel_Flow || 20)).toFixed(1)} PSI`;
   if ($('engKnock')) $('engKnock').textContent = `${(runState === 'ENGINE_OFF' ? 0 : 0.01 + 0.02 * Math.max(0, ((telemetry.CHT || 220) - 220) / 40)).toFixed(2)}`;
+
+  // Update Cockpit Flight Deck Propulsion Telemetry (Tab 1)
+  if ($('cockpitRPM')) $('cockpitRPM').textContent = `${rpm.toLocaleString()} RPM`;
+  if ($('cockpitThrottle')) $('cockpitThrottle').innerHTML = `${thr}% <small style="font-size:9px; color:#4cb574;">AUTO</small>`;
+  if ($('cockpitLoad')) $('cockpitLoad').innerHTML = `${typeof load === 'number' ? load.toFixed(2) : load} <small style="font-size:9px; color:#4cb574;">AUTO</small>`;
+  if ($('cockpitCHT')) $('cockpitCHT').textContent = `${fmt(telemetry.CHT, 1)} °F`;
+  if ($('cockpitEGT')) $('cockpitEGT').textContent = `${fmt(telemetry.EGT1, 0)} °F`;
+  if ($('cockpitOil')) $('cockpitOil').textContent = `${fmt(telemetry.Oil_Pressure, 0)} PSI • ${fmt(telemetry.Oil_Temp, 0)} °C`;
+  if ($('cockpitFuel')) $('cockpitFuel').textContent = `${fmt(telemetry.Fuel_Flow, 1)} L/h`;
+  if ($('cockpitVib')) $('cockpitVib').textContent = `${fmt(telemetry.Vibration ?? telemetry.Vibration_RMS ?? (runState === 'ENGINE_OFF' ? 0 : 1.02), 2)} g`;
+  if ($('cockpitMAP')) $('cockpitMAP').textContent = `${fmt(telemetry.MAP_Injector || 29.8, 1)} inHg`;
+  if ($('cockpitVolt')) $('cockpitVolt').textContent = `${fmt(telemetry.Battery_Voltage || 28.2, 1)} V`;
+  if ($('cockpitAlt')) $('cockpitAlt').textContent = `${fmt(telemetry.Alternator_Temp || 68.4, 1)} °C`;
+  if ($('cockpitFuelPress')) $('cockpitFuelPress').textContent = `${(runState === 'ENGINE_OFF' ? 0 : 38.0 + 0.22 * (telemetry.Fuel_Flow || 20)).toFixed(1)} PSI`;
+  if ($('cockpitKnock')) $('cockpitKnock').textContent = `${(runState === 'ENGINE_OFF' ? 0 : 0.01 + 0.02 * Math.max(0, ((telemetry.CHT || 220) - 220) / 40)).toFixed(2)}`;
 
   // Synchronize 3D WebGL Piston Engine Twin
   window.AeroPulseEngine3D?.setTelemetry({
@@ -2949,6 +3208,7 @@ function renderAnalysis(r){
       $('pxRUL').textContent = `${Number(rulVal).toFixed(1)} h`;
       $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
     }
+    updateCockpitPrognostics(rulVal, lower, upper, r.health_state, r.mission_risk?.level, r.mission_risk?.score, r.maintenance_advisory);
   }
 
   if (r.uav) {
@@ -3087,6 +3347,7 @@ async function startLiveStream(){
           $('pxRUL').textContent = `${Number(rulVal).toFixed(1)} h`;
           $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
         }
+        updateCockpitPrognostics(rulVal, lower, upper, p.health_state, p.risk_level, p.risk_score, p.maintenance_advisory);
       }
 
       if(p.uav){
