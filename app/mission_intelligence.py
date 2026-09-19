@@ -187,6 +187,18 @@ class EventExtractor:
                 result="Avionics and propulsion telemetry monitoring active",
             )
         )
+        if p0_phase.upper() in ("CLIMB", "TAKEOFF"):
+            events.append(
+                MissionEvent(
+                    timestamp_sec=t0_sec,
+                    timestamp_hours=round(t0_h, 3),
+                    phase=p0_phase,
+                    event_type=p0_phase.upper(),
+                    severity="INFO",
+                    evidence=f"Initial {p0_phase.lower()} active; climbing toward cruise altitude at {first_p.get('vertical_speed', 0.0):.0f} fpm",
+                    result="Propulsion and flight controls set to climb profile",
+                )
+            )
 
         prev_phase = p0_phase
         prev_throttle = float(first_p.get("throttle", 0.0))

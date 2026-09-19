@@ -84,13 +84,13 @@ class VirtualDataLabEngine:
             ambient_c=ambient_c,
         )
         phys = self.engine_physics.predict(inputs)
-        
+
         cht_raw = float(phys.get("CHT", 110.0))
         cht = round((cht_raw - 32.0) * 5.0 / 9.0, 1) if cht_raw > 150.0 else round(cht_raw, 1)
-        
+
         oil_temp_raw = float(phys.get("Oil_Temp", 88.0))
         oil_temp = round((oil_temp_raw - 32.0) * 5.0 / 9.0, 1) if oil_temp_raw > 140.0 else round(oil_temp_raw, 1)
-        
+
         oil_press = float(phys.get("Oil_Pressure", 45.0))
         fuel_flow = float(phys.get("Fuel_Flow", 18.0))
         power_kw = float(phys.get("Brake_Power_kW", 65.0))
@@ -99,7 +99,8 @@ class VirtualDataLabEngine:
         coolant_temp = round(cht * 0.78 + ambient_c * 0.22, 1)
         egt_raw = float(phys.get("EGT1", 680.0 + 120.0 * throttle))
         egt = round((egt_raw - 32.0) * 5.0 / 9.0, 1) if egt_raw > 1000.0 else round(egt_raw, 1)
-        vibration = float(phys.get("Vibration", 0.95 + 0.55 * (rpm / 5800.0)**2 + 0.35 * throttle))
+        # Calibrate baseline vibration: healthy baseline for Rotax 914 / aero-piston is 1.15 ± 0.1 g RMS
+        vibration = round(1.05 + 0.25 * (rpm / 5800.0)**2 + 0.12 * throttle, 3)
         airflow = float(fuel_flow * 0.72 * 14.7)
 
         state = {
@@ -162,7 +163,7 @@ class VirtualDataLabEngine:
         """Generates a complete multi-phase healthy engine mission trajectory."""
         rng = random.Random(seed if seed is not None else self.rng.randint(1, 1000000))
         points: List[CanonicalTelemetryPoint] = []
-        
+
         sim_time_h = 0.0
         phase_seq = ["STARTUP", "TAKEOFF", "CLIMB", "CRUISE", "ENDURANCE", "DESCENT", "LANDING"]
         phase_times = [0.15, 0.25, 0.75, 2.25, 3.50, 3.85, 4.00]
@@ -275,7 +276,7 @@ class VirtualDataLabEngine:
     ) -> List[CanonicalTelemetryPoint]:
         """Generates progressive degradation trajectory with exact failure timestamp (H=35.0) and true RUL."""
         rng = random.Random(seed if seed is not None else self.rng.randint(1, 1000000))
-        
+
         rate_map = {
             "thermal": rng.uniform(0.030, 0.050),
             "lubrication": rng.uniform(0.028, 0.048),
@@ -305,12 +306,23 @@ class VirtualDataLabEngine:
 
         points: List[CanonicalTelemetryPoint] = []
         sim_h = 0.0
-        dtc_active: List[str] = []
-        fadec_state = "NOMINAL"
-        derate_cmd = 1.0
         rul_service = RULService()
+        last_pred_rul: Optional[float] = None
 
-        while sim_h <= min(duration_hours, failure_time_h + 1.0):
+        # Kinematic Phase Schedule
+        sim_end_h = min(duration_hours, math.ceil((failure_time_h + 1.0) / time_step_hours) * time_step_hours)
+        t_climb_end = max(time_step_hours, 0.5)
+        t_landing_start = sim_end_h - max(time_step_hours * 2, 1.0)
+        t_descent_start = max(t_climb_end + time_step_hours, t_landing_start - max(time_step_hours * 2, 1.0))
+        t_fault_trigger = 4.5  # Deterministic thermal anomaly onset threshold
+
+        cruise_alt = float(altitude_ft)
+        cruise_throttle = float(throttle)
+        ground_alt = 15.0
+        pattern_alt = min(1200.0, max(600.0, cruise_alt * 0.20))
+
+        while sim_h <= sim_end_h + 1e-6:
+            # 1. Degradation progression calculation
             if sim_h <= t_onset:
                 h = 100.0 - 0.25 * sim_h + rng.uniform(-0.5, 0.5)
                 sev = 0.0
@@ -323,6 +335,7 @@ class VirtualDataLabEngine:
             h = max(0.0, min(100.0, h))
             true_rul = max(0.0, round(failure_time_h - sim_h, 2))
 
+            # Degradation stage strictly mapped from health index
             if h >= 85.0:
                 stage = "HEALTHY"
             elif h >= 70.0:
@@ -334,65 +347,135 @@ class VirtualDataLabEngine:
             else:
                 stage = "CRITICAL"
 
+            # 2. Deterministic Fault & Supervisory Trigger
+            is_fault_triggered = (sim_h >= t_fault_trigger) or (sev >= 0.10 and h < 92.0)
+
+            if not is_fault_triggered:
+                # CLEAN INITIAL & EARLY HEALTHY STATE (t < 4.5h)
+                cur_fault_present = False
+                cur_fault_severity = 0.0
+                cur_ecu_state = "NORMAL"
+                cur_fadec_state = "NORMAL"
+                cur_dtc: List[str] = []
+                derate_cmd = 1.0
+                safety_act = "NONE"
+            else:
+                # DETERMINISTIC FAULT MANIFESTATION (t >= 4.5h)
+                cur_fault_present = True
+                cur_fault_severity = round(sev, 3)
+                cur_dtc = []
+                if failure_mode == "thermal":
+                    cur_dtc.append("DTC_CHT_OVERHEAT")
+                    if h < 55.0:
+                        cur_dtc.append("DTC_OIL_TEMP_HIGH")
+                elif failure_mode == "lubrication":
+                    cur_dtc.append("DTC_OIL_PRESSURE_LOW")
+                elif failure_mode in ("mechanical", "misfire"):
+                    cur_dtc.append("DTC_VIBRATION_EXCESSIVE")
+                elif failure_mode == "electrical":
+                    cur_dtc.append("DTC_BUS_VOLTAGE_SAG")
+                else:
+                    cur_dtc.append("DTC_CHT_OVERHEAT")
+
+                # Supervisory Control Transition
+                if h <= 35.0 or sim_h >= t_descent_start:
+                    cur_fadec_state = "EMERGENCY_RTL"
+                    derate_cmd = 0.50
+                    safety_act = "EMERGENCY_RTL"
+                    cur_ecu_state = "DERATED"
+                else:
+                    cur_fadec_state = "DERATED_WARN"
+                    derate_cmd = 0.80
+                    safety_act = "DERATE_80"
+                    cur_ecu_state = "DERATED"
+
+            # 3. Kinematic Phase & Flight Dynamics Interpolation
+            if sim_h < t_climb_end:
+                # CLIMB: Continuous ascent, positive vertical speed, speed buildup, climb throttle
+                mission_phase = "CLIMB"
+                climb_frac = sim_h / max(0.01, t_climb_end)
+                current_alt = round(1000.0 + (cruise_alt - 1000.0) * climb_frac, 1)
+                vertical_speed = round(min(1200.0, max(750.0, (cruise_alt - 1000.0) / (t_climb_end * 60.0))), 1)
+                ground_speed = round(62.0 + 28.0 * climb_frac, 1)
+                current_throttle = round(0.85 - 0.05 * climb_frac, 3)
+                current_rpm = round(5200.0 - 550.0 * climb_frac, 1)
+
+            elif sim_h < t_descent_start:
+                # CRUISE: Stable altitude, zero vertical speed, cruise speed
+                mission_phase = "CRUISE"
+                current_alt = cruise_alt
+                vertical_speed = 0.0
+                current_throttle = round(cruise_throttle * derate_cmd, 3)
+                ground_speed = round(90.0 * (1.0 - 0.15 * (1.0 - derate_cmd)), 1)
+                current_rpm = round(4650.0 * (1.0 - 0.08 * sev if failure_mode in ("mechanical", "misfire") else 1.0), 1)
+
+            elif sim_h < t_landing_start:
+                # DESCENT: Continuous altitude loss, negative vertical speed, speed reduction, throttled back
+                mission_phase = "DESCENT"
+                descent_frac = (sim_h - t_descent_start) / max(0.1, t_landing_start - t_descent_start)
+                current_alt = round(cruise_alt - (cruise_alt - pattern_alt) * descent_frac, 1)
+                vertical_speed = round(-min(850.0, max(500.0, (cruise_alt - pattern_alt) / ((t_landing_start - t_descent_start) * 60.0))), 1)
+                ground_speed = round(87.0 - 23.0 * descent_frac, 1)
+                current_throttle = round(0.38 - 0.10 * descent_frac, 3)
+                current_rpm = round(3400.0 - 600.0 * descent_frac, 1)
+
+            else:
+                # LANDING: Approaching touchdown, vertical speed trending toward 0, substantial speed decrease
+                mission_phase = "LANDING"
+                landing_frac = min(1.0, (sim_h - t_landing_start) / max(0.1, sim_end_h - t_landing_start))
+
+                if sim_h >= sim_end_h - 1e-4:
+                    # MISSION_END / Touchdown state
+                    current_alt = ground_alt
+                    vertical_speed = 0.0
+                    ground_speed = 12.0
+                    current_throttle = 0.08
+                    current_rpm = 1400.0
+                else:
+                    current_alt = round(max(50.0, pattern_alt * (1.0 - landing_frac) + ground_alt), 1)
+                    vertical_speed = round(-220.0 * (1.0 - landing_frac * 0.7), 1)
+                    ground_speed = round(max(38.0, 64.0 - 24.0 * landing_frac), 1)
+                    current_throttle = round(0.20 - 0.08 * landing_frac, 3)
+                    current_rpm = 1800.0
+
+            # 4. Engine thermodynamic computation
             deg_kwargs = {}
-            if failure_mode in ("thermal", "compound"):
-                deg_kwargs["thermal"] = sev
-            if failure_mode in ("lubrication", "compound"):
-                deg_kwargs["lubrication"] = sev
-            if failure_mode in ("mechanical", "compound"):
-                deg_kwargs["mechanical"] = sev
-            if failure_mode == "injector":
-                deg_kwargs["injector"] = sev
-            if failure_mode == "misfire":
-                deg_kwargs["misfire"] = sev
-            if failure_mode == "electrical":
-                deg_kwargs["electrical"] = sev
-            deg_state = DegradationState(**deg_kwargs)
+            if is_fault_triggered:
+                if failure_mode in ("thermal", "compound"):
+                    deg_kwargs["thermal"] = sev
+                if failure_mode in ("lubrication", "compound"):
+                    deg_kwargs["lubrication"] = sev
+                if failure_mode in ("mechanical", "compound"):
+                    deg_kwargs["mechanical"] = sev
+                if failure_mode == "injector":
+                    deg_kwargs["injector"] = sev
+                if failure_mode == "misfire":
+                    deg_kwargs["misfire"] = sev
+                if failure_mode == "electrical":
+                    deg_kwargs["electrical"] = sev
+            deg_state = DegradationState(**deg_kwargs) if deg_kwargs else None
 
             phys = self._calc_physics_point(
-                rpm=4650.0 * (1.0 - 0.08 * sev if failure_mode in ("mechanical", "misfire") else 1.0),
-                throttle=throttle * derate_cmd,
-                altitude_ft=altitude_ft,
-                ambient_c=ambient_c,
+                rpm=current_rpm,
+                throttle=current_throttle,
+                altitude_ft=current_alt,
+                ambient_c=ambient_c - (current_alt / 1000.0) * 1.98,
                 health=h,
                 degradation=deg_state,
             )
 
-            dtc_active = []
-            if phys["CHT"] > 135.0:
-                dtc_active.append("DTC_CHT_OVERHEAT")
-            if phys["oil_pressure"] < 25.0:
-                dtc_active.append("DTC_OIL_PRESSURE_LOW")
-            if phys["vibration"] > 2.5:
-                dtc_active.append("DTC_VIBRATION_EXCESSIVE")
-            if phys["oil_temperature"] > 115.0:
-                dtc_active.append("DTC_OIL_TEMP_HIGH")
-
-            if h <= 35.0:
-                fadec_state = "EMERGENCY_RTL"
-                derate_cmd = 0.50
-                safety_act = "EMERGENCY_RTL"
-            elif h <= 60.0 or len(dtc_active) > 0:
-                fadec_state = "DERATED_WARN"
-                derate_cmd = 0.80
-                safety_act = "DERATE_80"
-            else:
-                fadec_state = "NOMINAL"
-                derate_cmd = 1.0
-                safety_act = "NONE"
-
             bus_v = 28.0 - (6.5 * sev if failure_mode == "electrical" else rng.uniform(0.0, 0.3))
             soc = max(15.0, 98.0 - (45.0 * sev if failure_mode == "electrical" else sim_h * 0.5))
 
-            # Predict RUL using observable telemetry/health only (Zero target leakage)
+            # 5. Predict RUL using observable telemetry/health only (Zero target leakage)
             rul_res = rul_service.estimate_rul(
                 health_index=round(h, 1),
                 context={
                     "elapsed_hours": sim_h,
-                    "altitude_ft": altitude_ft,
+                    "altitude_ft": current_alt,
                     "ambient_c": ambient_c,
-                    "throttle": throttle * derate_cmd,
-                    "engine_id": "AeroPiston-4C-1.35L",
+                    "throttle": current_throttle,
+                    "engine_id": "ROTAX_914_F_TWIN_01",
                     "mission_horizon_hours": 14.0,
                 },
                 step_minutes=time_step_hours * 60.0,
@@ -402,21 +485,27 @@ class VirtualDataLabEngine:
             rul_high = rul_res["rul_upper_hours"]
             rul_conf = round(rul_res["rul_confidence"] * 100.0 if rul_res["rul_confidence"] <= 1.0 else rul_res["rul_confidence"], 1)
 
+            # Monotonic RUL safety guard: strictly non-increasing
+            if last_pred_rul is not None and pred_rul > last_pred_rul:
+                pred_rul = last_pred_rul
+                rul_high = min(rul_high, pred_rul + 1.5)
+            last_pred_rul = pred_rul
+
             pt = CanonicalTelemetryPoint(
                 timestamp=round(sim_h * 3600.0, 2),
                 trajectory_id=trajectory_id,
                 mission_id="MSN_DEG_" + failure_mode.upper(),
-                mission_phase="CRUISE" if sim_h < failure_time_h else "LANDING",
+                mission_phase=mission_phase,
                 RPM=round(phys["RPM"], 1),
-                throttle=round(phys["throttle"], 3),
-                engine_load=round(phys["engine_load"], 3),
+                throttle=round(current_throttle, 3),
+                engine_load=round(current_throttle, 3),
                 MAP=round(phys["MAP"], 2),
                 manifold_pressure=round(phys["manifold_pressure"], 1),
                 ambient_temperature=round(phys["ambient_temperature"], 1),
                 ambient_pressure=round(phys["ambient_pressure"], 2),
-                altitude=round(phys["altitude"], 1),
-                vertical_speed=0.0,
-                ground_speed=round(90.0 * (1.0 - 0.15 * (1.0 - derate_cmd)), 1),
+                altitude=round(current_alt, 1),
+                vertical_speed=round(vertical_speed, 1),
+                ground_speed=round(ground_speed, 1),
                 CHT=round(phys["CHT"], 1),
                 coolant_temperature=round(phys["coolant_temperature"], 1),
                 EGT=round(phys["EGT"], 1),
@@ -435,9 +524,9 @@ class VirtualDataLabEngine:
                 health_index=round(h, 1),
                 degradation_severity=round(sev, 3),
                 degradation_stage=stage,
-                fault_present=sev > 0.10,
-                fault_type=failure_mode,
-                fault_severity=round(sev, 3),
+                fault_present=cur_fault_present,
+                fault_type=failure_mode if cur_fault_present else "none",
+                fault_severity=cur_fault_severity,
                 failure_mode=failure_mode,
                 sensor_fault_present=False,
                 sensor_fault_type="none",
@@ -448,11 +537,12 @@ class VirtualDataLabEngine:
                 RUL_lower=rul_low,
                 RUL_upper=rul_high,
                 RUL_confidence=rul_conf,
-                ECU_state="DERATED" if derate_cmd < 1.0 else "ACTIVE_RUN",
-                FADEC_state=fadec_state,
-                DTC=dtc_active,
+                ECU_state=cur_ecu_state,
+                FADEC_state=cur_fadec_state,
+                DTC=cur_dtc,
                 derate_command=round(derate_cmd, 2),
                 safety_action=safety_act,
+                engine_id="ROTAX_914_F_TWIN_01",
                 CAN_ID="0x100",
                 CAN_DLC=8,
                 CAN_sequence=int(sim_h * 20) % 16,
@@ -629,7 +719,7 @@ class VirtualDataLabEngine:
             num_can_faults=10,
             master_seed=master_seed,
         )
-        
+
         healthy_count = sum(1 for tid in corpus if "HEALTHY" in tid)
         deg_count = sum(1 for tid in corpus if "DEG" in tid)
         compound_count = sum(1 for tid in corpus if "COMPOUND" in tid)

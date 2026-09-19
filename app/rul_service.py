@@ -54,6 +54,7 @@ class RULService:
     ENGINE_TBO_HOURS: Dict[str, float] = {
         "AeroPiston-4C-1.35L": 2000.0,
         "Rotax-914-Turbo-115HP": 1200.0,
+        "ROTAX_914_F_TWIN_01": 1200.0,
         "Generic-Inline4-AeroDiesel": 1500.0,
         "Generic-2Stroke-Twin-50HP": 500.0,
         "Generic-Rotary-Wankel-40HP": 1000.0,
@@ -70,7 +71,11 @@ class RULService:
     def get_engine_tbo(self, engine_id: Optional[str] = None) -> float:
         """Returns certified/published TBO hours for the specified engine."""
         eid = engine_id or self.default_engine_id
-        return self.ENGINE_TBO_HOURS.get(eid, self.DEFAULT_TBO_HOURS)
+        if eid in self.ENGINE_TBO_HOURS:
+            return self.ENGINE_TBO_HOURS[eid]
+        if "rotax" in eid.lower() or "914" in eid.lower():
+            return self.ENGINE_TBO_HOURS["Rotax-914-Turbo-115HP"]
+        return self.DEFAULT_TBO_HOURS
 
     def reset(self, engine_id: Optional[str] = None) -> None:
         """Resets internal history buffer and engine states to prevent cross-mission/cross-engine leakage."""

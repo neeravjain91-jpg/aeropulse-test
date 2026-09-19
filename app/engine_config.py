@@ -297,7 +297,50 @@ ENGINE_PROFILES: Dict[str, Dict[str, Any]] = {
         "bsfc_nominal": 0.37,
         "provenance": "Austin Ch 6.5.1 / Ch 27 (Wankel rotary UAV power-plants)",
     },
+    "ROTAX_914_F_TWIN_01": {
+        "id": "ROTAX_914_F_TWIN_01",
+        "canonical_id": "Rotax-914-Turbo-115HP",
+        "name": "Rotax 914 Turbo 115HP (Opposed-4 Twin Serial 01)",
+        "cycle": "4-stroke",
+        "layout": "opposed",
+        "cylinders": 4,
+        "displacement_l": 1.211,
+        "bore_mm": 79.5,
+        "stroke_mm": 61.0,
+        "nominal_rpm": 5500.0,
+        "max_rpm": 5800.0,
+        "idle_rpm": 1400.0,
+        "compression_ratio": 9.0,
+        "valvetrain": "ohv_pushrod",
+        "firing_order": [1, 3, 2, 4],
+        "tbo_hours": 1200.0,
+        "bsfc_nominal": 0.33,
+        "provenance": "Rotax 914 F/UL Operator Manual / EASA TCDS E.121 / Austin Ch 6.5.1",
+    },
 }
+
+
+def resolve_canonical_engine_id(engine_id: Optional[str]) -> str:
+    """Resolves arbitrary engine identifiers, serial strings, or aliases to canonical profile ID."""
+    if not engine_id:
+        return "Rotax-914-Turbo-115HP"
+    eid = str(engine_id).strip()
+    if eid in ENGINE_PROFILES and "canonical_id" not in ENGINE_PROFILES[eid]:
+        return eid
+    if eid in ENGINE_PROFILES and "canonical_id" in ENGINE_PROFILES[eid]:
+        return ENGINE_PROFILES[eid]["canonical_id"]
+    eid_lower = eid.lower()
+    if "rotax" in eid_lower or "914" in eid_lower:
+        return "Rotax-914-Turbo-115HP"
+    if "diesel" in eid_lower or "inline4" in eid_lower:
+        return "Generic-Inline4-AeroDiesel"
+    if "2stroke" in eid_lower or "twin-50hp" in eid_lower:
+        return "Generic-2Stroke-Twin-50HP"
+    if "rotary" in eid_lower or "wankel" in eid_lower:
+        return "Generic-Rotary-Wankel-40HP"
+    if "aeropiston" in eid_lower or "1.35" in eid_lower:
+        return "AeroPiston-4C-1.35L"
+    return "Rotax-914-Turbo-115HP"
 
 
 def default_engine_config() -> EngineConfig:

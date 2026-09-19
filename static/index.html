@@ -4089,11 +4089,12 @@ function exportReportMarkdown() {
     return;
   }
   const tid = dlCurrentReport.trajectory_id || 'trajectory';
+  const mode = dlCurrentReport.report_mode || 'engineering';
   const blob = new Blob([dlCurrentReport.report_markdown], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `aeropulse_mission_report_${tid}_${Date.now()}.md`;
+  a.download = `AeroPulseX_Mission_Report_${tid}_${mode}.md`;
   a.click();
 }
 
@@ -4103,6 +4104,7 @@ function exportReportHTML() {
     return;
   }
   const tid = dlCurrentReport.trajectory_id || 'trajectory';
+  const mode = dlCurrentReport.report_mode || 'engineering';
   const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -4129,7 +4131,7 @@ ${dlCurrentReport.report_html}
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `aeropulse_mission_report_${tid}_${Date.now()}.html`;
+  a.download = `AeroPulseX_Mission_Report_${tid}_${mode}.html`;
   a.click();
 }
 
