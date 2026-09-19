@@ -21,6 +21,7 @@ from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional, Tuple
 
 from .environment import EnvironmentService, EnvironmentState, _DEFAULT_ENV_SERVICE
+from .uav_platform_config import UAVPlatformProfile, get_uav_profile
 
 
 @dataclass
@@ -88,6 +89,7 @@ class UAVPosition:
     operating_state: str
     environment: Optional[Dict[str, Any]] = None
     timestamp: str = ""
+    uav_id: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -265,6 +267,7 @@ class SimulatedGPSSource(GPSSource):
         ground_temp_c: float = 30.0,
         hot_weather_bias: float = 0.0,
         env_service: Optional[EnvironmentService] = None,
+        uav_profile: Optional[UAVPlatformProfile | str] = None,
     ):
         self.waypoints = [
             wp if isinstance(wp, MissionWaypoint) else MissionWaypoint.from_dict(wp)
@@ -276,9 +279,26 @@ class SimulatedGPSSource(GPSSource):
         self.ground_temp_c = float(ground_temp_c)
         self.hot_weather_bias = float(hot_weather_bias)
         self.env_service = env_service or _DEFAULT_ENV_SERVICE
+
+        if isinstance(uav_profile, str):
+            self.uav_profile: Optional[UAVPlatformProfile] = get_uav_profile(uav_profile)
+        elif isinstance(uav_profile, UAVPlatformProfile):
+            self.uav_profile = uav_profile
+        else:
+            self.uav_profile = None
         
         self._cumulative_distances_km = self._calc_cumulative_distances()
         self.total_distance_km = self._cumulative_distances_km[-1]
+        self.total_duration_min = self._calc_estimated_duration_min()
+
+    def set_uav_profile(self, profile: UAVPlatformProfile | str) -> None:
+        """Dynamically updates the active UAV platform profile and recalculates duration."""
+        if isinstance(profile, str):
+            p = get_uav_profile(profile)
+            if p:
+                self.uav_profile = p
+        elif isinstance(profile, UAVPlatformProfile):
+            self.uav_profile = profile
         self.total_duration_min = self._calc_estimated_duration_min()
 
     def _calc_cumulative_distances(self) -> List[float]:
@@ -292,11 +312,14 @@ class SimulatedGPSSource(GPSSource):
 
     def _calc_estimated_duration_min(self) -> float:
         total_time_min = 0.0
+        max_tas_limit = self.uav_profile.max_speed_kt if self.uav_profile else 185.0
         for i in range(len(self.waypoints) - 1):
             w1 = self.waypoints[i]
             w2 = self.waypoints[i + 1]
             dist_km = self.haversine_distance(w1.latitude, w1.longitude, w2.latitude, w2.longitude)
-            avg_tas = max(50.0, (w1.speed_kt + w2.speed_kt) / 2.0)
+            w1_spd = min(max_tas_limit, w1.speed_kt)
+            w2_spd = min(max_tas_limit, w2.speed_kt)
+            avg_tas = max(40.0, (w1_spd + w2_spd) / 2.0)
             
             # Approximate wind effect on leg duration
             leg_heading = self.calculate_heading(w1.latitude, w1.longitude, w2.latitude, w2.longitude)
@@ -406,9 +429,17 @@ class SimulatedGPSSource(GPSSource):
         turbulence = 0.015 * math.sin(progress_ratio * math.pi * 16.0)
         throttle = max(0.20, min(0.98, throttle + turbulence))
 
+        # Scale throttle and load demand for aircraft mass (MTOM) and throttle bounds
+        if self.uav_profile:
+            mtom_factor = (self.uav_profile.max_takeoff_mass_kg / 1000.0) ** 0.15
+            throttle = throttle * mtom_factor
+            throttle = max(self.uav_profile.throttle_range[0], min(self.uav_profile.throttle_range[1], throttle))
+
         # Load derived from throttle, density, and altitude resistance
         sigma = math.exp(-h / 30000.0)
         load = throttle * (1.05 - 0.12 * (1.0 - sigma))
+        if self.uav_profile:
+            load = load * mtom_factor
         load = max(0.20, min(1.15, load))
 
         return phase, op_state, round(throttle, 4), round(load, 4)
@@ -449,6 +480,10 @@ class SimulatedGPSSource(GPSSource):
         alt_end = w_end.altitude_ft
         curr_alt = alt_start + (alt_end - alt_start) * s_curve
 
+        # Enforce aircraft certified service ceiling
+        if self.uav_profile and self.uav_profile.service_ceiling_ft > 0:
+            curr_alt = min(curr_alt, self.uav_profile.service_ceiling_ft)
+
         # Override with context altitude only if explicitly requested by advanced manual overrides
         if context.get("manual_altitude_override") is True and "altitude_ft" in context:
             curr_alt = float(context["altitude_ft"])
@@ -465,9 +500,10 @@ class SimulatedGPSSource(GPSSource):
             manual_override=context if context.get("manual_override") else None,
         )
 
-        # Target True Airspeed (TAS)
+        # Target True Airspeed (TAS) bounded by platform flight envelope
         base_airspeed = w_start.speed_kt + (w_end.speed_kt - w_start.speed_kt) * u
-        airspeed_kt = round(max(55.0, min(185.0, base_airspeed)), 1)
+        max_speed = self.uav_profile.max_speed_kt if self.uav_profile else 185.0
+        airspeed_kt = round(max(35.0, min(max_speed, base_airspeed)), 1)
 
         # Dynamic Wind Effect: Ground Speed = True Airspeed - Headwind component
         # (If headwind > 0, ground speed drops; if tailwind < 0, ground speed increases)
@@ -528,10 +564,11 @@ class SimulatedGPSSource(GPSSource):
             auto_load=auto_ld,
             operating_state=op_state,
             environment=env.to_dict(),
+            uav_id=self.uav_profile.uav_id if self.uav_profile else "",
         )
 
     def get_flight_plan_summary(self) -> dict[str, Any]:
-        """Returns structured metadata and projected route risk for the flight plan."""
+        """Returns structured metadata, platform constraints, and projected route risk for the flight plan."""
         hours = int(self.total_duration_min // 60)
         mins = int(self.total_duration_min % 60)
         
@@ -554,6 +591,19 @@ class SimulatedGPSSource(GPSSource):
                 "end_coord": [w2.latitude, w2.longitude],
             })
 
+        platform_warnings: List[str] = []
+        if self.uav_profile:
+            max_plan_alt = max(wp.altitude_ft for wp in self.waypoints)
+            if max_plan_alt > self.uav_profile.service_ceiling_ft:
+                platform_warnings.append(
+                    f"Route max altitude ({int(max_plan_alt)} ft) exceeds {self.uav_profile.uav_name} service ceiling ({int(self.uav_profile.service_ceiling_ft)} ft)."
+                )
+            dur_h = self.total_duration_min / 60.0
+            if dur_h > self.uav_profile.endurance_hours:
+                platform_warnings.append(
+                    f"Estimated duration ({dur_h:.1f}h) exceeds {self.uav_profile.uav_name} maximum endurance ({self.uav_profile.endurance_hours:.1f}h)."
+                )
+
         return {
             "total_waypoints": len(self.waypoints),
             "total_distance_km": round(self.total_distance_km, 2),
@@ -566,6 +616,10 @@ class SimulatedGPSSource(GPSSource):
             "max_altitude_ft": max(wp.altitude_ft for wp in self.waypoints),
             "initial_ambient_c": self.ground_temp_c,
             "environment_source": "live_open_meteo_with_isa_fallback",
+            "uav_platform": self.uav_profile.to_dict() if self.uav_profile else None,
+            "platform_warnings": platform_warnings,
+            "glide_ratio": self.uav_profile.glide_ratio if self.uav_profile else None,
+            "glide_performance_available": (self.uav_profile.glide_ratio is not None) if self.uav_profile else False,
         }
 
 

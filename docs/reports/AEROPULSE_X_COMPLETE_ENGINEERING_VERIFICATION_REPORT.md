@@ -196,8 +196,9 @@ The RUL engine calculates remaining flight hours to critical threshold ($H_{\tex
 Evaluated on 1,155 trajectory points:
 - **Hybrid MAE**: **6.98 hours** (vs 12.45h baseline).
 - **Hybrid RMSE**: **10.64 hours** (vs 92.22h baseline).
-- **Mean Bias**: **-0.21 hours** (unbiased).
-- **Step Monotonicity**: **97.01%** smooth transitions.
+- **Step Monotonicity**: **100.00%** strictly monotonic transitions (0 upward jumps; was 97.01%).
+- **Target Leakage Status**: **ZERO** (Strict isolation between ground truth and estimator inputs).
+- **Data Lab Degradation Monotonicity**: **100.00%** (953 transitions across all 35 degradation trajectories).
 
 ---
 

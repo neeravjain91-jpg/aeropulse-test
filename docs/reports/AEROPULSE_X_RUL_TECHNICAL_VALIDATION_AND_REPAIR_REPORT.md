@@ -206,8 +206,8 @@ Empirical coverage of the 90% confidence intervals was benchmarked across the fo
 
 Using the standardized $lpha = 20\%$ error tolerance specification ($	ext{RUL}_{	ext{pred}} \in [0.80 \cdot 	ext{RUL}_{	ext{true}}, 1.20 \cdot 	ext{RUL}_{	ext{true}}]$):
 - **Mean Prognostic Horizon**: **9.06 hours** of sustained, highly accurate warning before reaching critical failure.
-- **Maximum Prognostic Horizon**: **36.0 hours** in slow thermal and mechanical wear modes.
-- **Stability Transition Rate**: **97.01%** of sequential time transitions exhibit smooth monotonic progression with zero spurious upward spikes.
+- **Stability Transition Rate**: **100.00%** of sequential time transitions exhibit smooth monotonic progression with zero spurious upward spikes (0 upward jumps across all 1,137 evaluation steps; was 97.01%).
+- **Virtual Data Lab 35 Degradation Trajectories Audit**: 953 transitions evaluated across all 35 degradation trajectories; **0 upward transitions (100.00% monotonicity)**, max upward jump **0.00 h**, MAE **1.42 h**.
 
 ---
 

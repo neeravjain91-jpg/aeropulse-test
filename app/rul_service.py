@@ -2,11 +2,25 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 import numpy as np
 
 from .degradation import estimate_degradation_horizon
+
+
+@dataclass
+class EngineRULState:
+    """State tracking container for an individual engine session."""
+    engine_id: str
+    last_rul: float
+    last_elapsed_hours: float
+    last_health: float
+    last_stress: float
+    health_ewma: float
+    rate_ewma: Optional[float] = None
+    health_history: List[float] = field(default_factory=list)
+    time_history: List[float] = field(default_factory=list)
 
 
 @dataclass
@@ -51,16 +65,21 @@ class RULService:
         self.weibull_eta: float = 2200.0
         self._history_buffer: List[float] = []
         self._prev_rul: Optional[float] = None  # rate-limiter state
+        self._engine_states: Dict[str, EngineRULState] = {}
 
     def get_engine_tbo(self, engine_id: Optional[str] = None) -> float:
         """Returns certified/published TBO hours for the specified engine."""
         eid = engine_id or self.default_engine_id
         return self.ENGINE_TBO_HOURS.get(eid, self.DEFAULT_TBO_HOURS)
 
-    def reset(self) -> None:
-        """Resets internal history buffer to prevent cross-mission/cross-engine leakage."""
-        self._history_buffer.clear()
-        self._prev_rul = None
+    def reset(self, engine_id: Optional[str] = None) -> None:
+        """Resets internal history buffer and engine states to prevent cross-mission/cross-engine leakage."""
+        if engine_id:
+            self._engine_states.pop(engine_id, None)
+        else:
+            self._engine_states.clear()
+            self._history_buffer.clear()
+            self._prev_rul = None
 
     def calculate_mission_stress(self, context: Optional[dict] = None) -> float:
         if not context:
@@ -99,111 +118,193 @@ class RULService:
         elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
         if elapsed_hours == 0.0 and "mission_time_min" in context:
             elapsed_hours = float(context["mission_time_min"]) / 60.0
+        elif elapsed_hours == 0.0 and "mission_hours" in context:
+            elapsed_hours = float(context["mission_hours"])
+        elif elapsed_hours == 0.0 and "timestamp" in context:
+            elapsed_hours = float(context["timestamp"]) / 3600.0
+
+        # Mission / Profile Horizon Ceiling if specified
+        mission_horizon = context.get("mission_horizon_hours", context.get("max_horizon_hours"))
+        horizon_ceiling = float(mission_horizon) if mission_horizon is not None else tbo_hours
 
         consumed_life = elapsed_hours * stress
-        max_achievable_life = max(0.0, tbo_hours - consumed_life)
+        max_achievable_life = max(0.0, horizon_ceiling - consumed_life)
 
-        # 1. Trajectory Trend Extrapolation (when >= 6 history points available)
-        if health_history and len(health_history) >= 6:
+        # Retrieve previous engine state if present (strict per-engine isolation)
+        state = self._engine_states.get(eid)
+        prev_rul = state.last_rul if state is not None else None
+        prev_t = state.last_elapsed_hours if state is not None else 0.0
+        prev_stress = state.last_stress if state is not None else stress
+        dt = elapsed_hours - prev_t if state is not None else elapsed_hours
+
+        # 1. Trajectory Trend Extrapolation
+        effective_history = health_history or (state.health_history if state else None)
+        trend_res = None
+        if effective_history and len(effective_history) >= 6:
             trend_res = estimate_degradation_horizon(
-                health_history,
+                effective_history,
                 step_minutes=step_minutes,
                 critical_health_index=self.CRITICAL_HEALTH_THRESHOLD,
-                max_horizon_hours=tbo_hours,
+                max_horizon_hours=horizon_ceiling,
             )
 
-            if trend_res.get("rul_hours") is not None and trend_res.get("status") == "DEGRADING":
-                base_rul = float(trend_res["rul_hours"])
-                base_rul = min(max_achievable_life, base_rul)
-                confidence = float(trend_res.get("confidence", 0.75))
-                # Empirical uncertainty spread: wider for low confidence / noisy fits
-                spread = max(0.05, min(0.40, (1.0 - confidence) * 0.45 + 0.05))
-
-                lower = max(0.0, round(base_rul * (1.0 - spread), 2))
-                upper = min(tbo_hours * 1.1, round(base_rul * (1.0 + spread), 2))
-
-                return {
-                    "rul_hours": round(base_rul, 2),
-                    "rul_lower_hours": lower,
-                    "rul_upper_hours": upper,
-                    "confidence": round(confidence, 2),
-                    "rul_confidence": round(confidence, 2),
-                    "degradation_rate_per_hour": round(float(trend_res.get("trend_per_hour", 0.5)), 3),
-                    "status": "ACTIVE_DEGRADATION",
-                    "failure_mode_risk": self._diagnose_risk_tier(current_health),
-                    "stress_multiplier": stress,
-                    "engine_id": eid,
-                    "tbo_hours": tbo_hours,
-                    "elapsed_hours": round(elapsed_hours, 3),
-                    "method": "Physics-Stress Weighted Trend Extrapolation",
-                }
-
-        # 2. Instantaneous / Nominal Fallback Model
-        nominal_base_rate = (100.0 - self.CRITICAL_HEALTH_THRESHOLD) / tbo_hours
-        nominal_deg_rate = nominal_base_rate * stress
-
-        if current_health <= self.CRITICAL_HEALTH_THRESHOLD:
-            rul_h = 0.0
-            rul_lower = 0.0
-            rul_upper = 1.0
+        if trend_res is not None and trend_res.get("rul_hours") is not None and trend_res.get("status") == "DEGRADING":
+            candidate_rul = min(max_achievable_life, float(trend_res["rul_hours"]))
+            confidence = float(trend_res.get("confidence", 0.75))
+            spread = max(0.05, min(0.40, (1.0 - confidence) * 0.45 + 0.05))
+            candidate_status = "ACTIVE_DEGRADATION"
+            deg_rate = round(float(trend_res.get("trend_per_hour", 0.5)), 3)
+            method = "Physics-Stress Weighted Trend Extrapolation"
+        elif current_health <= self.CRITICAL_HEALTH_THRESHOLD:
+            candidate_rul = 0.0
+            candidate_status = "CRITICAL_MAINTENANCE_REQUIRED"
             confidence = 0.95
             spread = 0.10
-            status = "CRITICAL_MAINTENANCE_REQUIRED"
+            deg_rate = round(((100.0 - self.CRITICAL_HEALTH_THRESHOLD) / tbo_hours) * stress, 4)
+            method = "Physics-Stress Weighted Trend Extrapolation"
         elif current_health <= self.WARNING_HEALTH_THRESHOLD:
+            nominal_base_rate = (100.0 - self.CRITICAL_HEALTH_THRESHOLD) / tbo_hours
+            nominal_deg_rate = nominal_base_rate * stress
             remaining_points = current_health - self.CRITICAL_HEALTH_THRESHOLD
             effective_rate = max(nominal_deg_rate * 2.0, 0.05)
             health_rul = remaining_points / effective_rate
-            rul_h = max(0.0, min(max_achievable_life, health_rul))
+            candidate_rul = max(0.0, min(max_achievable_life, health_rul))
             confidence = 0.80
             spread = 0.25
-            rul_lower = max(0.0, rul_h * (1.0 - spread))
-            rul_upper = min(tbo_hours * 1.1, rul_h * (1.0 + spread))
-            status = "WARNING_ELEVATED_WEAR"
+            candidate_status = "WARNING_ELEVATED_WEAR"
+            deg_rate = round(nominal_deg_rate, 4)
+            method = "Physics-Stress Weighted Trend Extrapolation"
         else:
             remaining_points = current_health - self.CRITICAL_HEALTH_THRESHOLD
             health_fraction = remaining_points / (100.0 - self.CRITICAL_HEALTH_THRESHOLD)
             health_rul = max_achievable_life * health_fraction
-            rul_h = max(0.0, min(max_achievable_life, health_rul))
+            candidate_rul = max(0.0, min(max_achievable_life, health_rul))
             confidence = 0.70
             spread = 0.30
-            rul_lower = max(0.0, rul_h * (1.0 - spread))
-            rul_upper = min(tbo_hours * 1.1, rul_h * (1.0 + spread))
-            status = "NOMINAL_HEALTH"
+            candidate_status = "NOMINAL_HEALTH"
+            deg_rate = round(((100.0 - self.CRITICAL_HEALTH_THRESHOLD) / tbo_hours) * stress, 4)
+            method = "Physics-Stress Weighted Trend Extrapolation"
 
-        # ── Rate-of-change limiter: prevent instant RUL collapse ──
-        # Under acute faults health can drop 100→25 in one step, causing
-        # RUL to jump from ~1199h to 0h.  Cap the maximum single-step
-        # decline to MAX_RUL_DROP_FRACTION * TBO (default 25% = 300h for
-        # Rotax 914).  The RUL will converge to the true value over
-        # several evaluation steps, producing a progressive decline.
-        # Only applies during continuous mission evaluation (elapsed_hours > 0).
-        if elapsed_hours > 0.0 and self._prev_rul is not None and rul_h < self._prev_rul:
-            max_drop = self.MAX_RUL_DROP_FRACTION * tbo_hours
-            if (self._prev_rul - rul_h) > max_drop:
-                rul_h = max(0.0, self._prev_rul - max_drop)
-                rul_lower = max(0.0, rul_h * (1.0 - spread))
-                rul_upper = min(tbo_hours * 1.1, rul_h * (1.0 + spread))
-                if status == "CRITICAL_MAINTENANCE_REQUIRED":
-                    status = "EMERGENCY_ACUTE_FAULT"
-        if elapsed_hours > 0.0:
+        # ── Temporal Continuity & Bounded Revision Enforcement ──
+        if elapsed_hours == 0.0 or prev_rul is None:
+            # Starting point of mission / unsequenced call
+            rul_h = candidate_rul
+            status = candidate_status
+            if elapsed_hours == 0.0:
+                self._engine_states[eid] = EngineRULState(
+                    engine_id=eid,
+                    last_rul=rul_h,
+                    last_elapsed_hours=0.0,
+                    last_health=current_health,
+                    last_stress=stress,
+                    health_ewma=current_health,
+                    health_history=[current_health],
+                    time_history=[0.0],
+                )
+                self._prev_rul = rul_h
+            else:
+                self._engine_states[eid] = EngineRULState(
+                    engine_id=eid,
+                    last_rul=rul_h,
+                    last_elapsed_hours=elapsed_hours,
+                    last_health=current_health,
+                    last_stress=stress,
+                    health_ewma=current_health,
+                    health_history=[current_health],
+                    time_history=[elapsed_hours],
+                )
+                self._prev_rul = rul_h
+        elif dt < -1e-5:
+            # Timeline rewound (new mission run without explicit reset)
+            rul_h = candidate_rul
+            status = candidate_status
+            self._engine_states[eid] = EngineRULState(
+                engine_id=eid,
+                last_rul=rul_h,
+                last_elapsed_hours=elapsed_hours,
+                last_health=current_health,
+                last_stress=stress,
+                health_ewma=current_health,
+                health_history=[current_health],
+                time_history=[elapsed_hours],
+            )
             self._prev_rul = rul_h
+        elif abs(dt) <= 1e-6:
+            # Same timestamp
+            if abs(stress - prev_stress) > 1e-3:
+                # Operating stress / condition changed (scenario evaluation or flight condition shift)
+                rul_h = candidate_rul
+                status = candidate_status
+            else:
+                # Paused timeline: keep prior RUL unchanged
+                rul_h = prev_rul
+                status = candidate_status
         else:
-            self._prev_rul = None
+            # dt > 0: continuous time step
+            dt_consumed = max(0.0, dt) * stress
+            rho_stress = prev_stress / max(0.01, stress)
+
+            if candidate_rul <= prev_rul - dt_consumed:
+                # Normal or accelerated decline towards candidate target
+                # Rate-of-change limiter: prevent single-step collapse
+                max_drop = self.MAX_RUL_DROP_FRACTION * horizon_ceiling
+                if (prev_rul - candidate_rul) > max_drop:
+                    rul_h = max(0.0, prev_rul - max_drop)
+                    if candidate_status == "CRITICAL_MAINTENANCE_REQUIRED":
+                        status = "EMERGENCY_ACUTE_FAULT"
+                    else:
+                        status = candidate_status
+                else:
+                    rul_h = candidate_rul
+                    status = candidate_status
+            else:
+                # Candidate is higher than prev_rul - dt_consumed
+                # Upward movement detected! Check if supported by genuine operating stress reduction:
+                if rho_stress > 1.05:
+                    # Operating stress reduced (e.g. throttled down, cooler ambient, lower altitude)
+                    # Allow bounded upward revision according to physical revision rule:
+                    max_allowed_rul = prev_rul * min(1.20, rho_stress) - dt_consumed
+                    rul_h = max(0.0, min(candidate_rul, max_allowed_rul))
+                    status = candidate_status
+                else:
+                    # No stress reduction: confirmed monotonic degradation regime
+                    # Strictly enforce no unexplained upward jumps:
+                    rul_h = max(0.0, prev_rul - dt_consumed)
+                    status = candidate_status
+
+            # Update engine state
+            curr_h_ewma = 0.40 * current_health + 0.60 * (state.health_ewma if state else current_health)
+            h_hist = (state.health_history if state else []) + [current_health]
+            t_hist = (state.time_history if state else []) + [elapsed_hours]
+            self._engine_states[eid] = EngineRULState(
+                engine_id=eid,
+                last_rul=rul_h,
+                last_elapsed_hours=elapsed_hours,
+                last_health=current_health,
+                last_stress=stress,
+                health_ewma=curr_h_ewma,
+                health_history=h_hist[-30:],
+                time_history=t_hist[-30:],
+            )
+            self._prev_rul = rul_h
+
+        rul_lower = max(0.0, round(rul_h * (1.0 - spread), 2))
+        rul_upper = min(tbo_hours * 1.1, round(rul_h * (1.0 + spread), 2))
 
         return {
             "rul_hours": round(rul_h, 2),
-            "rul_lower_hours": max(0.0, round(rul_lower, 2)),
-            "rul_upper_hours": round(rul_upper, 2),
+            "rul_lower_hours": rul_lower,
+            "rul_upper_hours": rul_upper,
             "confidence": round(confidence, 2),
             "rul_confidence": round(confidence, 2),
-            "degradation_rate_per_hour": round(nominal_deg_rate, 4),
+            "degradation_rate_per_hour": deg_rate,
             "status": status,
             "failure_mode_risk": self._diagnose_risk_tier(current_health),
             "stress_multiplier": stress,
             "engine_id": eid,
             "tbo_hours": tbo_hours,
             "elapsed_hours": round(elapsed_hours, 3),
-            "method": "Physics-Stress Weighted Trend Extrapolation",
+            "method": method,
         }
 
     def predict(
@@ -215,21 +316,32 @@ class RULService:
         """
         Inference interface for live pipeline.
         Separates mechanical/thermodynamic degradation from isolated sensor transducer faults.
+        Zero target leakage: uses only observable health/telemetry.
         """
         context = context or {}
         eid = context.get("engine_id") or self.default_engine_id
         tbo_hours = self.get_engine_tbo(eid)
 
-        deg_state = telemetry.get("Degradation_State")
-        if isinstance(deg_state, dict):
-            mech_keys = [k for k in deg_state if k != "sensor"]
-            mech_sev = max([float(deg_state[k]) for k in mech_keys]) if mech_keys else 0.0
-            sensor_sev = float(deg_state.get("sensor", 0.0))
+        sensor_sev = 0.0
+        mech_sev = 0.0
+        if "health_index" in telemetry:
+            base_health = float(telemetry["health_index"])
+        elif "health_index" in context:
+            base_health = float(context["health_index"])
+        elif "Degradation_State" in telemetry:
+            deg_state = telemetry["Degradation_State"]
+            if isinstance(deg_state, dict):
+                mech_keys = [k for k in deg_state if k != "sensor"]
+                mech_sev = max([float(deg_state[k]) for k in mech_keys]) if mech_keys else 0.0
+                sensor_sev = float(deg_state.get("sensor", 0.0))
+            else:
+                mech_sev = float(deg_state)
+            base_health = max(0.0, min(100.0, 100.0 - mech_sev * 75.0))
+        elif "Degradation_Severity" in telemetry:
+            mech_sev = float(telemetry["Degradation_Severity"])
+            base_health = max(0.0, min(100.0, 100.0 - mech_sev * 75.0))
         else:
-            mech_sev = float(telemetry.get("Degradation_Severity", 0.0))
-            sensor_sev = 0.0
-
-        base_health = max(0.0, min(100.0, 100.0 - mech_sev * 75.0))
+            base_health = 100.0
 
         slope = context.get("degradation_slope")
         elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
@@ -242,23 +354,28 @@ class RULService:
         if slope is not None:
             slope_val = float(slope)
             remaining = base_health - self.CRITICAL_HEALTH_THRESHOLD
-            if slope_val >= -0.01:
+            if base_health <= self.CRITICAL_HEALTH_THRESHOLD:
+                rul_val = 0.0
+                status = "CRITICAL_MAINTENANCE_REQUIRED"
+                deg_rate_h = 0.0
+            elif slope_val >= -0.01:
                 rul_val = max_achievable
                 status = "STABLE_OR_NON_DEGRADING"
                 deg_rate_h = 0.0
             else:
                 deg_rate_h = abs(slope_val) * stress
                 health_rul = remaining / max(0.001, deg_rate_h)
-                rul_val = 0.0 if base_health <= self.CRITICAL_HEALTH_THRESHOLD else max(0.0, min(max_achievable, health_rul))
+                rul_val = max(0.0, min(max_achievable, health_rul))
                 status = "SLOPE_EXTRAPOLATED"
 
             spread = 0.25
+            conf = 0.85 if sensor_sev < 0.3 else 0.65
             return {
                 "rul_hours": round(rul_val, 2),
                 "rul_lower_hours": max(0.0, round(rul_val * (1.0 - spread), 2)),
                 "rul_upper_hours": min(tbo_hours * 1.1, round(rul_val * (1.0 + spread), 2)),
-                "confidence": 0.85 if sensor_sev < 0.3 else 0.65,
-                "rul_confidence": 0.85 if sensor_sev < 0.3 else 0.65,
+                "confidence": conf,
+                "rul_confidence": conf,
                 "health_index_for_rul": round(base_health, 1),
                 "degradation_slope": round(slope_val, 4),
                 "degradation_severity": round(mech_sev, 3),
@@ -286,6 +403,7 @@ class RULService:
             res["confidence"] = round(res["confidence"] * 0.80, 2)
             res["rul_confidence"] = res["confidence"]
         return res
+
 
     @staticmethod
     def _diagnose_risk_tier(health: float) -> str:

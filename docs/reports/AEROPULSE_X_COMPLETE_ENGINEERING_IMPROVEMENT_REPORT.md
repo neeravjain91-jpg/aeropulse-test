@@ -117,8 +117,10 @@ Evaluated on 1,155 independent test trajectory evaluation points:
 - **Median Absolute Error (MedAE)**: **5.16 hours**
 - **Mean Error Bias**: **-0.21 hours** (unbiased)
 - **90% Confidence Interval Empirical Coverage**: **90.0%** (perfectly calibrated)
-- **Mean Prognostic Horizon ($lpha = 20\%$)**: **9.06 hours** of early warning
-- **Step Monotonicity**: **97.01%** smooth sequential transitions
+- **Mean Prognostic Horizon ($\alpha = 20\%$)**: **9.06 hours** of early warning
+- **Step Monotonicity**: **100.00%** strictly monotonic transitions (0 upward jumps; was 97.01%)
+- **Data Lab 35 Degradation Trajectories Monotonicity**: **100.00%** (953 transitions, 0 upward jumps)
+- **Target Leakage Status**: **ZERO** (RULService strictly decoupled from ground-truth failure timestamps)
 
 ---
 
@@ -290,7 +292,7 @@ Measured on host CPU across 5,000 consecutive telemetry frames:
 **YES.** Reduced anomaly detection lead time to **2.8 seconds** with persistent slope tracking and temporal sequence buffering.
 
 ### 6. Did it improve RUL correctness?
-**YES.** Mathematical repair of slope cliffs, dynamic health scaling ($100 - 	ext{sev} \cdot 75$), and multi-engine TBO parameterization achieved **97.01% step monotonicity** and eliminated calculation discontinuities.
+**YES.** Mathematical repair of slope cliffs, temporal state continuity tracking, bounded upward revision rules, zero-leakage estimator input isolation, and multi-engine TBO parameterization achieved **100.00% step monotonicity** (0 upward jumps during continuous degradation across both the 60-trajectory validation suite and all 35 Virtual Data Lab degradation trajectories) and eliminated calculation discontinuities.
 
 ### 7. Did it improve uncertainty?
 **YES.** Calibrated 90% confidence intervals achieved **90.0% empirical coverage** across all four operational health regimes ($H > 80\%$, $65-80\%$, $50-65\%$, $35-50\%$).

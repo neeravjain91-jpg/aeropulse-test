@@ -34,6 +34,7 @@ from .virtual_watchdog import VirtualWatchdog
 from .virtual_flight_computer import VirtualFlightComputer
 from .virtual_fadec import VirtualFADEC
 from .edge import UAVEdgeNode
+from .rul_service import RULService
 
 
 FAILURE_HEALTH_THRESHOLD: float = 35.0
@@ -307,6 +308,7 @@ class VirtualDataLabEngine:
         dtc_active: List[str] = []
         fadec_state = "NOMINAL"
         derate_cmd = 1.0
+        rul_service = RULService()
 
         while sim_h <= min(duration_hours, failure_time_h + 1.0):
             if sim_h <= t_onset:
@@ -382,10 +384,23 @@ class VirtualDataLabEngine:
             bus_v = 28.0 - (6.5 * sev if failure_mode == "electrical" else rng.uniform(0.0, 0.3))
             soc = max(15.0, 98.0 - (45.0 * sev if failure_mode == "electrical" else sim_h * 0.5))
 
-            pred_rul = max(0.0, round(true_rul + rng.gauss(0.0, max(0.8, 0.15 * true_rul)), 2))
-            half_width = max(1.5, 0.40 * pred_rul + 1.2)
-            rul_low = max(0.0, round(pred_rul - half_width, 2))
-            rul_high = round(pred_rul + half_width, 2)
+            # Predict RUL using observable telemetry/health only (Zero target leakage)
+            rul_res = rul_service.estimate_rul(
+                health_index=round(h, 1),
+                context={
+                    "elapsed_hours": sim_h,
+                    "altitude_ft": altitude_ft,
+                    "ambient_c": ambient_c,
+                    "throttle": throttle * derate_cmd,
+                    "engine_id": "AeroPiston-4C-1.35L",
+                    "mission_horizon_hours": 14.0,
+                },
+                step_minutes=time_step_hours * 60.0,
+            )
+            pred_rul = rul_res["rul_hours"]
+            rul_low = rul_res["rul_lower_hours"]
+            rul_high = rul_res["rul_upper_hours"]
+            rul_conf = round(rul_res["rul_confidence"] * 100.0 if rul_res["rul_confidence"] <= 1.0 else rul_res["rul_confidence"], 1)
 
             pt = CanonicalTelemetryPoint(
                 timestamp=round(sim_h * 3600.0, 2),
@@ -432,7 +447,7 @@ class VirtualDataLabEngine:
                 predicted_RUL=pred_rul,
                 RUL_lower=rul_low,
                 RUL_upper=rul_high,
-                RUL_confidence=round(max(60.0, 95.0 - 15.0 * (1.0 - h / 100.0)), 1),
+                RUL_confidence=rul_conf,
                 ECU_state="DERATED" if derate_cmd < 1.0 else "ACTIVE_RUN",
                 FADEC_state=fadec_state,
                 DTC=dtc_active,

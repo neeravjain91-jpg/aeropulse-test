@@ -9,6 +9,7 @@ from .engine_model import EngineInputs, ReducedOrderPistonEngine
 from .mission_whatif import MissionScenario
 from .rul_service import RULService
 from .simulator import mission_adjust
+from .uav_platform_config import UAVPlatformProfile, get_uav_profile
 
 
 class MissionWhatIfRUL:
@@ -29,8 +30,14 @@ class MissionWhatIfRUL:
         self.engine = ReducedOrderPistonEngine()
         self.rul_service = RULService()
 
-    def run(self, telemetry: dict, scenario: MissionScenario) -> dict[str, Any]:
+    def run(
+        self,
+        telemetry: dict,
+        scenario: MissionScenario,
+        uav_profile: Optional[UAVPlatformProfile | str] = None,
+    ) -> dict[str, Any]:
         """Runs a single scenario simulation with degradation kinetics and RUL."""
+        profile = get_uav_profile(uav_profile) if isinstance(uav_profile, str) else uav_profile
         sim_telemetry = mission_adjust(
             telemetry,
             altitude_ft=scenario.altitude_ft,
@@ -44,6 +51,9 @@ class MissionWhatIfRUL:
         rul_res = self.rul_service.predict(sim_telemetry, scenario.to_dict())
         cht = float(sim_telemetry.get("CHT", 145.0))
         fuel_flow = float(sim_telemetry.get("Fuel_Flow", 30.0))
+        if profile:
+            mtom_factor = 0.65 + 0.35 * (profile.max_takeoff_mass_kg / 1000.0)
+            fuel_flow *= mtom_factor
         total_fuel = round(fuel_flow * scenario.duration_h, 2)
 
         return {
@@ -55,10 +65,17 @@ class MissionWhatIfRUL:
             "degradation_severity": round(deg_sev, 3),
             "health_index": round(health_index, 1),
             "rul": rul_res,
+            "uav_platform": profile.to_dict() if profile else None,
         }
 
-    def evaluate_scenario(self, base_telemetry: dict, scenario: MissionScenario) -> dict[str, Any]:
+    def evaluate_scenario(
+        self,
+        base_telemetry: dict,
+        scenario: MissionScenario,
+        uav_profile: Optional[UAVPlatformProfile | str] = None,
+    ) -> dict[str, Any]:
         """Evaluates engine response and projected health/RUL under a single mission scenario."""
+        profile = get_uav_profile(uav_profile) if isinstance(uav_profile, str) else uav_profile
         sim_telemetry = mission_adjust(
             base_telemetry,
             altitude_ft=scenario.altitude_ft,
@@ -96,7 +113,26 @@ class MissionWhatIfRUL:
         )
 
         fuel_rate_l_h = float(sim_telemetry.get("Fuel_Flow", 20.0))
+        if profile:
+            mtom_factor = 0.65 + 0.35 * (profile.max_takeoff_mass_kg / 1000.0)
+            fuel_rate_l_h *= mtom_factor
+
         total_mission_fuel_l = fuel_rate_l_h * scenario.duration_h
+
+        platform_warnings: list[str] = []
+        if profile:
+            if scenario.altitude_ft > profile.service_ceiling_ft:
+                platform_warnings.append(
+                    f"Scenario altitude ({int(scenario.altitude_ft)} ft) exceeds {profile.uav_name} service ceiling ({int(profile.service_ceiling_ft)} ft)."
+                )
+            if scenario.duration_h > profile.endurance_hours:
+                platform_warnings.append(
+                    f"Scenario duration ({scenario.duration_h:.1f}h) exceeds {profile.uav_name} maximum endurance ({profile.endurance_hours:.1f}h)."
+                )
+            if profile.fuel_capacity_l and total_mission_fuel_l > profile.fuel_capacity_l:
+                platform_warnings.append(
+                    f"Scenario fuel burn ({total_mission_fuel_l:.1f} L) exceeds {profile.uav_name} fuel capacity ({profile.fuel_capacity_l:.1f} L)."
+                )
 
         return {
             "scenario": scenario.to_dict(),
@@ -119,6 +155,8 @@ class MissionWhatIfRUL:
             "indicated_power_kw": phys_state.indicated_power_kw,
             "brake_power_kw": phys_state.brake_power_kw,
             "volumetric_efficiency": phys_state.volumetric_efficiency,
+            "uav_platform": profile.to_dict() if profile else None,
+            "platform_warnings": platform_warnings,
         }
 
     def compare(
@@ -126,10 +164,12 @@ class MissionWhatIfRUL:
         telemetry: dict,
         baseline: MissionScenario,
         alternative: MissionScenario,
+        uav_profile: Optional[UAVPlatformProfile | str] = None,
     ) -> dict[str, Any]:
-        """Compares baseline vs alternative mission scenarios."""
-        base_res = self.run(telemetry, baseline)
-        alt_res = self.run(telemetry, alternative)
+        """Compares baseline vs alternative mission scenarios with optional UAV platform constraints."""
+        profile = get_uav_profile(uav_profile) if isinstance(uav_profile, str) else uav_profile
+        base_res = self.run(telemetry, baseline, profile)
+        alt_res = self.run(telemetry, alternative, profile)
 
         rul_delta = round(alt_res["rul"]["rul_hours"] - base_res["rul"]["rul_hours"], 2)
         health_delta = round(alt_res["health_index"] - base_res["health_index"], 2)
@@ -142,8 +182,8 @@ class MissionWhatIfRUL:
             "cht": round(alt_res["cht"] - base_res["cht"], 1),
         }
 
-        base_eval = self.evaluate_scenario(telemetry, baseline)
-        alt_eval = self.evaluate_scenario(telemetry, alternative)
+        base_eval = self.evaluate_scenario(telemetry, baseline, profile)
+        alt_eval = self.evaluate_scenario(telemetry, alternative, profile)
         fuel_diff = round(alt_eval["total_fuel_burn_l"] - base_eval["total_fuel_burn_l"], 1)
         fuel_pct = round(100.0 * fuel_diff / max(1.0, base_eval["total_fuel_burn_l"]), 2)
 
@@ -151,6 +191,8 @@ class MissionWhatIfRUL:
             "baseline": base_res,
             "alternative": alt_res,
             "impact": impact,
+            "uav_platform": profile.to_dict() if profile else None,
+            "platform_warnings": alt_eval.get("platform_warnings", []),
             "comparison": {
                 "rul_delta_hours": rul_delta,
                 "fuel_delta_liters": fuel_diff,

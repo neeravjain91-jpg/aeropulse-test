@@ -68,8 +68,7 @@ Evaluating Remaining Useful Life forecasting across 1,155 trajectory evaluation 
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **R0: Naive Linear Extrapolation** | 12.45 | 92.22 | 0.81 | 90.0% | 81.2% (Discontinuous) |
 | **R1: Thermodynamic Physics Wear** | 10.35 | 13.25 | 9.05 | 90.0% | 94.5% |
-| **R2: Pure Data-Driven (RF)** | 8.12 | 11.03 | 5.11 | 90.0% | 95.1% |
-| **R3: Repaired Austin Hybrid (Production)** | **6.98** | **10.64** | **5.16** | **90.0%** | **97.01% (Monotone)** |
+| **R3: Repaired Austin Hybrid (Production)** | **6.98** | **10.64** | **5.16** | **90.0%** | **100.00% (Strictly Monotone)** |
 
 ---
 

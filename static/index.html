@@ -575,111 +575,230 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
             <button class="success" onclick="generateDataLabTrajectoryUI()">▶ Generate Trajectory</button>
             <button class="secondary" id="btnReplayDataLab" onclick="startDataLabReplayUI()">⟳ Replay Closed-Loop SIL</button>
             <button class="secondary" onclick="exportDataLabJSON()">📊 Export Canonical JSON</button>
+            <button class="secondary" style="background:#112415; border-color:#204a28; color:#95db9f;" onclick="generateMissionReportUI()">📄 Generate AI Mission Report</button>
             <span id="dlGenNotice" style="font-size:11px; color:#7a8c7b; margin-left:8px;">Ready to generate or replay.</span>
           </div>
         </div>
 
-        <!-- 3. VISUAL CAUSAL FLOW CHAIN -->
-        <div class="card" style="margin-bottom:8px; border-color:#1c2e1f;">
-          <h2 style="font-size:12px; color:#5eb574; margin-bottom:6px;">
-            <span>⚡</span> PHYSICAL-TO-AVIONICS VISUAL CAUSAL CHAIN (LIVE SIMULATION STATE)
-          </h2>
-          <div style="display:flex; gap:4px; overflow-x:auto; padding:4px 0;" id="causalChainContainer">
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode1">
-              <div class="s-name">1. Fault Onset</div>
-              <div class="s-score" style="font-size:11px; color:#e2ece2;" id="ccVal1">Thermal</div>
-              <div class="pill good" style="font-size:9px;" id="ccPill1">Cooling Deficit</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode2">
-              <div class="s-name">2. Physics</div>
-              <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal2">CHT ↑ 138°C</div>
-              <div class="pill warn" style="font-size:9px;" id="ccPill2">Heat Accumulation</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode3">
-              <div class="s-name">3. Sensor Array</div>
-              <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal3">Trust 96.5%</div>
-              <div class="pill good" style="font-size:9px;" id="ccPill3">Transducer Valid</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode4">
-              <div class="s-name">4. CAN Bus</div>
-              <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal4">CRC VALID</div>
-              <div class="pill good" style="font-size:9px;" id="ccPill4">0x100..0x104</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode5">
-              <div class="s-name">5. Twin Residual</div>
-              <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal5">ΔCHT +24°C</div>
-              <div class="pill warn" style="font-size:9px;" id="ccPill5">Anomaly Trig</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode6">
-              <div class="s-name">6. Diagnosis</div>
-              <div class="s-score" style="font-size:11px; color:#c94c48;" id="ccVal6">OVERHEATING</div>
-              <div class="pill bad" style="font-size:9px;" id="ccPill6">Confidence 94%</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode7">
-              <div class="s-name">7. Health (H)</div>
-              <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal7">H = 58.2</div>
-              <div class="pill warn" style="font-size:9px;" id="ccPill7">Moderate Wear</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode8">
-              <div class="s-name">8. RUL Forecast</div>
-              <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal8">14.2 h (True: 13.8)</div>
-              <div class="pill good" style="font-size:9px;" id="ccPill8">90% CI: [10, 18]</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode9">
-              <div class="s-name">9. FADEC Derate</div>
-              <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal9">DERATE 80%</div>
-              <div class="pill warn" style="font-size:9px;" id="ccPill9">Throttle Cap</div>
-            </div>
-            <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
-            <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode10">
-              <div class="s-name">10. Mission Impact</div>
-              <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal10">RTB SAFE</div>
-              <div class="pill good" style="font-size:9px;" id="ccPill10">Endurance Ok</div>
-            </div>
+        <!-- VIEW MODE SELECTOR: ANALYTICS / RAW DATA / AI MISSION REPORT -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin: 8px 0; background:#070d08; border:1px solid #142016; border-radius:6px; padding:6px 10px;">
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span style="font-size:10px; font-weight:700; color:#7a8c7b; text-transform:uppercase; letter-spacing:0.06em;">View Mode:</span>
+            <button id="btnViewAnalytics" class="map-btn active" onclick="switchDataLabView('analytics')">📊 ANALYTICS &amp; CAUSAL</button>
+            <button id="btnViewRawData" class="map-btn" onclick="switchDataLabView('raw')">📋 RAW DATA TABLE</button>
+            <button id="btnViewReport" class="map-btn" onclick="switchDataLabView('report')">🧠 AI MISSION REPORT</button>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <label style="font-size:10px; color:#7a8c7b; margin:0;">Report Mode:</label>
+            <select id="dlReportModeSelect" style="width:auto; padding:2px 8px; font-size:10px; margin:0;">
+              <option value="engineering" selected>Engineering (Detailed - 17 Sections)</option>
+              <option value="executive">Executive (Summary - 11 Sections)</option>
+            </select>
+            <button class="map-btn" style="background:linear-gradient(90deg,#194523,#256635); border-color:#358a49; color:#e2ece2; font-weight:700; width:auto; padding:3px 10px;" onclick="generateMissionReportUI()">📄 Generate Report</button>
           </div>
         </div>
 
-        <!-- 4. SIDE-BY-SIDE TELEMETRY & GROUND TRUTH PROGNOSTIC TABLE -->
-        <div class="grid two" style="margin-bottom:8px;">
-          <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <h2 style="font-size:13px; color:#5eb574; margin:0;">Ground Truth vs Model Prognostics</h2>
-              <span class="pill good" id="dlReplayProgress">Step: 0 / 0</span>
+        <!-- VIEW 1: ANALYTICS & CAUSAL CHAIN -->
+        <div id="dlViewAnalytics">
+          <!-- 3. VISUAL CAUSAL FLOW CHAIN -->
+          <div class="card" style="margin-bottom:8px; border-color:#1c2e1f;">
+            <h2 style="font-size:12px; color:#5eb574; margin-bottom:6px;">
+              <span>⚡</span> PHYSICAL-TO-AVIONICS VISUAL CAUSAL CHAIN (LIVE SIMULATION STATE)
+            </h2>
+            <div style="display:flex; gap:4px; overflow-x:auto; padding:4px 0;" id="causalChainContainer">
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode1">
+                <div class="s-name">1. Fault Onset</div>
+                <div class="s-score" style="font-size:11px; color:#e2ece2;" id="ccVal1">Thermal</div>
+                <div class="pill good" style="font-size:9px;" id="ccPill1">Cooling Deficit</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode2">
+                <div class="s-name">2. Physics</div>
+                <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal2">CHT ↑ 138°C</div>
+                <div class="pill warn" style="font-size:9px;" id="ccPill2">Heat Accumulation</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode3">
+                <div class="s-name">3. Sensor Array</div>
+                <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal3">Trust 96.5%</div>
+                <div class="pill good" style="font-size:9px;" id="ccPill3">Transducer Valid</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode4">
+                <div class="s-name">4. CAN Bus</div>
+                <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal4">CRC VALID</div>
+                <div class="pill good" style="font-size:9px;" id="ccPill4">0x100..0x104</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode5">
+                <div class="s-name">5. Twin Residual</div>
+                <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal5">ΔCHT +24°C</div>
+                <div class="pill warn" style="font-size:9px;" id="ccPill5">Anomaly Trig</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode6">
+                <div class="s-name">6. Diagnosis</div>
+                <div class="s-score" style="font-size:11px; color:#c94c48;" id="ccVal6">OVERHEATING</div>
+                <div class="pill bad" style="font-size:9px;" id="ccPill6">Confidence 94%</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode7">
+                <div class="s-name">7. Health (H)</div>
+                <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal7">H = 58.2</div>
+                <div class="pill warn" style="font-size:9px;" id="ccPill7">Moderate Wear</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode8">
+                <div class="s-name">8. RUL Forecast</div>
+                <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal8">14.2 h (True: 13.8)</div>
+                <div class="pill good" style="font-size:9px;" id="ccPill8">90% CI: [10, 18]</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode9">
+                <div class="s-name">9. FADEC Derate</div>
+                <div class="s-score" style="font-size:11px; color:#c9983e;" id="ccVal9">DERATE 80%</div>
+                <div class="pill warn" style="font-size:9px;" id="ccPill9">Throttle Cap</div>
+              </div>
+              <div style="color:#2c4530; align-self:center; font-weight:bold;">→</div>
+              <div class="subsystem-card" style="flex:1; min-width:90px;" id="ccNode10">
+                <div class="s-name">10. Mission Impact</div>
+                <div class="s-score" style="font-size:11px; color:#5eb574;" id="ccVal10">RTB SAFE</div>
+                <div class="pill good" style="font-size:9px;" id="ccPill10">Endurance Ok</div>
+              </div>
             </div>
-            <div class="scroll" style="max-height:220px;">
-              <table class="tbl" id="dlPrognosticsTable">
+          </div>
+
+          <!-- 4. SIDE-BY-SIDE TELEMETRY & GROUND TRUTH PROGNOSTIC TABLE -->
+          <div class="grid two" style="margin-bottom:8px;">
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h2 style="font-size:13px; color:#5eb574; margin:0;">Ground Truth vs Model Prognostics</h2>
+                <span class="pill good" id="dlReplayProgress">Step: 0 / 0</span>
+              </div>
+              <div class="scroll" style="max-height:220px;">
+                <table class="tbl" id="dlPrognosticsTable">
+                  <thead>
+                    <tr>
+                      <th>Time (h)</th>
+                      <th>Health</th>
+                      <th>True RUL</th>
+                      <th>Pred RUL</th>
+                      <th>90% CI Bound</th>
+                      <th>FADEC Mode</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dlPrognosticsTableBody">
+                    <tr><td colspan="6" style="text-align:center; color:#7a8c7b;">No trajectory loaded. Click Generate or Replay.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h2 style="font-size:13px; color:#5eb574; margin:0;">Quality Audit & Dataset Metadata</h2>
+                <span class="pill good" id="dlQualityBadge">● AUDIT READY</span>
+              </div>
+              <div class="scroll" style="max-height:220px; font-size:10.5px;" id="dlAuditBox">
+                <div style="color:#7a8c7b; padding:10px 0;">Click 'Audit Data Quality' to run an automated audit across all trajectories.</div>
+              </div>
+            </div>
+          </div>
+        </div> <!-- End dlViewAnalytics -->
+
+        <!-- VIEW 2: RAW DATA TABLE -->
+        <div id="dlViewRawData" style="display:none;">
+          <div class="card" style="margin-bottom:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <h2 style="font-size:13px; color:#5eb574; margin:0;">Complete Canonical Telemetry Data Stream (v2.0 Schema)</h2>
+              <div style="display:flex; gap:6px;">
+                <button class="map-btn" onclick="exportDataLabJSON()" style="width:auto;">Export JSON</button>
+              </div>
+            </div>
+            <div class="scroll" style="max-height:480px;">
+              <table class="tbl" id="dlRawFullTable">
                 <thead>
                   <tr>
-                    <th>Time (h)</th>
+                    <th>Time (s)</th>
+                    <th>Phase</th>
+                    <th>RPM</th>
+                    <th>Throttle</th>
+                    <th>CHT (°C)</th>
+                    <th>Oil Press (psi)</th>
+                    <th>Vibration (g)</th>
                     <th>Health</th>
-                    <th>True RUL</th>
-                    <th>Pred RUL</th>
-                    <th>90% CI Bound</th>
-                    <th>FADEC Mode</th>
+                    <th>Pred RUL (h)</th>
+                    <th>True RUL (h)</th>
+                    <th>FADEC</th>
+                    <th>Safety</th>
                   </tr>
                 </thead>
-                <tbody id="dlPrognosticsTableBody">
-                  <tr><td colspan="6" style="text-align:center; color:#7a8c7b;">No trajectory loaded. Click Generate or Replay.</td></tr>
+                <tbody id="dlRawFullTableBody">
+                  <tr><td colspan="12" style="text-align:center; color:#7a8c7b;">No trajectory loaded. Click Generate Trajectory first.</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
+        </div>
 
-          <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <h2 style="font-size:13px; color:#5eb574; margin:0;">Quality Audit & Dataset Metadata</h2>
-              <span class="pill good" id="dlQualityBadge">● AUDIT READY</span>
+        <!-- VIEW 3: AI MISSION REPORT -->
+        <div id="dlViewReport" style="display:none;">
+          <!-- REPORT HEADER & EXPORT ACTIONS -->
+          <div class="card" style="margin-bottom:8px; border-color:#1c2e1f;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div>
+                <div style="font-size:13.5px; font-weight:800; color:#e8f0e8; letter-spacing:0.02em;">
+                  🧠 AEROPULSE-X MISSION INTELLIGENCE REPORT
+                </div>
+                <div style="display:flex; gap:6px; margin-top:4px; align-items:center; flex-wrap:wrap;">
+                  <span class="pill good" id="dlReportGeneratorBadge">● DETERMINISTIC FALLBACK REPORT</span>
+                  <span class="pill warn" id="dlReportProvenanceBadge">● SYNTHETIC GROUND TRUTH</span>
+                  <span class="pill info" id="dlReportModeBadge">ENGINEERING</span>
+                </div>
+              </div>
+              <div style="display:flex; gap:6px; align-items:center;">
+                <button class="map-btn" onclick="exportReportMarkdown()" style="background:#102213; border-color:#1e4225; color:#95db9f; width:auto;">⬇ Export Markdown (.md)</button>
+                <button class="map-btn" onclick="exportReportHTML()" style="background:#143018; border-color:#266133; color:#e2ece2; width:auto;">⬇ Export HTML (.html)</button>
+              </div>
             </div>
-            <div class="scroll" style="max-height:220px; font-size:10.5px;" id="dlAuditBox">
-              <div style="color:#7a8c7b; padding:10px 0;">Click 'Audit Data Quality' to run an automated audit across all trajectories.</div>
+
+            <!-- TOP-LEVEL KPI RIBBON (10 KPIs) -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(125px,1fr)); gap:6px; margin-top:10px; background:#060a06; border:1px solid #142016; border-radius:6px; padding:8px 10px;">
+              <div class="auto-item"><span class="auto-label">Mission Status</span><span class="auto-val info" id="kpiReportMissionStatus">—</span></div>
+              <div class="auto-item"><span class="auto-label">Engine Status</span><span class="auto-val good" id="kpiReportEngineStatus">—</span></div>
+              <div class="auto-item"><span class="auto-label">Primary Event</span><span class="auto-val warn" id="kpiReportPrimaryEvent">—</span></div>
+              <div class="auto-item"><span class="auto-label">Current Health</span><span class="auto-val" id="kpiReportCurrentHealth">—</span></div>
+              <div class="auto-item"><span class="auto-label">Current RUL</span><span class="auto-val good" id="kpiReportCurrentRUL">—</span></div>
+              <div class="auto-item"><span class="auto-label">RUL Confidence</span><span class="auto-val info" id="kpiReportConfidence">—</span></div>
+              <div class="auto-item"><span class="auto-label">System Risk</span><span class="auto-val warn" id="kpiReportRisk">—</span></div>
+              <div class="auto-item"><span class="auto-label">Safety Action</span><span class="auto-val bad" id="kpiReportSafetyAction">—</span></div>
+              <div class="auto-item"><span class="auto-label">Mission Impact</span><span class="auto-val" id="kpiReportImpact" style="font-size:10.5px;">—</span></div>
+              <div class="auto-item"><span class="auto-label">Recommended Action</span><span class="auto-val good" id="kpiReportRecommendedAction" style="font-size:10px;">—</span></div>
+            </div>
+          </div>
+
+          <!-- TREND CHARTS: HEALTH TREND & RUL TREND -->
+          <div class="grid two" style="margin-bottom:8px;">
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="font-size:11.5px; color:#5eb574; margin:0;">📉 Health Index Degradation Curve</h3>
+                <span style="font-size:9.5px; color:#7a8c7b;">Thresholds: 85% • 60% • 35%</span>
+              </div>
+              <div id="dlReportHealthChart" style="min-height:180px;"></div>
+            </div>
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="font-size:11.5px; color:#5eb574; margin:0;">⏳ Remaining Useful Life (RUL) &amp; Uncertainty</h3>
+                <span class="pill warn" style="font-size:9.5px; padding:1px 6px;">SYNTHETIC GROUND TRUTH — VALIDATION ONLY</span>
+              </div>
+              <div id="dlReportRulChart" style="min-height:180px;"></div>
+            </div>
+          </div>
+
+          <!-- RENDERED REPORT DOCUMENT -->
+          <div class="card" style="margin-bottom:8px;">
+            <div id="dlReportContent" style="padding:4px;">
+              <div style="text-align:center; color:#7a8c7b; padding:30px 0;">Click 'Generate AI Mission Report' to analyze the current mission trajectory.</div>
             </div>
           </div>
         </div>
@@ -695,8 +814,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
         <div class="cockpit-status-ribbon">
           <div class="cockpit-status-item">
             <span class="cockpit-status-dot"></span>
-            <b style="color:#ffffff;">UAV-01 MALE-TWIN</b>
-            <span class="pill good" style="font-size:9.5px; padding:1px 6px;">ROTAX 914 TURBO</span>
+            <b style="color:#ffffff;" id="cockpitRibbonUavName">GENERAL ATOMICS MQ-1B PREDATOR</b>
+            <span class="pill good" style="font-size:9.5px; padding:1px 6px;" id="cockpitRibbonEngine">ROTAX 914 TURBO</span>
           </div>
           <div class="cockpit-status-item">
             <span>MISSION:</span>
@@ -740,6 +859,41 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
               <button id="btnModePlanner" class="map-btn active" onclick="setUIMode('planner')">⚒ MISSION DESIGN</button>
               <button id="btnModeExecution" class="map-btn" onclick="setUIMode('execution')">✈ MISSION EXECUTION</button>
             </div>
+          </div>
+
+          <!-- UAV PLATFORM SELECTION & SPECIFICATION BAR -->
+          <div class="uav-platform-selection-bar" style="margin: 6px 0; padding: 7px 10px; background: #080f0a; border: 1px solid #142818; border-radius: 6px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <label for="selUAVPlatform" style="font-size: 10px; font-weight: 700; color: #8ee0a3; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px; margin: 0;">
+                  ✈ UAV PLATFORM:
+                </label>
+                <select id="selUAVPlatform" style="width: auto; min-width: 290px; margin: 0; padding: 4px 8px; font-size: 11px; font-weight: 600; background: #060d07; border: 1px solid #27452b; color: #e8f5e9; border-radius: 4px;" onchange="onSelectUAVPlatform(this.value)">
+                  <!-- Populated dynamically from /api/v1/uav/catalog -->
+                </select>
+                <span class="pill good" style="font-size: 9.5px; padding: 2px 6px;">CLASS: MALE</span>
+                <span class="pill good" style="font-size: 9.5px; padding: 2px 6px;">PROPULSION: AERO-PISTON</span>
+              </div>
+              <div id="uavProvenanceBadge" style="font-size: 9.5px; color: #7a8c7b; display: flex; align-items: center; gap: 6px;">
+                <span class="badge" id="uavProvTag" style="font-size: 9.5px; color: #a3e635; border-color: #27452b;">PROVENANCE: MANUFACTURER</span>
+                <span class="badge" id="uavConfTag" style="font-size: 9.5px; color: #5eb574; border-color: #27452b;">CONFIDENCE: HIGH</span>
+              </div>
+            </div>
+
+            <!-- COMPACT UAV SPECIFICATION & PROPULSION COUPLING CARD -->
+            <div id="uavSpecCard" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 6px; background: #040805; border: 1px solid #101e12; border-radius: 4px; padding: 6px 8px;">
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">LINKED ENGINE:</span> <b id="specEngineName" style="font-size: 10px; color: #4cb574;">Rotax 914 Turbo (115 HP)</b></div>
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">MAX TAKEOFF MASS:</span> <b id="specMtom" style="font-size: 10px; color: #dbe5db;">1,020 kg</b></div>
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">CRUISE / MAX SPEED:</span> <b id="specSpeed" style="font-size: 10px; color: #dbe5db;">70 / 117 kt</b></div>
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">SERVICE CEILING:</span> <b id="specCeiling" style="font-size: 10px; color: #dbe5db;">25,000 ft</b></div>
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">MAX ENDURANCE:</span> <b id="specEndurance" style="font-size: 10px; color: #dbe5db;">24.0 h (1,100 km)</b></div>
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">FUEL CAPACITY:</span> <b id="specFuel" style="font-size: 10px; color: #dbe5db;">380 L (Avgas/Mogas)</b></div>
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">GLIDE RATIO (L/D):</span> <b id="specGlideRatio" style="font-size: 10px; color: #5eb574;">16.0 : 1</b></div>
+              <div><span style="font-size: 9.5px; color: #7a8c7b;">MISSION CAPABILITY:</span> <b id="specMissions" style="font-size: 10px; color: #8ee0a3;">ISR, BORDER PATROL</b></div>
+            </div>
+
+            <!-- PLATFORM MISSION WARNINGS CONTAINER -->
+            <div id="uavPlatformWarnings" style="display: none; padding: 4px 8px; border: 1px solid #c9983e; background: #1c1407; border-radius: 4px; font-size: 9.5px; color: #e0ad48;"></div>
           </div>
 
           <!-- AUTOMATIC PARAMETER READOUT STRIP -->
@@ -1558,6 +1712,8 @@ function showToast(msg, type = 'info', duration = 5000) {
 const $ = id => document.getElementById(id);
 
 let currentTab = 'cockpit';
+let currentUAVProfile = null;
+let uavCatalogData = [];
 
 function reparentCockpitViews(targetTab) {
   // No-op in 3-tab architecture (views have permanent home tabs)
@@ -1937,9 +2093,26 @@ function updateTacticalRangeRings(lat, lon) {
 }
 
 function updateGlideFootprint(lat, lon, alt_ft) {
-  if (!glideConeLayerGroup || !glideConeEnabled) return;
+  if (!glideConeLayerGroup) return;
   glideConeLayerGroup.clearLayers();
-  const glideDistMeters = Math.max(1200, (alt_ft || 8000) * 0.3048 * 12);
+  if (!glideConeEnabled) return;
+
+  const btn = $('btnGlideToggle');
+  if (!currentUAVProfile || currentUAVProfile.glide_ratio === null || currentUAVProfile.glide_ratio === undefined) {
+    if (btn) {
+      btn.title = "Glide performance unavailable for selected platform";
+      btn.style.opacity = "0.6";
+    }
+    return;
+  }
+
+  const gr = parseFloat(currentUAVProfile.glide_ratio);
+  if (btn) {
+    btn.title = `Engine-Out Glide Cone (L/D ${gr}:1)`;
+    btn.style.opacity = "1.0";
+  }
+
+  const glideDistMeters = Math.max(1200, (alt_ft || 8000) * 0.3048 * gr);
   L.circle([lat, lon], {
     radius: glideDistMeters,
     color: '#44d7b6',
@@ -1947,7 +2120,7 @@ function updateGlideFootprint(lat, lon, alt_ft) {
     dashArray: '4, 4',
     fillColor: '#44d7b6',
     fillOpacity: 0.05
-  }).bindTooltip(`ENGINE-OUT GLIDE CONE (L/D 12:1 · ${Math.round(alt_ft || 8000)}' AGL)`, { permanent: false })
+  }).bindTooltip(`ENGINE-OUT GLIDE CONE (L/D ${gr}:1 · ${Math.round(alt_ft || 8000)}' AGL)`, { permanent: false })
     .addTo(glideConeLayerGroup);
 }
 
@@ -1961,6 +2134,10 @@ function toggleGeofence() {
 }
 
 function toggleGlideCone() {
+  if (!currentUAVProfile || currentUAVProfile.glide_ratio === null || currentUAVProfile.glide_ratio === undefined) {
+    showToast("Glide performance unavailable for selected platform", "warn");
+    return;
+  }
   glideConeEnabled = !glideConeEnabled;
   if (!uavMap || !glideConeLayerGroup) return;
   if (glideConeEnabled) {
@@ -1975,6 +2152,111 @@ function toggleGlideCone() {
   }
   const btn = $('btnGlideToggle');
   if (btn) btn.classList.toggle('active', glideConeEnabled);
+}
+
+// ==========================================
+// MALE Aero-Piston UAV Platform Selection Core
+// ==========================================
+async function initUAVCatalog() {
+  try {
+    const res = await fetch('/api/v1/uav/catalog');
+    if (!res.ok) {
+      console.warn('Failed to load UAV catalog, status:', res.status);
+      return;
+    }
+    const data = await res.json();
+    uavCatalogData = data.platforms || [];
+    const sel = $('selUAVPlatform');
+    if (!sel) return;
+
+    sel.innerHTML = '';
+    uavCatalogData.forEach(uav => {
+      const opt = document.createElement('option');
+      opt.value = uav.uav_id;
+      const grText = (uav.glide_ratio !== null && uav.glide_ratio !== undefined) ? `L/D ${uav.glide_ratio}:1` : 'Glide N/A';
+      opt.textContent = `${uav.uav_name} (${uav.engine_id.replace(/-/g, ' ')} · ${uav.max_takeoff_mass_kg} kg · ${grText})`;
+      if (uav.uav_id === data.active_uav_id) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    const activeProfile = data.active_uav || uavCatalogData[0];
+    if (activeProfile) {
+      applyUAVProfileToUI(activeProfile);
+    }
+  } catch (err) {
+    console.warn('Error loading UAV platform catalog:', err);
+  }
+}
+
+function applyUAVProfileToUI(profile) {
+  currentUAVProfile = profile;
+
+  // Update Compact Spec Card
+  if ($('specEngineName')) $('specEngineName').textContent = profile.engine_id.replace(/-/g, ' ');
+  if ($('specMtom')) $('specMtom').textContent = `${profile.max_takeoff_mass_kg.toLocaleString()} kg`;
+  if ($('specSpeed')) $('specSpeed').textContent = `${profile.cruise_speed_kt} / ${profile.max_speed_kt} kt`;
+  if ($('specCeiling')) $('specCeiling').textContent = `${profile.service_ceiling_ft.toLocaleString()} ft`;
+  if ($('specEndurance')) $('specEndurance').textContent = `${profile.endurance_hours} h (${profile.range_km} km)`;
+  if ($('specFuel')) $('specFuel').textContent = profile.fuel_capacity_l ? `${profile.fuel_capacity_l} L (${profile.fuel_type})` : 'Not available';
+  if ($('specGlideRatio')) {
+    if (profile.glide_ratio !== null && profile.glide_ratio !== undefined) {
+      $('specGlideRatio').textContent = `${profile.glide_ratio} : 1`;
+      $('specGlideRatio').style.color = '#5eb574';
+    } else {
+      $('specGlideRatio').textContent = 'Glide performance unavailable for selected platform';
+      $('specGlideRatio').style.color = '#c9983e';
+    }
+  }
+  if ($('specMissions')) $('specMissions').textContent = (profile.mission_types || []).join(', ');
+
+  // Update Provenance Tags
+  if ($('uavProvTag')) $('uavProvTag').textContent = `PROVENANCE: ${profile.data_provenance}`;
+  if ($('uavConfTag')) $('uavConfTag').textContent = `CONFIDENCE: ${profile.confidence}`;
+
+  // Update Cockpit Status Ribbon
+  if ($('cockpitRibbonUavName')) $('cockpitRibbonUavName').textContent = profile.uav_name.toUpperCase();
+  if ($('cockpitRibbonEngine')) $('cockpitRibbonEngine').textContent = profile.engine_id.replace(/-/g, ' ').toUpperCase();
+
+  // Update Glide Cone button title and map overlay
+  const btnGlide = $('btnGlideToggle');
+  if (btnGlide) {
+    if (profile.glide_ratio === null || profile.glide_ratio === undefined) {
+      btnGlide.title = "Glide performance unavailable for selected platform";
+      btnGlide.style.opacity = "0.6";
+      if (glideConeLayerGroup) glideConeLayerGroup.clearLayers();
+    } else {
+      btnGlide.title = `Engine-Out Glide Cone (L/D ${profile.glide_ratio}:1)`;
+      btnGlide.style.opacity = "1.0";
+      if (uavMarker && glideConeEnabled) {
+        const pos = uavMarker.getLatLng();
+        const alt = parseFloat($('pxAlt')?.textContent) || 8000;
+        updateGlideFootprint(pos.lat, pos.lng, alt);
+      }
+    }
+  }
+}
+
+async function onSelectUAVPlatform(uav_id) {
+  try {
+    const res = await fetch('/api/v1/uav/select', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uav_id })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      showToast(err.detail || 'Failed to select UAV platform', 'error');
+      return;
+    }
+    const data = await res.json();
+    applyUAVProfileToUI(data.uav_profile);
+    showToast(`Active platform: ${data.selected_uav}`, 'info');
+
+    // Recalculate flight plan summary with the selected UAV
+    refreshFlightPlan();
+  } catch (err) {
+    showToast(`Platform selection failed: ${err.message}`, 'error');
+  }
 }
 
 function toggleRangeRings() {
@@ -2072,7 +2354,8 @@ async function loadPresetMission(presetKey) {
       setUIMode('planner');
       return;
     }
-    const data = await api(`/api/mission/waypoints?preset=${encodeURIComponent(presetKey)}`);
+    const uavParam = currentUAVProfile ? `&uav_id=${encodeURIComponent(currentUAVProfile.uav_id)}` : '';
+    const data = await api(`/api/mission/waypoints?preset=${encodeURIComponent(presetKey)}${uavParam}`);
     currentWaypoints = data.waypoints || [];
     currentPlannedCoords = data.planned_route || [];
     currentRiskSegments = data.route_risk_segments || [];
@@ -2080,6 +2363,17 @@ async function loadPresetMission(presetKey) {
     $('autoMissionName').textContent = data.mission_name || presetKey.toUpperCase();
     $('autoRouteSummary').textContent = `${data.total_waypoints} Waypoints • ${data.total_distance_km} km`;
     $('autoEstDuration').textContent = data.formatted_duration || `${Math.round(data.estimated_duration_min)}m`;
+
+    const warnBox = $('uavPlatformWarnings');
+    if (warnBox) {
+      if (data.platform_warnings && data.platform_warnings.length > 0) {
+        warnBox.style.display = 'block';
+        warnBox.innerHTML = '⚠ <b>PLATFORM CONSTRAINTS:</b> ' + data.platform_warnings.join(' • ');
+      } else {
+        warnBox.style.display = 'none';
+        warnBox.innerHTML = '';
+      }
+    }
 
     renderWaypointsAndPlannedRoute();
     renderWaypointsTable();
@@ -2090,19 +2384,34 @@ async function loadPresetMission(presetKey) {
 
 async function refreshFlightPlan() {
   try {
+    const payload = {
+      waypoints: currentWaypoints,
+      ground_temp_c: 30.0
+    };
+    if (currentUAVProfile && currentUAVProfile.uav_id) {
+      payload.uav_id = currentUAVProfile.uav_id;
+    }
     const data = await api('/api/mission/plan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        waypoints: currentWaypoints,
-        ground_temp_c: 30.0
-      })
+      body: JSON.stringify(payload)
     });
 
     currentPlannedCoords = data.planned_route || [];
     currentRiskSegments = data.route_risk_segments || [];
     $('autoRouteSummary').textContent = `${data.total_waypoints} Waypoints • ${data.total_distance_km} km`;
     $('autoEstDuration').textContent = data.formatted_duration || `${Math.round(data.estimated_duration_min)}m`;
+
+    const warnBox = $('uavPlatformWarnings');
+    if (warnBox) {
+      if (data.platform_warnings && data.platform_warnings.length > 0) {
+        warnBox.style.display = 'block';
+        warnBox.innerHTML = '⚠ <b>PLATFORM CONSTRAINTS:</b> ' + data.platform_warnings.join(' • ');
+      } else {
+        warnBox.style.display = 'none';
+        warnBox.innerHTML = '';
+      }
+    }
 
     renderWaypointsAndPlannedRoute();
     renderWaypointsTable();
@@ -3440,6 +3749,7 @@ async function generateDataLabTrajectoryUI() {
     dlCurrentTrajectory = data.points;
     $('dlGenNotice').textContent = `Generated ${data.sample_count} points for ${data.trajectory_id}.`;
     renderDataLabTable(data.points);
+    renderRawDataTable(data.points);
     updateCausalChainUI(data.points[Math.min(data.points.length - 1, 10)]);
   } catch (err) {
     $('dlGenNotice').textContent = `Generation error: ${err.message}`;
@@ -3550,12 +3860,290 @@ function exportDataLabJSON() {
   a.click();
 }
 
+let dlCurrentReport = null;
+
+function switchDataLabView(view) {
+  const views = ['analytics', 'raw', 'report'];
+  views.forEach(v => {
+    const btn = $('btnView' + (v === 'analytics' ? 'Analytics' : (v === 'raw' ? 'RawData' : 'Report')));
+    const pane = $('dlView' + (v === 'analytics' ? 'Analytics' : (v === 'raw' ? 'RawData' : 'Report')));
+    if (btn) btn.classList.toggle('active', v === view);
+    if (pane) pane.style.display = (v === view) ? 'block' : 'none';
+  });
+  if (view === 'raw' && dlCurrentTrajectory) {
+    renderRawDataTable(dlCurrentTrajectory);
+  }
+}
+
+function renderRawDataTable(points) {
+  const tbody = $('dlRawFullTableBody');
+  if (!tbody || !points) return;
+  tbody.innerHTML = '';
+  const stepJump = Math.max(1, Math.floor(points.length / 50));
+  for (let i = 0; i < points.length; i += stepJump) {
+    const p = points[i];
+    tbody.innerHTML += `
+      <tr>
+        <td>${p.timestamp.toFixed(0)}</td>
+        <td><span class="pill good" style="font-size:9px;">${p.mission_phase}</span></td>
+        <td>${p.RPM.toFixed(0)}</td>
+        <td>${(p.throttle*100).toFixed(0)}%</td>
+        <td>${p.CHT.toFixed(1)}</td>
+        <td>${p.oil_pressure.toFixed(1)}</td>
+        <td>${p.vibration.toFixed(2)}</td>
+        <td><span class="pill ${p.health_index >= 70 ? 'good' : (p.health_index >= 35 ? 'warn' : 'bad')}">${p.health_index.toFixed(1)}</span></td>
+        <td>${p.predicted_RUL !== null ? p.predicted_RUL.toFixed(1) : '—'}</td>
+        <td><b>${p.true_RUL !== null ? p.true_RUL.toFixed(1) : '—'}</b></td>
+        <td><span class="pill ${p.FADEC_state === 'NOMINAL' ? 'good' : 'warn'}">${p.FADEC_state}</span></td>
+        <td>${p.safety_action}</td>
+      </tr>
+    `;
+  }
+}
+
+async function generateMissionReportUI() {
+  const mode = $('dlReportModeSelect') ? $('dlReportModeSelect').value : 'engineering';
+  $('dlGenNotice').textContent = `Synthesizing ${mode} mission intelligence report...`;
+
+  try {
+    let payload = { report_mode: mode };
+    if (dlCurrentTrajectory && dlCurrentTrajectory.length > 0) {
+      payload.points = dlCurrentTrajectory;
+    } else {
+      payload.trajectory_id = 'TRAJ_CUSTOM_DEGRADATION_THERMAL_001';
+    }
+
+    const res = await fetch('/api/v1/data/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`Report API responded with HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    dlCurrentReport = data;
+
+    // If no trajectory was locally loaded, fetch it to synchronize tables and charts
+    if (!dlCurrentTrajectory) {
+      try {
+        const trajRes = await fetch(`/api/v1/data/trajectory/${data.trajectory_id}`);
+        if (trajRes.ok) {
+          const trajData = await trajRes.json();
+          dlCurrentTrajectory = trajData.points;
+          renderDataLabTable(dlCurrentTrajectory);
+          updateCausalChainUI(dlCurrentTrajectory[Math.min(dlCurrentTrajectory.length - 1, 10)]);
+        }
+      } catch (e) {
+        console.warn('Could not backfill trajectory:', e);
+      }
+    }
+
+    $('dlGenNotice').textContent = `Mission report generated successfully (${data.generator}).`;
+    renderMissionReportUI(data);
+    switchDataLabView('report');
+  } catch (err) {
+    $('dlGenNotice').textContent = `Report generation error: ${err.message}`;
+    showToast(`Error generating report: ${err.message}`, 'error');
+  }
+}
+
+function renderMissionReportUI(data) {
+  if (!data) return;
+  const kpi = data.kpi_summary || {};
+  const sum = data.summary || {};
+
+  if ($('dlReportGeneratorBadge')) {
+    $('dlReportGeneratorBadge').textContent = `● ${data.generator}`;
+    $('dlReportGeneratorBadge').className = 'pill ' + (data.generator.includes('AI') ? 'good' : 'warn');
+  }
+  if ($('dlReportProvenanceBadge')) {
+    $('dlReportProvenanceBadge').textContent = `● ${data.provenance}`;
+    $('dlReportProvenanceBadge').className = 'pill ' + (data.provenance.includes('GROUND') ? 'warn' : 'good');
+  }
+  if ($('dlReportModeBadge')) {
+    $('dlReportModeBadge').textContent = (data.report_mode || 'engineering').toUpperCase();
+  }
+
+  if ($('kpiReportMissionStatus')) $('kpiReportMissionStatus').textContent = kpi.mission_status || 'NOMINAL';
+  if ($('kpiReportEngineStatus')) $('kpiReportEngineStatus').textContent = kpi.engine_status || 'NOMINAL';
+  if ($('kpiReportPrimaryEvent')) $('kpiReportPrimaryEvent').textContent = kpi.primary_event || 'Nominal';
+  if ($('kpiReportCurrentHealth')) $('kpiReportCurrentHealth').textContent = kpi.current_health || '100%';
+  if ($('kpiReportCurrentRUL')) $('kpiReportCurrentRUL').textContent = kpi.current_rul || '—';
+  if ($('kpiReportConfidence')) $('kpiReportConfidence').textContent = kpi.rul_confidence || '—';
+  if ($('kpiReportRisk')) $('kpiReportRisk').textContent = kpi.risk || 'LOW';
+  if ($('kpiReportSafetyAction')) $('kpiReportSafetyAction').textContent = kpi.safety_action || 'NONE';
+  if ($('kpiReportImpact')) $('kpiReportImpact').textContent = kpi.mission_impact || 'Nominal';
+  if ($('kpiReportRecommendedAction')) $('kpiReportRecommendedAction').textContent = kpi.recommended_action || 'Routine Turnaround';
+
+  renderReportCharts(sum, dlCurrentTrajectory);
+
+  if ($('dlReportContent')) {
+    $('dlReportContent').innerHTML = data.report_html;
+  }
+}
+
+function renderReportCharts(summary, points) {
+  const hContainer = $('dlReportHealthChart');
+  const rContainer = $('dlReportRulChart');
+  if (!points || points.length === 0) {
+    if (hContainer) hContainer.innerHTML = '<div style="color:#7a8c7b; padding:20px; text-align:center;">Generate trajectory to view trend chart</div>';
+    if (rContainer) rContainer.innerHTML = '<div style="color:#7a8c7b; padding:20px; text-align:center;">Generate trajectory to view trend chart</div>';
+    return;
+  }
+
+  const w = 480;
+  const h = 180;
+  const pad = { top: 22, right: 20, bottom: 25, left: 45 };
+  const pw = w - pad.left - pad.right;
+  const ph = h - pad.top - pad.bottom;
+
+  const tVals = points.map(p => p.timestamp / 3600.0);
+  const minT = tVals[0];
+  const maxT = Math.max(minT + 0.1, tVals[tVals.length - 1]);
+
+  // 1. Health Chart
+  if (hContainer) {
+    let ptsSvg = '';
+    points.forEach((p, idx) => {
+      const x = pad.left + ((p.timestamp / 3600.0 - minT) / (maxT - minT)) * pw;
+      const y = pad.top + ((100.0 - p.health_index) / 100.0) * ph;
+      ptsSvg += `${idx === 0 ? 'M' : 'L'} ${x.toFixed(1)},${y.toFixed(1)} `;
+    });
+
+    const y85 = pad.top + ((100.0 - 85.0) / 100.0) * ph;
+    const y60 = pad.top + ((100.0 - 60.0) / 100.0) * ph;
+    const y35 = pad.top + ((100.0 - 35.0) / 100.0) * ph;
+
+    hContainer.innerHTML = `
+      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="background:#050805; border:1px solid #142016; border-radius:6px;">
+        <line x1="${pad.left}" y1="${y85}" x2="${w - pad.right}" y2="${y85}" stroke="#c9983e" stroke-dasharray="3,3" stroke-width="1" />
+        <text x="${w - pad.right - 2}" y="${y85 - 3}" fill="#c9983e" font-size="8.5" text-anchor="end">Warn (85%)</text>
+        <line x1="${pad.left}" y1="${y60}" x2="${w - pad.right}" y2="${y60}" stroke="#c9703e" stroke-dasharray="3,3" stroke-width="1" />
+        <line x1="${pad.left}" y1="${y35}" x2="${w - pad.right}" y2="${y35}" stroke="#c94c48" stroke-dasharray="3,3" stroke-width="1.2" />
+        <text x="${w - pad.right - 2}" y="${y35 - 3}" fill="#c94c48" font-size="8.5" text-anchor="end">Failure Limit (35%)</text>
+        <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${h - pad.bottom}" stroke="#1c2e1f" stroke-width="1" />
+        <line x1="${pad.left}" y1="${h - pad.bottom}" x2="${w - pad.right}" y2="${h - pad.bottom}" stroke="#1c2e1f" stroke-width="1" />
+        <text x="${pad.left - 6}" y="${pad.top + 4}" fill="#7a8c7b" font-size="8.5" text-anchor="end">100%</text>
+        <text x="${pad.left - 6}" y="${h - pad.bottom}" fill="#7a8c7b" font-size="8.5" text-anchor="end">0%</text>
+        <text x="${pad.left}" y="${h - pad.bottom + 14}" fill="#7a8c7b" font-size="8.5">0h</text>
+        <text x="${w - pad.right}" y="${h - pad.bottom + 14}" fill="#7a8c7b" font-size="8.5" text-anchor="end">${maxT.toFixed(1)}h</text>
+        <path d="${ptsSvg}" fill="none" stroke="#5eb574" stroke-width="2.2" />
+      </svg>
+    `;
+  }
+
+  // 2. RUL Chart
+  if (rContainer) {
+    const maxRul = Math.max(1.0, ...points.map(p => Math.max(p.predicted_RUL || 0, p.true_RUL || 0, p.RUL_upper || 0)));
+    let predPts = '';
+    let truePts = '';
+    let ciUpperPts = [];
+    let ciLowerPts = [];
+
+    points.forEach((p, idx) => {
+      const x = pad.left + ((p.timestamp / 3600.0 - minT) / (maxT - minT)) * pw;
+      const pred = p.predicted_RUL !== null ? p.predicted_RUL : 0;
+      const yPred = pad.top + ((maxRul - pred) / maxRul) * ph;
+      predPts += `${idx === 0 ? 'M' : 'L'} ${x.toFixed(1)},${yPred.toFixed(1)} `;
+
+      if (p.true_RUL !== null) {
+        const yTrue = pad.top + ((maxRul - p.true_RUL) / maxRul) * ph;
+        truePts += `${idx === 0 ? 'M' : 'L'} ${x.toFixed(1)},${yTrue.toFixed(1)} `;
+      }
+
+      if (p.RUL_upper !== null && p.RUL_lower !== null) {
+        const yu = pad.top + ((maxRul - p.RUL_upper) / maxRul) * ph;
+        const yl = pad.top + ((maxRul - p.RUL_lower) / maxRul) * ph;
+        ciUpperPts.push(`${x.toFixed(1)},${yu.toFixed(1)}`);
+        ciLowerPts.unshift(`${x.toFixed(1)},${yl.toFixed(1)}`);
+      }
+    });
+
+    let ciArea = '';
+    if (ciUpperPts.length > 0 && ciLowerPts.length > 0) {
+      ciArea = `M ${ciUpperPts.join(' L ')} L ${ciLowerPts.join(' L ')} Z`;
+    }
+
+    rContainer.innerHTML = `
+      <svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" style="background:#050805; border:1px solid #142016; border-radius:6px;">
+        <line x1="${pad.left}" y1="${pad.top}" x2="${pad.left}" y2="${h - pad.bottom}" stroke="#1c2e1f" stroke-width="1" />
+        <line x1="${pad.left}" y1="${h - pad.bottom}" x2="${w - pad.right}" y2="${h - pad.bottom}" stroke="#1c2e1f" stroke-width="1" />
+        <text x="${pad.left - 6}" y="${pad.top + 4}" fill="#7a8c7b" font-size="8.5" text-anchor="end">${maxRul.toFixed(0)}h</text>
+        <text x="${pad.left - 6}" y="${h - pad.bottom}" fill="#7a8c7b" font-size="8.5" text-anchor="end">0h</text>
+        <text x="${pad.left}" y="${h - pad.bottom + 14}" fill="#7a8c7b" font-size="8.5">0h</text>
+        <text x="${w - pad.right}" y="${h - pad.bottom + 14}" fill="#7a8c7b" font-size="8.5" text-anchor="end">${maxT.toFixed(1)}h</text>
+        ${ciArea ? `<path d="${ciArea}" fill="rgba(94,181,116,0.15)" />` : ''}
+        <path d="${predPts}" fill="none" stroke="#5eb574" stroke-width="2.2" />
+        ${truePts ? `<path d="${truePts}" fill="none" stroke="#c9983e" stroke-width="1.8" stroke-dasharray="4,3" />` : ''}
+      </svg>
+    `;
+  }
+}
+
+function exportReportMarkdown() {
+  if (!dlCurrentReport || !dlCurrentReport.report_markdown) {
+    showToast('Generate report first before exporting.', 'error');
+    return;
+  }
+  const tid = dlCurrentReport.trajectory_id || 'trajectory';
+  const blob = new Blob([dlCurrentReport.report_markdown], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aeropulse_mission_report_${tid}_${Date.now()}.md`;
+  a.click();
+}
+
+function exportReportHTML() {
+  if (!dlCurrentReport || !dlCurrentReport.report_html) {
+    showToast('Generate report first before exporting.', 'error');
+    return;
+  }
+  const tid = dlCurrentReport.trajectory_id || 'trajectory';
+  const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>AeroPulse-X Mission Intelligence Report - ${tid}</title>
+<style>
+body { font-family: Inter, system-ui, -apple-system, sans-serif; background: #060a06; color: #dbe5db; padding: 24px; max-width: 1000px; margin: 0 auto; line-height: 1.5; }
+h1, h2, h3 { color: #5eb574; }
+.tbl { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11.5px; }
+.tbl th, .tbl td { padding: 6px 10px; border: 1px solid #18281b; text-align: left; }
+.tbl th { background: #09120a; color: #5eb574; font-weight: 700; }
+code { background: #070d08; border: 1px solid #142016; padding: 1px 4px; border-radius: 3px; color: #7ee09b; }
+.pill { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
+.pill.good { background: #0a1c0f; border: 1px solid #1c3d24; color: #4cb574; }
+.pill.warn { background: #1c1407; border: 1px solid #3d2f10; color: #c9983e; }
+.pill.bad { background: #1f0c0c; border: 1px solid #421818; color: #c94c48; }
+</style>
+</head>
+<body>
+${dlCurrentReport.report_html}
+</body>
+</html>`;
+  const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aeropulse_mission_report_${tid}_${Date.now()}.html`;
+  a.click();
+}
+
 // Initialization Sequence
+initUAVCatalog();
 initUAVMap();
 setupHardwareListeners();
 checkStatus();
 loadPresetMission('border_patrol_alpha');
-switchDashboardTab('live');
+const initialTab = new URLSearchParams(window.location.search).get('tab') || 'live';
+switchDashboardTab(initialTab);
+if (new URLSearchParams(window.location.search).get('autorun') === 'report') {
+  setTimeout(() => generateMissionReportUI(), 400);
+}
 </script>
 <script src="/static/engine-3d.js?v=20260909_003"></script>
 </body>

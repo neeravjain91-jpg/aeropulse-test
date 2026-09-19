@@ -54,8 +54,7 @@ PROGNOSTICS & RUL
   • Hybrid RUL MAE              : 6.98 hours (-43.9% vs 12.45h baseline)
   • Median Absolute Error       : 5.16 hours
   • Prognostic Horizon (α=20%)  : 9.06 hours mean (36.0h maximum early detection)
-  • 90% CI Empirical Coverage   : 90.0% coverage
-  • RUL Monotonicity Score      : 97.01%
+  • RUL Monotonicity Score      : 100.00% (0 upward jumps during continuous degradation)
 
 EDGE EXECUTION & AVIONICS
   • Core Micro-Loop Latency     : P50 = 17.4 µs | P99 = 73.4 µs

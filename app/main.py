@@ -39,9 +39,18 @@ from .uav_mission import UAVMissionSimulator
 from .vibration import VibrationAI, load_demo as load_vibration_demo
 from .rul_service import RULService
 from .validation import AeroPulseValidator
+from .uav_platform_config import (
+    CATALOG_TITLE,
+    UAVPlatformProfile,
+    get_uav_profile,
+    list_supported_uavs,
+    SUPPORTED_UAV_REGISTRY,
+)
 
 
-_GPS = SimulatedGPSSource()
+_ACTIVE_UAV_ID = "UAV_MALE_MQ1_PREDATOR"
+_ACTIVE_UAV_PROFILE = get_uav_profile(_ACTIVE_UAV_ID) or get_uav_profile("UAV_MALE_AEROPULSE_REF")
+_GPS = SimulatedGPSSource(uav_profile=_ACTIVE_UAV_PROFILE)
 _RUL = RULService()
 
 
@@ -159,12 +168,14 @@ class Scenario(BaseModel):
     simulation_mode: str = "automatic"
     waypoints: Optional[List[Dict[str, Any]]] = None
     preset: Optional[str] = None
+    uav_id: Optional[str] = None
 
 
 class FlightPlanRequest(BaseModel):
     waypoints: List[Dict[str, Any]] = Field(default_factory=list)
     ground_temp_c: float = 30.0
     hot_weather_bias: float = 0.0
+    uav_id: Optional[str] = None
 
 
 class ReplayScenario(Scenario):
@@ -176,6 +187,11 @@ class ReplayScenario(Scenario):
 class WhatIfRequest(BaseModel):
     baseline: Scenario
     alternative: Scenario
+    uav_id: Optional[str] = None
+
+
+class UAVSelectionRequest(BaseModel):
+    uav_id: str
 
 
 class LiveMissionConfig(Scenario):
@@ -203,6 +219,7 @@ Scenario.model_rebuild()
 FlightPlanRequest.model_rebuild()
 ReplayScenario.model_rebuild()
 WhatIfRequest.model_rebuild()
+UAVSelectionRequest.model_rebuild()
 LiveMissionConfig.model_rebuild()
 
 
@@ -643,6 +660,13 @@ class ReplayDataRequest(BaseModel):
     seed: Optional[int] = 42
 
 
+class MissionReportRequest(BaseModel):
+    trajectory_id: Optional[str] = None
+    points: Optional[List[Dict[str, Any]]] = None
+    report_mode: str = Field("engineering", description="Report mode: 'engineering' or 'executive'")
+    seed: Optional[int] = 42
+
+
 @app.get("/api/v1/data/catalog")
 def get_data_catalog():
     """Returns dataset registry metadata and provenance for all primary and proxy datasets."""
@@ -769,6 +793,41 @@ def replay_data_trajectory(req: ReplayDataRequest):
 
     summary = replay_eng.replay_trajectory(points)
     return summary.to_dict()
+
+
+@app.post("/api/v1/data/report")
+def generate_mission_report_endpoint(req: MissionReportRequest):
+    """Generates an engineering-grade or executive mission intelligence report from trajectory data."""
+    from .mission_intelligence import TrajectorySummarizer
+    from .llm_report_service import LLMReportService
+
+    if req.points and len(req.points) > 0:
+        raw_pts = req.points
+    else:
+        tid = req.trajectory_id or "TRAJ_CUSTOM_DEGRADATION_THERMAL_001"
+        traj_data = get_data_trajectory(trajectory_id=tid, seed=req.seed or 42)
+        raw_pts = traj_data["points"]
+
+    summarizer = TrajectorySummarizer()
+    summary = summarizer.summarize(raw_pts)
+
+    service = LLMReportService()
+    report = service.generate_mission_report(summary, report_mode=req.report_mode)
+    return report
+
+
+@app.get("/api/v1/data/report/{trajectory_id}")
+def get_mission_report_by_id(trajectory_id: str, report_mode: str = "engineering", seed: int = 42):
+    """Convenience endpoint returning mission intelligence report for a trajectory ID."""
+    from .mission_intelligence import TrajectorySummarizer
+    from .llm_report_service import LLMReportService
+
+    traj_data = get_data_trajectory(trajectory_id=trajectory_id, seed=seed)
+    summarizer = TrajectorySummarizer()
+    summary = summarizer.summarize(traj_data["points"])
+
+    service = LLMReportService()
+    return service.generate_mission_report(summary, report_mode=report_mode)
 
 
 @app.get("/api/v1/data/quality")
@@ -910,13 +969,17 @@ def analyze(
         context,
     )
 
+    uav_prof = get_uav_profile(scenario.uav_id) if scenario.uav_id else _ACTIVE_UAV_PROFILE
     if scenario.waypoints and len(scenario.waypoints) >= 2:
         gps = SimulatedGPSSource(
             waypoints=scenario.waypoints,
             ground_temp_c=float(scenario.ambient_c),
+            uav_profile=uav_prof,
         )
     else:
         gps = _GPS
+        if uav_prof:
+            gps.set_uav_profile(uav_prof)
 
     uav_pos = gps.get_position(
         progress_ratio=0.15,
@@ -962,21 +1025,26 @@ def mission_presets():
 @app.post("/api/mission/plan")
 def calculate_flight_plan(request: FlightPlanRequest):
     """Calculates full 3D flight plan metrics, distance, duration, and route summary."""
+    uav_prof = get_uav_profile(request.uav_id) if request.uav_id else _ACTIVE_UAV_PROFILE
     gps = SimulatedGPSSource(
         waypoints=[MissionWaypoint.from_dict(w) for w in request.waypoints],
         ground_temp_c=request.ground_temp_c,
         hot_weather_bias=request.hot_weather_bias,
+        uav_profile=uav_prof,
     )
     return gps.get_flight_plan_summary()
 
 
 @app.get("/api/mission/waypoints")
-def mission_waypoints(preset: str | None = None):
+def mission_waypoints(preset: str | None = None, uav_id: str | None = None):
     """Returns planned 3D mission waypoints, route coordinates, and base coordinates."""
+    uav_prof = get_uav_profile(uav_id) if uav_id else _ACTIVE_UAV_PROFILE
     if preset and preset in PRESET_MISSIONS:
-        gps = SimulatedGPSSource(PRESET_MISSIONS[preset]["waypoints"])
+        gps = SimulatedGPSSource(PRESET_MISSIONS[preset]["waypoints"], uav_profile=uav_prof)
     else:
         gps = _GPS
+        if uav_prof:
+            gps.set_uav_profile(uav_prof)
     return gps.get_flight_plan_summary()
 
 
@@ -1031,6 +1099,78 @@ def select_engine_profile(request: EngineSelectionRequest):
     }
 
 
+# =========================================================================
+# MALE Aero-Piston UAV Platform Selection & Specification Endpoints
+# =========================================================================
+
+@app.get("/api/v1/uav/catalog")
+@app.get("/api/uav/catalog")
+def get_uav_catalog(engine_filter: Optional[str] = None, mission_filter: Optional[str] = None):
+    """Returns the catalog of verified MALE aero-piston UAV platforms."""
+    platforms = list_supported_uavs(engine_filter=engine_filter, mission_filter=mission_filter)
+    return {
+        "catalog_title": CATALOG_TITLE,
+        "scope_rule": "Class: MALE, Propulsion: AERO-PISTON only. Turboprop, turbojet, turbofan, and electric excluded.",
+        "active_uav_id": _ACTIVE_UAV_ID,
+        "active_uav": _ACTIVE_UAV_PROFILE.to_dict() if _ACTIVE_UAV_PROFILE else None,
+        "count": len(platforms),
+        "platforms": [p.to_dict() for p in platforms],
+    }
+
+
+@app.get("/api/v1/uav/{uav_id}")
+@app.get("/api/uav/{uav_id}")
+def get_uav_profile_by_id(uav_id: str):
+    """Returns detailed specification profile and provenance for a single UAV platform."""
+    profile = get_uav_profile(uav_id)
+    if not profile:
+        raise HTTPException(404, detail="Configuration unavailable for selected UAV.")
+    return profile.to_dict()
+
+
+@app.post("/api/v1/uav/select")
+@app.post("/api/uav/select")
+def select_uav_platform(request: UAVSelectionRequest):
+    """Selects and hot-swaps active MALE aero-piston UAV platform, flight dynamics, and digital twin engine."""
+    global _ACTIVE_UAV_ID, _ACTIVE_UAV_PROFILE, _GPS, _ENGINE
+    uav_id = request.uav_id.strip()
+    profile = get_uav_profile(uav_id)
+    if not profile:
+        raise HTTPException(404, detail="Configuration unavailable for selected UAV.")
+
+    is_valid, violations = profile.validate_profile()
+    if not is_valid:
+        raise HTTPException(400, detail=f"Invalid UAV platform profile: {'; '.join(violations)}")
+
+    _ACTIVE_UAV_ID = profile.uav_id
+    _ACTIVE_UAV_PROFILE = profile
+    _GPS.set_uav_profile(profile)
+
+    # Auto-load linked engine profile if available
+    eng_id = profile.engine_id
+    if eng_id in ENGINE_PROFILES:
+        if eng_id == "Rotax-914-Turbo-115HP":
+            new_cfg = EngineConfig.rotax_914()
+        elif eng_id == "Generic-Inline4-AeroDiesel":
+            new_cfg = EngineConfig.inline4_diesel()
+        elif eng_id == "Generic-2Stroke-Twin-50HP":
+            new_cfg = EngineConfig.two_stroke_twin()
+        elif eng_id == "Generic-Rotary-Wankel-40HP":
+            new_cfg = EngineConfig.rotary_wankel()
+        else:
+            new_cfg = EngineConfig.default_135l()
+        _ENGINE = ReducedOrderPistonEngine(config=new_cfg)
+
+    return {
+        "status": "success",
+        "selected_uav": profile.uav_name,
+        "uav_profile": profile.to_dict(),
+        "linked_engine_id": profile.engine_id,
+        "linked_engine_name": _ENGINE.config.name,
+        "glide_ratio": profile.glide_ratio,
+        "glide_status": f"Glide ratio {profile.glide_ratio}:1" if profile.glide_ratio is not None else "Glide performance unavailable for selected platform",
+    }
+
 
 @app.post("/api/mission-whatif-rul")
 def mission_whatif_rul(
@@ -1054,6 +1194,8 @@ def mission_whatif_rul(
         }
     )
 
+    uav_prof = get_uav_profile(request.uav_id) if request.uav_id else _ACTIVE_UAV_PROFILE
+
     result = engine.compare(
         base,
         _mission_scenario(
@@ -1064,6 +1206,7 @@ def mission_whatif_rul(
             request.alternative,
             "alternative",
         ),
+        uav_profile=uav_prof,
     )
 
     result[

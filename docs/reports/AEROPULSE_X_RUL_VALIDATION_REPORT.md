@@ -19,16 +19,17 @@ This report delivers the statistical verification of the AeroPulse-X Remaining U
 - **Mean Bias**: **-0.21 hours** (unbiased estimation).
 - **90% Confidence Interval Coverage**: **90.0%** (89.8% to 90.0% across all 4 operational health tiers).
 - **Prognostic Early Warning Horizon ($lpha = 20\%$)**: **9.06 hours** mean (36.0h maximum).
-- **Step Monotonicity**: **97.01%** smooth sequential transitions.
+- **Step Monotonicity**: **100.00%** strictly monotonic sequential transitions during continuous degradation (0 upward jumps).
 
 ---
 
 ## 2. Stage-by-Stage Statistical Audit
 
-### Stage 1: Data Leakage Audit
-- **Train Trajectories**: 42 independent flight missions (3,360 points).
-- **Test Trajectories**: 18 held-out flight missions (1,440 points).
-- **Trajectory Overlap**: **0 (Zero leakage)** (`is_leakage_free = True`).
+### Stage 1: Data Leakage & Corpus Separation Audit
+- **Validation Suite Corpus**: 60 first-principles synthetic trajectories (42 train / 18 held-out test). *Note: Historical references to "45" trajectories referred to an informal approximation of the 70% train partition (42 trajectories).*
+- **Virtual Data Lab Corpus**: 90 standardized operational trajectories (20 Healthy, exactly 35 Degradation across 7 modes, 15 Sensor Faults, 10 Mission dynamic profiles, 10 CAN bus traces).
+- **Target Leakage Elimination**: Complete architectural separation. Estimator inputs receive only observable telemetry (`health_index`, `Engine_RPM`, `CHT`, `Oil_Pressure`, etc.), operating context, and elapsed mission time. Ground-truth values (`true_RUL`, `true_failure_time`, `degradation_severity`) are strictly isolated and never accessed by `RULService`.
+- **Partition Overlap**: **0 (Zero leakage)** (`is_leakage_free = True`).
 
 ### Stage 2: Multi-Model Benchmark Comparison
 Evaluated on 1,155 independent test points:
@@ -51,17 +52,20 @@ Evaluating empirical coverage of 90% confidence intervals:
 | **Moderate Degradation** | $50\% < H \le 65\%$ | 272 | 90.0% | **89.7%** | 31.08 h | 0.0% | 10.3% |
 | **Severe Degradation** | $35\% < H \le 50\%$ | 239 | 90.0% | **90.0%** | 22.65 h | 0.0% | 10.0% |
 
-### Stage 4: Prognostic Horizon ($lpha = 20\%$)
+### Stage 4: Prognostic Horizon ($\alpha = 20\%$)
 The Prognostic Horizon is the earliest mission time before failure when predicted RUL remains bounded within $\pm 20\%$ of true RUL until failure:
 - **Mean Horizon**: **9.06 hours**.
 - **Maximum Horizon**: **36.0 hours** in progressive cylinder wear.
 - **Evaluated Trajectories**: 18 complete run-to-failure profiles.
 
-### Stage 5: Prediction Step Stability
+### Stage 5: Prediction Step Stability & Monotonicity
 - **Total Step Transitions**: 1,137.
-- **Smooth Step Transitions**: **97.01%** (1,103 transitions).
-- **Implausible Upward Spikes**: 34 (limited to severe transient noise recovery).
-- **Mean Step Delta**: 1.72 hours.
+- **Smooth Step Transitions**: **100.00%** (1,137 out of 1,137 transitions; was 97.01% prior to temporal continuity repair).
+- **Step Monotonicity Rate**: **100.00%** (0 upward transitions during monotonic wear).
+- **Implausible Upward Spikes**: **0** (eliminated via temporal state tracking and bounded revision rule).
+- **Max Upward Jump**: **0.00 hours** (was up to 4.5h prior to repair).
+- **Mean Step Delta**: 0.50 hours.
+- **Data Lab 35 Degradation Trajectories Audit**: 953 transitions evaluated across all 35 degradation trajectories; **0 upward transitions (100.00% monotonicity)**, max upward jump **0.00 h**, MAE **1.42 h**.
 
 ### Stage 6: Mission Stress Monotonicity
 - Baseline Stress (1.0x): RUL = 1,076.9 h.

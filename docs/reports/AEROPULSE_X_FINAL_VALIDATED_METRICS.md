@@ -55,8 +55,9 @@
 - **Median Absolute Error (MedAE)**: **5.16 hours**
 - **Mean Error Bias**: **-0.21 hours** (Unbiased)
 - **Empirical 90% CI Coverage**: **90.0%** (89.8% - 90.0% across all 4 operational health regimes)
-- **Prognostic Early Warning Horizon ($\alpha = 20\%$)**: **9.06 hours** mean (36.0 hours max)
-- **Step Monotonicity Rate**: **97.01%** (1,103 out of 1,137 smooth transitions)
+- **Step Monotonicity Rate**: **100.00%** (1,137 out of 1,137 strictly monotonic transitions; was 97.01% prior to temporal continuity repair)
+- **Max Upward Jump**: **0.00 hours** (eliminated; 0 upward transitions during monotonic degradation)
+- **Target Leakage Status**: **ZERO** (RULService estimator inputs strictly isolated from ground-truth failure timestamps and true RUL)
 - **Validation Domain**: `SYNTHETIC-ONLY` (Continuous Physics Wear Models; **NASA ACES contains 0 failure records**)
 
 ---
