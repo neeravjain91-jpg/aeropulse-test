@@ -1,18 +1,24 @@
 # Dataset Registry & Scientific Provenance Catalog
+## Master Dataset Registry Synchronized with `docs/DATA_RESOURCE_SPEC.md`
 
-## 1. Master Dataset Catalog
+### 1. Master Dataset Inventory & Provenance Catalog
 
-| Dataset ID | Name | Domain | Type | Provenance & Relevance | Ground Truth RUL |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `AERO_PULSE_SYNTHETIC` | AeroPulse-X Synthetic Aero-Piston Degradation & SIL Corpus | Reciprocating IC Aero-Piston | Synthetic | Primary physics-informed aero-piston/RUL demonstrator | Exact Mathematical RUL ($H=35.0$) |
-| `NASA_ACES` | NASA ACES — Altus II Operational Flight Telemetry | General Aviation Reciprocating IC | Real Operational | Operational-envelope & contextual cross-domain validation | None (Contains NO run-to-failure RUL ground truth) |
-| `NASA_CMAPSS` | NASA C-MAPSS Turbofan Degradation Benchmark (FD001-FD004) | Turbofan Gas Turbine | Cross-Domain Proxy | Turbofan cross-domain RUL/prognostics proxy | Run-to-Failure Cycle Ground Truth |
-| `CWRU_BEARING` | Case Western Reserve University Bearing Vibration Benchmark | Rotating Machinery | Cross-Domain Proxy | Rotating-machinery/bearing vibration proxy | Seeded Fault Diameters (EDM) |
-| `ALFA_UAV` | CMU AirLab Failure & Anomaly Dataset for Fixed-Wing UAVs | Fixed-Wing UAV Flight Dynamics | Cross-Domain Proxy | UAV flight/failure/anomaly proxy | In-Flight Injected Actuator Faults |
+| Resource ID | Dataset Name | Physical Domain | Engine Architecture | Source Type | Ground Truth Status | AeroPulse Subsystem Role | Decision |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **`REAL_ACES`** | NASA ACES Telemetry | Real Operational Flight Logs | Continental TSIO-360-MB (Twin-Turbo 6-Cyl Piston, 5.9L) | Real Flight Data | 4-Class `Health_State` (No run-to-failure RUL) | Primary operational envelope baseline & real flight health classification | **`ACTIVE`** |
+| **`AEROPULSE_SYNTHETIC`** | AeroPulse-X Synthetic Master Corpus | Reciprocating IC Simulation (ODE Wear + Otto) | Rotax 914 F (Turbocharged 4-Stroke Boxer-4, 1.2L, 115 HP) | Physics-Grounded Simulation | Exact Mathematical RUL ($H=35.0$) & 7 Discrete Fault Modes | Primary physics-informed digital twin, SIL degradation, and RUL demonstrator | **`ACTIVE`** |
+| **`RUL_PROXY_CMAPSS`** | NASA C-MAPSS v1 / N-CMAPSS | Commercial Gas Turbine | High-Bypass Commercial Turbofan (90,000 lbf, Brayton Cycle) | Cross-Domain Proxy | Run-to-Failure Remaining Cycles ($Y$) | Algorithmic RUL methodology benchmark & Weibull parameter verification only | **`SELECTIVE_PROXY`** |
+| **`VIBRATION_PROXY_CWRU`** | CWRU Bearing Data Center | Rotating Machinery Test Rig | 2 HP Reliance Electric Induction Motor | Cross-Domain Proxy | Seeded EDM Fault Location & Diameter (0.007"-0.028") | Rotordynamic vibration DSP feature extraction pipeline validation | **`METHODOLOGY_ONLY`** |
+| **`NAVIGATION_PROXY_ALFA`** | CMU AirLab Failure & Anomaly (ALFA) | Fixed-Wing Autonomous Avionics | CarbonZ T-28 Trojan (Brushless Electric Motor + Pixhawk) | Cross-Domain Proxy | Timestamped Actuator Failures & In-Flight Emergency Glide | Flight path cross-track error modeling, wind vector estimation ($V_w, \theta_w$), and RTL divert planning | **`NAVIGATION_ONLY`** |
+| **`REFERENCE_MARINE`** | Marine Engine Fault Dataset | Maritime Heavy Diesel | Multi-Megawatt Heavy Marine Diesel Engine | Research Reference | 5 Maritime Diesel Fault Classes | Research reference for multi-fault terminology taxonomy only (Excluded from ML) | **`REJECTED`** |
+| **`REFERENCE_PROPELLER`** | UAV Propeller Blade Dataset | Propeller Structural / Acoustic | Brushless Motor Propeller Test Rig | Research Reference | Damaged / Unbalanced Propeller Blade States | Reference for propeller harmonic order equations only (Excluded from ML) | **`REJECTED`** |
 
 ---
 
-## 2. Scientific Boundaries & Disclaimers
-1. **Target Engine Ground Truth**: Real run-to-failure telemetry for the Rotax 914 F is unavailable in open literature. Therefore, `AERO_PULSE_SYNTHETIC` serves as the physics-informed benchmark.
-2. **NASA ACES Disclosure**: NASA ACES provides real Altus II operational/mechanical flight telemetry used strictly for operational-envelope and contextual cross-domain validation; it contains **NO run-to-failure RUL ground truth** and is **not** target-engine Rotax 914 data.
-3. **Cross-Domain Proxy Disclosure**: NASA C-MAPSS (turbofan gas turbine), CWRU (electric motor bearing), and ALFA (electric fixed-wing UAV) are utilized strictly as cross-domain algorithmic proxies.
+### 2. Scientific Boundaries & Strict Anti-Concatenation Policy
+
+1. **Target Engine Ground Truth**: Real run-to-failure telemetry for the Rotax 914 F is unavailable in open literature. Therefore, `AEROPULSE_SYNTHETIC` serves as the physics-informed benchmark.
+2. **NASA ACES Operational Disclosure**: NASA ACES provides real Altus II operational flight telemetry used strictly for operational-envelope and contextual real-flight validation; it contains **NO run-to-failure RUL ground truth** and is **not** target-engine Rotax 914 data.
+3. **Cross-Domain Proxy Separation**: NASA C-MAPSS (turbofan gas turbine), CWRU (electric motor bearing), and ALFA (electric fixed-wing UAV) are utilized strictly as cross-domain algorithmic proxies within their isolated namespaces.
+4. **Strict Anti-Concatenation Mandate**: Prohibits merging multi-source datasets into a single engine-health feature dataframe. All dataset pipelines maintain strict physical and architectural boundaries.
+5. **Anti-Leakage Enforcement**: Ground-truth target fields (`Health_State`, `Degradation_Severity`, `true_RUL`, `true_failure_time`) are strictly excluded from predictive model inputs.
