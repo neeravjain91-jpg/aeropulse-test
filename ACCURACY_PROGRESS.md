@@ -1,11 +1,12 @@
 # AeroPulse-X — Accuracy Improvement Progress
 
 ## CURRENT_PHASE
-**Part 2/7 — Dataset + Validation Integrity** ✅ COMPLETE
+**Part 3/7 — Physics + Temporal Feature Engineering** ✅ COMPLETE
 
 ## COMPLETED_PHASES
 - [x] Part 1/7 — System Understanding + Baseline
 - [x] Part 2/7 — Dataset + Validation Integrity
+- [x] Part 3/7 — Physics + Temporal Feature Engineering
 
 ---
 
@@ -287,13 +288,20 @@ Per-flight weakness: Flight 235 → TCN balanced_accuracy=0.760, macro_f1=0.583
 - Without the ground-truth severity penalty, the health index will be **higher** for degraded trajectories (since the observable ML classifiers may not fully capture degradation severity). This is the scientifically correct behavior — lower metrics from honest evaluation are preferable to inflated metrics from leakage.
 - The demo CSV row triggers a genuine "Critical" diagnosis (residual_rms=26.41) due to the systematic vibration model mismatch (RC-4, to be addressed in Part 3+).
 
+### Part 3/7 — Physics + Temporal Feature Engineering Deliverables
+1. ✅ Evaluated Experiments E0 through E6 across 6 model families (HistGradientBoosting, ExtraTrees, RandomForest, XGBoost, LightGBM, CatBoost).
+2. ✅ Established immutable baseline (E0 HGB: Acc=0.8919, BalAcc=0.8767, MacroF1=0.8518, CritRec=0.9131, CritF1=0.7974, Latency=10.8μs, Size=939.7KB).
+3. ✅ Highest balanced accuracy achieved by E3 HGB (0.8802 vs 0.8767, Acc=0.8991), but Critical Recall dropped to 0.9087, Critical Precision dropped to 0.6599, and Macro-F1 dropped to 0.8479.
+4. ✅ Production Decision: Per Acceptance Rule, KEEP CURRENT PRODUCTION MODEL (E0 HGB). No candidate clearly improved the real-flight operational diagnostic profile.
+5. ✅ Created `app/feature_engineering.py`, `scripts/benchmark_physics_temporal.py`, `docs/PART3_PHYSICS_TEMPORAL_FEATURE_REPORT.md`, machine-readable reports in `reports/`, and 6 regression tests in `tests/test_feature_engineering_physics_temporal.py` (all passing).
+
 ## NEXT_PHASE
-**Part 3/7 — Physics Model Harmonization**
+**Part 4/7 — Anomaly Detection & Multimodal Diagnostic Refinement**
 
 Priority:
-1. RC-4: Harmonize vibration model between engine_model.py and data_engine.py
-2. RC-5: Fix ISA atmosphere formula in simulator.py
-3. RC-6: Standardize EGT/CHT unit conversions in data_engine.py
+1. Optimize IsolationForest contamination threshold and TCN Autoencoder reconstruction threshold $\tau$.
+2. Reduce false alarm rate on high-altitude real-flight transitions (from 14.38% in HIGH state).
+3. Multimodal fusion calibration between Model A (HGB) and Model B (TCN).
 
 ## IMPORTANT_DECISIONS
 - Do NOT modify the health index formula in a way that removes all degradation sensitivity — the formula should respond to degradation, but via observable sensor deviations, not via ground-truth labels.

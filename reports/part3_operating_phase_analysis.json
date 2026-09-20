@@ -1,0 +1,87 @@
+{
+  "aces_phases": {
+    "CRUISE": {
+      "sample_count": 11217,
+      "distribution": {
+        "Normal": 7315,
+        "Warning": 1951,
+        "Watch": 1272,
+        "Critical": 679
+      }
+    },
+    "CRUISE_LOW": {
+      "sample_count": 8654,
+      "distribution": {
+        "Normal": 5175,
+        "Watch": 1943,
+        "Warning": 1536
+      }
+    },
+    "HIGH": {
+      "sample_count": 10190,
+      "distribution": {
+        "Normal": 6118,
+        "Watch": 3919,
+        "Warning": 153
+      }
+    }
+  },
+  "synthetic_phases": {
+    "CLIMB": {
+      "sample_count": 47,
+      "distribution": {
+        "Normal": 47
+      }
+    },
+    "CRUISE": {
+      "sample_count": 246,
+      "distribution": {
+        "Normal": 199,
+        "Warning": 22,
+        "Watch": 20,
+        "Critical": 5
+      }
+    },
+    "DESCENT": {
+      "sample_count": 38,
+      "distribution": {
+        "Normal": 28,
+        "Critical": 10
+      }
+    },
+    "ENDURANCE": {
+      "sample_count": 103,
+      "distribution": {
+        "Normal": 103
+      }
+    },
+    "LANDING": {
+      "sample_count": 30,
+      "distribution": {
+        "Critical": 15,
+        "Normal": 15
+      }
+    },
+    "STARTUP": {
+      "sample_count": 15,
+      "distribution": {
+        "Normal": 15
+      }
+    },
+    "TAKEOFF": {
+      "sample_count": 8,
+      "distribution": {
+        "Normal": 8
+      }
+    }
+  },
+  "transition_false_alarm_analysis": {
+    "summary": "Operating_State transitions (e.g. CRUISE_LOW -> HIGH) induce transient MAP and Fuel_Flow excursions that mimic fault states.",
+    "findings": [
+      "In E0 baseline, step changes in throttle during CRUISE_LOW -> HIGH lead to transient false positives (Normal misclassified as Watch/Warning).",
+      "In E1 and E4, causal derivatives (dX/dt) capture the deliberate rate of change, distinguishing smooth pilot/autopilot transitions from abrupt mechanical breakdown.",
+      "Cross-sensor ratios (RPM/MAP, Fuel_Flow/RPM) normalize operating point variations across cruise and high-power regimes."
+    ],
+    "recommendation": "Preserve explicit Operating_State one-hot encoding in feature vector, combined with causal derivatives to buffer transition excursions."
+  }
+}
