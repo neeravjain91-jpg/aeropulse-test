@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import joblib
@@ -88,6 +89,14 @@ class AeroTwinAI:
             except Exception:
                 self.autoencoder = None
 
+    def reset(self, engine_id: Optional[str] = None) -> None:
+        """Resets all internal sub-system states to prevent cross-mission state leakage."""
+        self.twin.reset()
+        self.rul.reset(engine_id)
+        self.tcn_buffer.reset()
+        from .sensor_fault_isolation import get_sensor_fault_isolation_engine
+        get_sensor_fault_isolation_engine().reset(engine_id)
+
     def analyze(
         self,
         telemetry: dict,
@@ -148,7 +157,8 @@ class AeroTwinAI:
         # ---------------------------------------------------------
         # 4. SENSOR HEALTH & INTEGRITY ASSESSMENT
         # ---------------------------------------------------------
-        sensor_health = assess_sensor_health(telemetry, twin)
+        engine_profile = (context.get("engine_id") or context.get("engine_profile")) if context else None
+        sensor_health = assess_sensor_health(telemetry, twin, engine_profile=engine_profile)
 
         # ---------------------------------------------------------
         # 5. TEMPORAL DL CLASSIFIER & AUTOENCODER
@@ -160,7 +170,15 @@ class AeroTwinAI:
         # Construct 13-channel physics-normalized residual vector
         res_vec = []
         for ch in RESIDUAL_CHANNELS_13:
-            obs = float(telemetry.get(ch, exp_dict.get(ch, 0.0)))
+            raw_obs = telemetry.get(ch)
+            if raw_obs is not None:
+                try:
+                    f_obs = float(raw_obs)
+                    obs = f_obs if math.isfinite(f_obs) else float(exp_dict.get(ch, 0.0))
+                except (TypeError, ValueError):
+                    obs = float(exp_dict.get(ch, 0.0))
+            else:
+                obs = float(exp_dict.get(ch, 0.0))
             exp = float(exp_dict.get(ch, 0.0))
             std = max(float(ref_std_dict.get(ch, {}).get("std", 1.0)), 1e-4)
             res_vec.append((obs - exp) / std)
@@ -196,10 +214,11 @@ class AeroTwinAI:
             except Exception:
                 pass
 
-        # Combined Anomaly Flag
+        # Combined Anomaly Flag (suppressed when sensor fault is isolated)
         anomaly_flag = (
             (iso_anomaly_score > 0.005 or tcn_is_anomaly)
-            and float(twin["residual_rms"]) >= 2.0
+            and float(sensor_health.get("bulk_physics_rms_z", twin["residual_rms"])) >= 2.0
+            and not sensor_health.get("is_sensor_fault_only", False)
         )
 
         # ---------------------------------------------------------
@@ -226,12 +245,13 @@ class AeroTwinAI:
         #   - ML/fusion diagnostic state (from sensor readings)
         #   - Digital twin physics residual RMS (from sensor vs model comparison)
         #   - Sensor trust score (from cross-channel consistency)
-        # Degradation_Severity is a simulator ground-truth label and MUST NOT
-        # be used as a predictor or penalty term.
+        # Uses bulk_physics_rms_z (excluding untrusted channels) so an isolated sensor fault
+        # does not falsely depress the physical engine health.
+        bulk_rms = float(sensor_health.get("bulk_physics_rms_z", twin.get("residual_rms", 0.0)))
         base_health_index = (
             100.0
             - HEALTH_ORDER.get(diagnostic_evidence.final_diagnosis, 1) * 18.0
-            - min(float(twin["residual_rms"]), 12.0) * 4.0
+            - min(bulk_rms, 12.0) * 4.0
             - max(0.0, 100.0 - sensor_health["overall_trust_score"]) * 0.10
         )
         health_index_value = max(0.0, min(100.0, base_health_index))
@@ -257,6 +277,9 @@ class AeroTwinAI:
         # ---------------------------------------------------------
         rul_context = dict(context) if context else {}
         rul_context["health_index"] = health_index_value
+        if sensor_health.get("is_sensor_fault_only") or sensor_health.get("verdict") == "SENSOR_FAULT_ISOLATED":
+            rul_context["sensor_fault_flag"] = True
+            rul_context["sensor_fault_severity"] = max(0.60, (100.0 - float(sensor_health.get("overall_trust_score", 100.0))) / 100.0)
         rul = self.rul.predict(telemetry, context=rul_context)
 
         # ---------------------------------------------------------

@@ -1,0 +1,374 @@
+{
+  "part": "6.1",
+  "target_repository": "neeravjain91-jpg/aeropulse-test",
+  "branch": "feature/rul-degradation-engineering",
+  "git_provenance": {
+    "base_commit": "668d0eafa46be7aeccf0b7b9f3121b52974a985a",
+    "part_4_commit": "668d0ea",
+    "part_5_status": "Hardened & Validated in Working Tree on feature branch",
+    "part_5_1_status": "Audited & Verified in Working Tree on feature branch",
+    "part_6_status": "Implemented & Validated in Working Tree on feature branch",
+    "current_head": "668d0ea",
+    "history_integrity": "Unmodified, zero force pushes, clean ancestry"
+  },
+  "observability_criteria_validation": {
+    "1_failed_sensor": {
+      "verdict": "SENSOR_FAULT_ISOLATED",
+      "trusted_channel_count": 12,
+      "trusted_channel_fraction": 0.9230769230769231,
+      "suspect_sensors": [
+        "CHT"
+      ],
+      "expected_verdict": "SENSOR_FAULT_ISOLATED",
+      "passed": true
+    },
+    "2_failed_sensors": {
+      "verdict": "SENSOR_FAULT_ISOLATED",
+      "trusted_channel_count": 9,
+      "trusted_channel_fraction": 0.6923076923076923,
+      "suspect_sensors": [
+        "MAP_Injector",
+        "CHT",
+        "Oil_Pressure",
+        "Fuel_Flow"
+      ],
+      "expected_verdict": "SENSOR_FAULT_ISOLATED",
+      "passed": true
+    },
+    "50_percent_trusted": {
+      "verdict": "INSUFFICIENT_OBSERVABILITY",
+      "trusted_channel_count": 5,
+      "trusted_channel_fraction": 0.5,
+      "suspect_sensors": [
+        "CHT",
+        "Oil_Pressure",
+        "Fuel_Flow",
+        "EGT1",
+        "EFI_Water_Temp"
+      ],
+      "expected_verdict": "INSUFFICIENT_OBSERVABILITY",
+      "passed": true
+    },
+    "less_than_60_percent_trusted": {
+      "verdict": "INSUFFICIENT_OBSERVABILITY",
+      "trusted_channel_count": 5,
+      "trusted_channel_fraction": 0.5555555555555556,
+      "suspect_sensors": [
+        "CHT",
+        "Oil_Pressure",
+        "Fuel_Flow",
+        "EFI_Water_Temp"
+      ],
+      "expected_verdict": "INSUFFICIENT_OBSERVABILITY",
+      "passed": true
+    },
+    "less_than_4_trusted_channels": {
+      "verdict": "INSUFFICIENT_OBSERVABILITY",
+      "trusted_channel_count": 3,
+      "trusted_channel_fraction": 0.75,
+      "suspect_sensors": [
+        "CHT"
+      ],
+      "expected_verdict": "INSUFFICIENT_OBSERVABILITY",
+      "passed": true
+    },
+    "correlated_multi_sensor_failure": {
+      "verdict": "INSUFFICIENT_OBSERVABILITY",
+      "trusted_channel_count": 7,
+      "trusted_channel_fraction": 0.5384615384615384,
+      "suspect_sensors": [
+        "CHT",
+        "Oil_Pressure",
+        "Fuel_Flow",
+        "Battery_Voltage",
+        "Alternator_Temp",
+        "EFI_Water_Temp"
+      ],
+      "expected_verdict": "INSUFFICIENT_OBSERVABILITY",
+      "passed": true
+    }
+  },
+  "cases_a_through_h_verification": {
+    "Case_A_Nominal": {
+      "expected": "NOMINAL",
+      "predicted": "NOMINAL",
+      "bulk_rms": 0.11684967331510242,
+      "trusted_channels": 13,
+      "passed": true
+    },
+    "Case_B_Single_Sensor_Bias": {
+      "expected": "SENSOR_FAULT_ISOLATED",
+      "predicted": "SENSOR_FAULT_ISOLATED",
+      "suspect_sensors": [
+        "CHT"
+      ],
+      "bulk_rms": 0.11814539065631523,
+      "passed": true
+    },
+    "Case_C_Single_Sensor_Dropout": {
+      "expected": "SENSOR_FAULT_ISOLATED",
+      "predicted": "SENSOR_FAULT_ISOLATED",
+      "suspect_sensors": [
+        "Oil_Pressure"
+      ],
+      "bulk_rms": 0.120761472884912,
+      "passed": true
+    },
+    "Case_D_Dual_Sensor_Fault": {
+      "expected": "SENSOR_FAULT_ISOLATED",
+      "predicted": "SENSOR_FAULT_ISOLATED",
+      "suspect_sensors": [
+        "CHT",
+        "Fuel_Flow"
+      ],
+      "bulk_rms": 0.10766108438479104,
+      "passed": true
+    },
+    "Case_E_Engine_Degradation_Confirmed": {
+      "expected": "ENGINE_DEGRADATION_CONFIRMED",
+      "predicted": "ENGINE_DEGRADATION_CONFIRMED",
+      "bulk_rms": 2.4902888309468167,
+      "suspect_sensors": [],
+      "passed": true
+    },
+    "Case_F_Compound_Fault": {
+      "expected": "COMPOUND_FAULT",
+      "predicted": "COMPOUND_FAULT",
+      "bulk_rms": 2.5555495169010785,
+      "suspect_sensors": [
+        "Alternator_Temp"
+      ],
+      "passed": true
+    },
+    "Case_G_Observability_Collapse": {
+      "expected": "INSUFFICIENT_OBSERVABILITY",
+      "predicted": "INSUFFICIENT_OBSERVABILITY",
+      "trusted_channel_fraction": 0.5384615384615384,
+      "passed": true
+    },
+    "Case_H_Sensor_Stuck_At": {
+      "expected": "SENSOR_FAULT_ISOLATED",
+      "predicted": "SENSOR_FAULT_ISOLATED",
+      "suspect_sensors": [
+        "MAP_Injector",
+        "Oil_Pressure",
+        "Fuel_Flow"
+      ],
+      "passed": true
+    }
+  },
+  "false_alarm_metric_qualifications": {
+    "false_catastrophe_rate": {
+      "value_percent": 0.0,
+      "scope_statement": "0% on the evaluated controlled fault-injection benchmark.",
+      "mathematical_formula": "FC_Rate = (True Healthy & Predicted Severe Alarm) / True Healthy",
+      "numerator_definition": "Count of controlled test episodes where the physical engine is nominal, but the system erroneously emits ENGINE_DEGRADATION_CONFIRMED.",
+      "denominator_definition": "Total count of evaluated test episodes where the ground-truth engine state is Healthy/Nominal (including isolated transducer faults).",
+      "evaluated_episodes": 60,
+      "false_catastrophes_count": 0
+    },
+    "false_reassurance_rate": {
+      "value_percent": 0.0,
+      "scope_statement": "0% on the evaluated controlled benchmark.",
+      "mathematical_formula": "FR_Rate = (True Degradation & Predicted Nominal/Ignored) / True Degradation",
+      "numerator_definition": "Count of controlled test episodes where the physical engine is degraded, but the system erroneously emits NOMINAL or ignores the degradation.",
+      "denominator_definition": "Total count of evaluated test episodes where the ground-truth engine state is Degraded.",
+      "evaluated_episodes": 40,
+      "false_reassurances_count": 0
+    }
+  },
+  "engine_profile_isolation": {
+    "comparisons": {
+      "Engine_RPM": {
+        "Rotax_nominal": [
+          1400.0,
+          5800.0
+        ],
+        "Rotax_critical_max": 6000.0,
+        "Rotax_slew": 1200.0,
+        "Rotax_unit": "RPM",
+        "Rotax_provenance": "A_EXTERNAL",
+        "TSIO360_nominal": [
+          700.0,
+          2700.0
+        ],
+        "TSIO360_critical_max": 2900.0,
+        "TSIO360_slew": 600.0,
+        "TSIO360_unit": "RPM",
+        "TSIO360_provenance": "A_EXTERNAL",
+        "envelope_distinct": true
+      },
+      "MAP_Injector": {
+        "Rotax_nominal": [
+          15.0,
+          39.9
+        ],
+        "Rotax_critical_max": 45.0,
+        "Rotax_slew": 18.0,
+        "Rotax_unit": "inHg",
+        "Rotax_provenance": "A_EXTERNAL",
+        "TSIO360_nominal": [
+          15.0,
+          38.0
+        ],
+        "TSIO360_critical_max": 42.0,
+        "TSIO360_slew": 15.0,
+        "TSIO360_unit": "inHg",
+        "TSIO360_provenance": "A_EXTERNAL",
+        "envelope_distinct": true
+      },
+      "CHT": {
+        "Rotax_nominal": [
+          140.0,
+          250.0
+        ],
+        "Rotax_critical_max": 275.0,
+        "Rotax_slew": 6.0,
+        "Rotax_unit": "deg_F",
+        "Rotax_provenance": "A_EXTERNAL",
+        "TSIO360_nominal": [
+          240.0,
+          420.0
+        ],
+        "TSIO360_critical_max": 460.0,
+        "TSIO360_slew": 8.0,
+        "TSIO360_unit": "deg_F",
+        "TSIO360_provenance": "A_EXTERNAL",
+        "envelope_distinct": true
+      },
+      "Oil_Pressure": {
+        "Rotax_nominal": [
+          29.0,
+          72.5
+        ],
+        "Rotax_critical_max": 101.5,
+        "Rotax_slew": 25.0,
+        "Rotax_unit": "psi",
+        "Rotax_provenance": "A_EXTERNAL",
+        "TSIO360_nominal": [
+          30.0,
+          60.0
+        ],
+        "TSIO360_critical_max": 100.0,
+        "TSIO360_slew": 20.0,
+        "TSIO360_unit": "psi",
+        "TSIO360_provenance": "A_EXTERNAL",
+        "envelope_distinct": true
+      },
+      "Oil_Temp": {
+        "Rotax_nominal": [
+          120.0,
+          230.0
+        ],
+        "Rotax_critical_max": 266.0,
+        "Rotax_slew": 1.5,
+        "Rotax_unit": "deg_F",
+        "Rotax_provenance": "A_EXTERNAL",
+        "TSIO360_nominal": [
+          140.0,
+          220.0
+        ],
+        "TSIO360_critical_max": 240.0,
+        "TSIO360_slew": 1.5,
+        "TSIO360_unit": "deg_F",
+        "TSIO360_provenance": "A_EXTERNAL",
+        "envelope_distinct": true
+      },
+      "Fuel_Flow": {
+        "Rotax_nominal": [
+          5.0,
+          38.0
+        ],
+        "Rotax_critical_max": 50.0,
+        "Rotax_slew": 12.0,
+        "Rotax_unit": "L/h",
+        "Rotax_provenance": "C_MODEL_DERIVED",
+        "TSIO360_nominal": [
+          8.0,
+          75.0
+        ],
+        "TSIO360_critical_max": 90.0,
+        "TSIO360_slew": 20.0,
+        "TSIO360_unit": "L/h",
+        "TSIO360_provenance": "A_EXTERNAL",
+        "envelope_distinct": true
+      },
+      "EGT1": {
+        "Rotax_nominal": [
+          1100.0,
+          1550.0
+        ],
+        "Rotax_critical_max": 1650.0,
+        "Rotax_slew": 40.0,
+        "Rotax_unit": "deg_F",
+        "Rotax_provenance": "A_EXTERNAL",
+        "TSIO360_nominal": [
+          1200.0,
+          1550.0
+        ],
+        "TSIO360_critical_max": 1650.0,
+        "TSIO360_slew": 45.0,
+        "TSIO360_unit": "deg_F",
+        "TSIO360_provenance": "A_EXTERNAL",
+        "envelope_distinct": true
+      }
+    },
+    "all_profiles_strictly_isolated": true
+  },
+  "rul_robustness_under_faults": {
+    "nominal_rul_hours": 950.0,
+    "nominal_confidence": 0.7,
+    "nominal_interval_hours": 570.0,
+    "sensor_fault_rul_hours": 950.0,
+    "sensor_fault_confidence": 0.49,
+    "sensor_fault_interval_hours": 750.0,
+    "engine_degradation_rul_hours": 66.67,
+    "engine_degradation_confidence": 0.85,
+    "rul_delta_under_sensor_fault": 0.0,
+    "interval_expansion_ratio": 1.32,
+    "passed": true
+  },
+  "aces_real_flight_audit": {
+    "total_rows": 173878,
+    "flight_count": 14,
+    "flights": [
+      "aces1am_2002_191",
+      "aces1am_2002_192",
+      "aces1am_2002_193",
+      "aces1am_2002_214",
+      "aces1am_2002_216",
+      "aces1am_2002_218",
+      "aces1am_2002_220",
+      "aces1am_2002_222",
+      "aces1am_2002_224",
+      "aces1am_2002_225",
+      "aces1am_2002_227",
+      "aces1am_2002_235",
+      "aces1am_2002_237",
+      "aces1am_2002_242"
+    ],
+    "zero_vibration_compliance": true,
+    "vibration_synthetic_fabricated": false,
+    "available_channels": [
+      "Engine_RPM",
+      "MAP_Injector",
+      "CHT",
+      "EGT1",
+      "EGT2",
+      "EGT3",
+      "EGT4",
+      "Oil_Pressure",
+      "Oil_Temp",
+      "Fuel_Flow",
+      "Battery_Voltage",
+      "Battery_Current",
+      "Alternator_Temp",
+      "EFI_Water_Temp"
+    ],
+    "unavailable_channels": [
+      "Vibration"
+    ],
+    "data_provenance": "NASA Altus II Dryden Flight Research Center flight telemetry (strictly non-vibrational instrumentation)"
+  },
+  "overall_verdict": "OPTION_A_PART_6_FULLY_VERIFIED_PROCEED_TO_PART_7"
+}

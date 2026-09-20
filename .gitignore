@@ -31,3 +31,4 @@ FINAL_DATASET/ACES/*
 
 .vercel
 .env*
+models/cmapss_rul_method.joblib

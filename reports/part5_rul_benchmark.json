@@ -1,0 +1,182 @@
+{
+  "benchmark_date": "2026-09-20",
+  "provenance": "AEROPULSE_SYNTHETIC_GROUPED_TRAJECTORIES",
+  "data_split": {
+    "total_trajectories": 42,
+    "train_trajectories": 25,
+    "val_trajectories": 8,
+    "test_trajectories": 9,
+    "trajectory_overlap": 0,
+    "split_mechanism": "Grouped trajectory ID partition"
+  },
+  "models_evaluated": [
+    {
+      "estimator": "E0_CurrentRULService",
+      "mae_hours": 315.65,
+      "rmse_hours": 600.071,
+      "median_absolute_error_hours": 5.55,
+      "zero_crossing_error_hours": 0.002,
+      "monotonicity_violation_rate": 0.0075,
+      "early_warning_lead_time_hours": 6.33,
+      "uncertainty_coverage": 0.178,
+      "mean_interval_width_hours": 153.14,
+      "per_mode_mae": {
+        "lubrication": 301.454,
+        "mechanical": 268.931,
+        "misfire": 327.33,
+        "electrical": 294.876,
+        "thermal": 317.092,
+        "compound": 579.607
+      },
+      "per_engine_mae": {
+        "Rotax-914-Turbo-115HP": 291.559,
+        "Continental-TSIO-360-MB": 579.607
+      }
+    },
+    {
+      "estimator": "E1_PhysicsInformedProjector",
+      "mae_hours": 262.661,
+      "rmse_hours": 489.593,
+      "median_absolute_error_hours": 52.24,
+      "zero_crossing_error_hours": 0.009,
+      "monotonicity_violation_rate": 0.0,
+      "early_warning_lead_time_hours": 4.22,
+      "uncertainty_coverage": 0.087,
+      "mean_interval_width_hours": 101.86,
+      "per_mode_mae": {
+        "lubrication": 315.413,
+        "mechanical": 228.164,
+        "misfire": 255.453,
+        "electrical": 250.411,
+        "thermal": 344.067,
+        "compound": 273.57
+      },
+      "per_engine_mae": {
+        "Rotax-914-Turbo-115HP": 261.666,
+        "Continental-TSIO-360-MB": 273.57
+      }
+    },
+    {
+      "estimator": "E2_PowerLawRegressor",
+      "mae_hours": 182.569,
+      "rmse_hours": 488.59,
+      "median_absolute_error_hours": 1.45,
+      "zero_crossing_error_hours": 0.416,
+      "monotonicity_violation_rate": 0.0,
+      "early_warning_lead_time_hours": 11.5,
+      "uncertainty_coverage": 0.382,
+      "mean_interval_width_hours": 58.11,
+      "per_mode_mae": {
+        "lubrication": 159.435,
+        "mechanical": 188.704,
+        "misfire": 177.341,
+        "electrical": 135.082,
+        "thermal": 74.892,
+        "compound": 469.765
+      },
+      "per_engine_mae": {
+        "Rotax-914-Turbo-115HP": 156.357,
+        "Continental-TSIO-360-MB": 469.765
+      }
+    },
+    {
+      "estimator": "E3_GradientBoostedRegressor",
+      "mae_hours": 0.926,
+      "rmse_hours": 1.425,
+      "median_absolute_error_hours": 0.44,
+      "zero_crossing_error_hours": 0.006,
+      "monotonicity_violation_rate": 0.0,
+      "early_warning_lead_time_hours": 13.67,
+      "uncertainty_coverage": 0.742,
+      "mean_interval_width_hours": 2.48,
+      "per_mode_mae": {
+        "lubrication": 0.653,
+        "mechanical": 1.492,
+        "misfire": 0.329,
+        "electrical": 0.495,
+        "thermal": 0.741,
+        "compound": 0.913
+      },
+      "per_engine_mae": {
+        "Rotax-914-Turbo-115HP": 0.927,
+        "Continental-TSIO-360-MB": 0.913
+      }
+    },
+    {
+      "estimator": "E4_WeibullHazardModel",
+      "mae_hours": 1.274,
+      "rmse_hours": 1.623,
+      "median_absolute_error_hours": 1.08,
+      "zero_crossing_error_hours": 0.642,
+      "monotonicity_violation_rate": 0.0564,
+      "early_warning_lead_time_hours": 13.67,
+      "uncertainty_coverage": 0.462,
+      "mean_interval_width_hours": 2.03,
+      "per_mode_mae": {
+        "lubrication": 0.916,
+        "mechanical": 1.716,
+        "misfire": 1.287,
+        "electrical": 0.838,
+        "thermal": 0.883,
+        "compound": 1.501
+      },
+      "per_engine_mae": {
+        "Rotax-914-Turbo-115HP": 1.253,
+        "Continental-TSIO-360-MB": 1.501
+      }
+    },
+    {
+      "estimator": "E5_CalibratedUncertaintyEstimator",
+      "mae_hours": 262.661,
+      "rmse_hours": 489.593,
+      "median_absolute_error_hours": 52.24,
+      "zero_crossing_error_hours": 0.009,
+      "monotonicity_violation_rate": 0.0,
+      "early_warning_lead_time_hours": 4.22,
+      "uncertainty_coverage": 0.985,
+      "mean_interval_width_hours": 280.42,
+      "per_mode_mae": {
+        "lubrication": 315.413,
+        "mechanical": 228.164,
+        "misfire": 255.453,
+        "electrical": 250.411,
+        "thermal": 344.067,
+        "compound": 273.57
+      },
+      "per_engine_mae": {
+        "Rotax-914-Turbo-115HP": 261.666,
+        "Continental-TSIO-360-MB": 273.57
+      }
+    }
+  ],
+  "cmapss_isolated_methodology_proxy": {
+    "metrics": {
+      "subset": "FD001",
+      "mae_cycles": 13.622750925308592,
+      "rmse_cycles": 18.183055988112542,
+      "rul_cap_cycles": 125.0,
+      "features": [
+        "cycle",
+        "setting_1",
+        "setting_2",
+        "sensor_2",
+        "sensor_3",
+        "sensor_4",
+        "sensor_6",
+        "sensor_7",
+        "sensor_8",
+        "sensor_9",
+        "sensor_11",
+        "sensor_12",
+        "sensor_13",
+        "sensor_14",
+        "sensor_15",
+        "sensor_17",
+        "sensor_20",
+        "sensor_21"
+      ],
+      "domain_note": "NASA C-MAPSS is turbofan data. These metrics validate an RUL methodology, not MALE-UAV aero-piston-engine RUL accuracy."
+    },
+    "disclaimer": "NASA C-MAPSS is commercial turbofan data. It verifies algorithmic prognostic mechanics, not aero-piston engine RUL accuracy."
+  }
+}

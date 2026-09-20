@@ -51,10 +51,13 @@ class RULService:
     MAX_RUL_DROP_FRACTION: float = 0.25
 
     # Engine TBO mapping (Certified specifications / published operator manuals)
+    # TBO is a maintenance service-life ceiling, not a physical failure time.
     ENGINE_TBO_HOURS: Dict[str, float] = {
         "AeroPiston-4C-1.35L": 2000.0,
         "Rotax-914-Turbo-115HP": 1200.0,
         "ROTAX_914_F_TWIN_01": 1200.0,
+        "Continental-TSIO-360-MB": 1800.0,
+        "TSIO_360_MB_ACES_01": 1800.0,
         "Generic-Inline4-AeroDiesel": 1500.0,
         "Generic-2Stroke-Twin-50HP": 500.0,
         "Generic-Rotary-Wankel-40HP": 1000.0,
@@ -73,7 +76,10 @@ class RULService:
         eid = engine_id or self.default_engine_id
         if eid in self.ENGINE_TBO_HOURS:
             return self.ENGINE_TBO_HOURS[eid]
-        if "rotax" in eid.lower() or "914" in eid.lower():
+        eid_lower = eid.lower()
+        if "continental" in eid_lower or "tsio" in eid_lower or "360" in eid_lower:
+            return self.ENGINE_TBO_HOURS["Continental-TSIO-360-MB"]
+        if "rotax" in eid_lower or "914" in eid_lower:
             return self.ENGINE_TBO_HOURS["Rotax-914-Turbo-115HP"]
         return self.DEFAULT_TBO_HOURS
 
@@ -90,11 +96,34 @@ class RULService:
         if not context:
             return 1.0
 
-        altitude_ft = float(context.get("altitude_ft", 3000.0))
-        ambient_c = float(context.get("ambient_c", 25.0))
-        duration_h = float(context.get("duration_h", 4.0))
+        try:
+            altitude_ft = float(context.get("altitude_ft", 3000.0))
+            if not math.isfinite(altitude_ft):
+                altitude_ft = 3000.0
+        except (TypeError, ValueError):
+            altitude_ft = 3000.0
+
+        try:
+            ambient_c = float(context.get("ambient_c", 25.0))
+            if not math.isfinite(ambient_c):
+                ambient_c = 25.0
+        except (TypeError, ValueError):
+            ambient_c = 25.0
+
+        try:
+            duration_h = float(context.get("duration_h", 4.0))
+            if not math.isfinite(duration_h):
+                duration_h = 4.0
+        except (TypeError, ValueError):
+            duration_h = 4.0
+
         rapid_throttle = bool(context.get("rapid_throttle", False))
-        throttle = float(context.get("throttle", 0.60))
+        try:
+            throttle = float(context.get("throttle", 0.60))
+            if not math.isfinite(throttle):
+                throttle = 0.60
+        except (TypeError, ValueError):
+            throttle = 0.60
 
         alt_stress = 1.0 + 0.35 * max(0.0, (altitude_ft - 10000.0) / 15000.0)
         thermal_stress = 1.0 + 0.40 * max(0.0, (ambient_c - 25.0) / 25.0)
@@ -116,19 +145,40 @@ class RULService:
         eid = engine_id or context.get("engine_id") or self.default_engine_id
         tbo_hours = self.get_engine_tbo(eid)
 
-        current_health = max(0.0, min(100.0, float(health_index)))
+        try:
+            raw_health = float(health_index)
+            if not math.isfinite(raw_health):
+                raw_health = 100.0
+        except (TypeError, ValueError):
+            raw_health = 100.0
+        current_health = max(0.0, min(100.0, raw_health))
         stress = self.calculate_mission_stress(context)
 
         # Elapsed operating time in hours
-        elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
+        try:
+            elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
+            if not math.isfinite(elapsed_hours) or elapsed_hours < 0:
+                elapsed_hours = 0.0
+        except (TypeError, ValueError):
+            elapsed_hours = 0.0
         if elapsed_hours == 0.0 and "mission_time_min" in context:
-            elapsed_hours = float(context["mission_time_min"]) / 60.0
+            try:
+                elapsed_hours = max(0.0, float(context["mission_time_min"]) / 60.0)
+            except (TypeError, ValueError):
+                elapsed_hours = 0.0
         elif elapsed_hours == 0.0 and "mission_hours" in context:
-            elapsed_hours = float(context["mission_hours"])
+            try:
+                elapsed_hours = max(0.0, float(context["mission_hours"]))
+            except (TypeError, ValueError):
+                elapsed_hours = 0.0
         elif elapsed_hours == 0.0 and "timestamp" in context:
-            elapsed_hours = float(context["timestamp"]) / 3600.0
+            try:
+                elapsed_hours = max(0.0, float(context["timestamp"]) / 3600.0)
+            except (TypeError, ValueError):
+                elapsed_hours = 0.0
 
         # Mission / Profile Horizon Ceiling if specified
+        # TBO is a maintenance ceiling/horizon, not an inherent physical failure time.
         mission_horizon = context.get("mission_horizon_hours", context.get("max_horizon_hours"))
         horizon_ceiling = float(mission_horizon) if mission_horizon is not None else tbo_hours
 
@@ -296,6 +346,10 @@ class RULService:
         rul_lower = max(0.0, round(rul_h * (1.0 - spread), 2))
         rul_upper = min(tbo_hours * 1.1, round(rul_h * (1.0 + spread), 2))
 
+        deg_mode = str(context.get("degradation_mode") or context.get("fault_mode") or context.get("failure_mode") or "unspecified")
+        traj_ver = str(context.get("trajectory_version", "v2.0-physics"))
+        prov = str(context.get("provenance", "AEROPULSE_SYNTHETIC"))
+
         return {
             "rul_hours": round(rul_h, 2),
             "rul_lower_hours": rul_lower,
@@ -307,7 +361,13 @@ class RULService:
             "failure_mode_risk": self._diagnose_risk_tier(current_health),
             "stress_multiplier": stress,
             "engine_id": eid,
+            "engine_profile": eid,
             "tbo_hours": tbo_hours,
+            "maintenance_tbo_horizon": tbo_hours,
+            "failure_threshold": self.CRITICAL_HEALTH_THRESHOLD,
+            "degradation_mode": deg_mode,
+            "trajectory_version": traj_ver,
+            "provenance": prov,
             "elapsed_hours": round(elapsed_hours, 3),
             "method": method,
         }
@@ -328,26 +388,65 @@ class RULService:
         tbo_hours = self.get_engine_tbo(eid)
 
         sensor_sev = 0.0
+        try:
+            sensor_sev = float(telemetry.get("sensor_fault_severity", context.get("sensor_fault_severity", 0.0)))
+            if not math.isfinite(sensor_sev):
+                sensor_sev = 0.0
+        except (TypeError, ValueError):
+            sensor_sev = 0.0
+
+        if telemetry.get("sensor_fault_flag", False) or context.get("sensor_fault_flag", False):
+            sensor_sev = max(sensor_sev, 0.75)
+
         mech_sev = 0.0
         if "health_index" in telemetry:
-            base_health = float(telemetry["health_index"])
+            try:
+                base_health = float(telemetry["health_index"])
+                if not math.isfinite(base_health):
+                    base_health = 100.0
+            except (TypeError, ValueError):
+                base_health = 100.0
         elif "health_index" in context:
-            base_health = float(context["health_index"])
+            try:
+                base_health = float(context["health_index"])
+                if not math.isfinite(base_health):
+                    base_health = 100.0
+            except (TypeError, ValueError):
+                base_health = 100.0
         else:
             # RC-1 leakage fix: Do NOT derive base_health from
             # Degradation_State or Degradation_Severity (ground-truth labels).
             base_health = 100.0
 
         slope = context.get("degradation_slope")
-        elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
+        elapsed_hours = 0.0
+        try:
+            elapsed_hours = float(context.get("elapsed_hours", context.get("flight_hours", 0.0)))
+            if not math.isfinite(elapsed_hours) or elapsed_hours < 0:
+                elapsed_hours = 0.0
+        except (TypeError, ValueError):
+            elapsed_hours = 0.0
         if elapsed_hours == 0.0 and "mission_time_min" in context:
-            elapsed_hours = float(context["mission_time_min"]) / 60.0
+            try:
+                elapsed_hours = max(0.0, float(context["mission_time_min"]) / 60.0)
+            except (TypeError, ValueError):
+                elapsed_hours = 0.0
 
         stress = self.calculate_mission_stress(context)
         max_achievable = max(0.0, tbo_hours - elapsed_hours * stress)
 
+        deg_mode = str(context.get("degradation_mode") or context.get("fault_mode") or context.get("failure_mode") or "unspecified")
+        traj_ver = str(context.get("trajectory_version", "v2.0-physics"))
+        prov = str(context.get("provenance", "AEROPULSE_SYNTHETIC"))
+
         if slope is not None:
-            slope_val = float(slope)
+            try:
+                slope_val = float(slope)
+                if not math.isfinite(slope_val):
+                    slope_val = -0.05
+            except (TypeError, ValueError):
+                slope_val = -0.05
+
             remaining = base_health - self.CRITICAL_HEALTH_THRESHOLD
             if base_health <= self.CRITICAL_HEALTH_THRESHOLD:
                 rul_val = 0.0
@@ -363,8 +462,8 @@ class RULService:
                 rul_val = max(0.0, min(max_achievable, health_rul))
                 status = "SLOPE_EXTRAPOLATED"
 
-            spread = 0.25
-            conf = 0.85 if sensor_sev < 0.3 else 0.65
+            spread = 0.25 if sensor_sev < 0.3 else 0.45
+            conf = 0.85 if sensor_sev < 0.3 else 0.60
             return {
                 "rul_hours": round(rul_val, 2),
                 "rul_lower_hours": max(0.0, round(rul_val * (1.0 - spread), 2)),
@@ -379,7 +478,13 @@ class RULService:
                 "failure_mode_risk": self._diagnose_risk_tier(base_health),
                 "stress_multiplier": stress,
                 "engine_id": eid,
+                "engine_profile": eid,
                 "tbo_hours": tbo_hours,
+                "maintenance_tbo_horizon": tbo_hours,
+                "failure_threshold": self.CRITICAL_HEALTH_THRESHOLD,
+                "degradation_mode": deg_mode,
+                "trajectory_version": traj_ver,
+                "provenance": prov,
                 "elapsed_hours": round(elapsed_hours, 3),
                 "method": "Explicit Slope Estimation",
             }
@@ -395,8 +500,13 @@ class RULService:
         res["sensor_fault_severity"] = round(sensor_sev, 3)
         res["degradation_slope"] = round(-res.get("degradation_rate_per_hour", 0.05), 4)
         if sensor_sev > 0.3:
-            res["confidence"] = round(res["confidence"] * 0.80, 2)
+            # Sensor degradation reduces confidence and widens uncertainty interval
+            # without triggering catastrophic engine structural RUL collapse
+            res["confidence"] = round(res["confidence"] * 0.70, 2)
             res["rul_confidence"] = res["confidence"]
+            cur_rul = float(res["rul_hours"])
+            res["rul_lower_hours"] = max(0.0, round(cur_rul * 0.60, 2))
+            res["rul_upper_hours"] = min(tbo_hours * 1.1, round(cur_rul * 1.40, 2))
         return res
 
 

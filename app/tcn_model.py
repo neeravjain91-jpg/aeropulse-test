@@ -254,6 +254,12 @@ class TemporalSequenceBuffer:
         self.count = 0
         self.last_timestamp: Optional[float] = None
 
+    def reset(self) -> None:
+        """Resets sequence buffer state."""
+        self.buffer.fill(0.0)
+        self.count = 0
+        self.last_timestamp = None
+
     def push(self, residual_vector_13: Union[List[float], np.ndarray], timestamp: Optional[float] = None) -> np.ndarray:
         """Pushes a 13-channel residual vector into the buffer.
 

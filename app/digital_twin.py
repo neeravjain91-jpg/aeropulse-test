@@ -51,6 +51,11 @@ class ReferenceTwin:
         self._history_z: Dict[str, deque] = {p: deque(maxlen=20) for p in PARAMS}
         self._persistence_counts: Dict[str, int] = {p: 0 for p in PARAMS}
 
+    def reset(self) -> None:
+        """Resets causal rolling history and persistence counts."""
+        self._history_z = {p: deque(maxlen=20) for p in PARAMS}
+        self._persistence_counts = {p: 0 for p in PARAMS}
+
     @property
     def operating_states(self) -> list[str]:
         return sorted(key for key in self.stats if key != "_GLOBAL_")

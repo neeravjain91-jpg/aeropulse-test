@@ -1,0 +1,27 @@
+{
+  "subset": "FD001",
+  "mae_cycles": 13.622750925308592,
+  "rmse_cycles": 18.183055988112542,
+  "rul_cap_cycles": 125.0,
+  "features": [
+    "cycle",
+    "setting_1",
+    "setting_2",
+    "sensor_2",
+    "sensor_3",
+    "sensor_4",
+    "sensor_6",
+    "sensor_7",
+    "sensor_8",
+    "sensor_9",
+    "sensor_11",
+    "sensor_12",
+    "sensor_13",
+    "sensor_14",
+    "sensor_15",
+    "sensor_17",
+    "sensor_20",
+    "sensor_21"
+  ],
+  "domain_note": "NASA C-MAPSS is turbofan data. These metrics validate an RUL methodology, not MALE-UAV aero-piston-engine RUL accuracy."
+}

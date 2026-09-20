@@ -1,0 +1,246 @@
+{
+  "validation_date": "2026-09-20",
+  "provenance": "AEROPULSE_X_PART5_VALIDATION",
+  "synthetic_benchmark_summary": {
+    "E0_CurrentRULService": {
+      "mae": 315.65,
+      "zero_crossing_error": 0.002,
+      "coverage": 0.178
+    },
+    "E1_PhysicsInformedProjector": {
+      "mae": 262.661,
+      "zero_crossing_error": 0.009,
+      "coverage": 0.087
+    },
+    "E2_PowerLawRegressor": {
+      "mae": 182.569,
+      "zero_crossing_error": 0.416,
+      "coverage": 0.382
+    },
+    "E3_GradientBoostedRegressor": {
+      "mae": 0.926,
+      "zero_crossing_error": 0.006,
+      "coverage": 0.742
+    },
+    "E4_WeibullHazardModel": {
+      "mae": 1.274,
+      "zero_crossing_error": 0.642,
+      "coverage": 0.462
+    },
+    "E5_CalibratedUncertaintyEstimator": {
+      "mae": 262.661,
+      "zero_crossing_error": 0.009,
+      "coverage": 0.985
+    }
+  },
+  "aces_operational_consistency": {
+    "status": "VALIDATED",
+    "disclaimer": "ACES contains operational aero-piston flights without run-to-failure ground truth. Metrics validate operational trend consistency, not empirical RUL accuracy.",
+    "engine_profile": "Continental-TSIO-360-MB",
+    "tbo_ceiling_hours": 1800.0,
+    "flights_evaluated": [
+      {
+        "flight_id": "aces1am_2002_191",
+        "samples_analyzed": 201,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_192",
+        "samples_analyzed": 564,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_193",
+        "samples_analyzed": 677,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_214",
+        "samples_analyzed": 383,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_216",
+        "samples_analyzed": 651,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_218",
+        "samples_analyzed": 313,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_220",
+        "samples_analyzed": 717,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_222",
+        "samples_analyzed": 1478,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_224",
+        "samples_analyzed": 339,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_225",
+        "samples_analyzed": 546,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_227",
+        "samples_analyzed": 993,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_235",
+        "samples_analyzed": 758,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_237",
+        "samples_analyzed": 470,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      },
+      {
+        "flight_id": "aces1am_2002_242",
+        "samples_analyzed": 612,
+        "mean_health_index": 100.0,
+        "mean_projected_rul_hours": 1800.0,
+        "rul_temporal_stability_cv": 0.0,
+        "monotonic_consistency": true
+      }
+    ]
+  },
+  "adversarial_robustness": {
+    "all_adversarial_tests_passed": true,
+    "total_scenarios": 12,
+    "results": [
+      {
+        "scenario": "nan_health",
+        "passed": true,
+        "rul_service_rul": 1998.0,
+        "projector_rul": 1198.0,
+        "error": null
+      },
+      {
+        "scenario": "inf_health",
+        "passed": true,
+        "rul_service_rul": 1998.0,
+        "projector_rul": 1198.0,
+        "error": null
+      },
+      {
+        "scenario": "negative_elapsed",
+        "passed": true,
+        "rul_service_rul": 1692.31,
+        "projector_rul": 1100.0,
+        "error": null
+      },
+      {
+        "scenario": "nan_elapsed",
+        "passed": true,
+        "rul_service_rul": 1692.31,
+        "projector_rul": 1100.0,
+        "error": null
+      },
+      {
+        "scenario": "extreme_temperature",
+        "passed": true,
+        "rul_service_rul": 1383.92,
+        "projector_rul": 900.0,
+        "error": null
+      },
+      {
+        "scenario": "abrupt_throttle_transient",
+        "passed": true,
+        "rul_service_rul": 1381.22,
+        "projector_rul": 740.74,
+        "error": null
+      },
+      {
+        "scenario": "high_altitude_stress",
+        "passed": true,
+        "rul_service_rul": 1536.38,
+        "projector_rul": 740.74,
+        "error": null
+      },
+      {
+        "scenario": "sensor_dropout",
+        "passed": true,
+        "rul_service_rul": 2000.0,
+        "projector_rul": 1200.0,
+        "error": null
+      },
+      {
+        "scenario": "sensor_bias_isolated",
+        "passed": true,
+        "rul_service_rul": 1535.38,
+        "projector_rul": 1000.0,
+        "error": null
+      },
+      {
+        "scenario": "timeline_rewind",
+        "passed": true,
+        "rul_service_rul": 1537.69,
+        "projector_rul": 1000.0,
+        "error": null
+      },
+      {
+        "scenario": "engine_switch_isolation",
+        "passed": true,
+        "rul_service_rul": 1577.58,
+        "projector_rul": 1140.0,
+        "error": null
+      },
+      {
+        "scenario": "invalid_engine_id",
+        "passed": true,
+        "rul_service_rul": 1690.62,
+        "projector_rul": 1100.0,
+        "error": null
+      }
+    ]
+  }
+}

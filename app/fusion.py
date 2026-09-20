@@ -55,8 +55,15 @@ class FusionEngine:
         if not tcn_probs:
             tcn_probs = dict(hgb_probs)
 
+        bulk_rms = float(sensor_health.get("bulk_physics_rms_z", rms_z))
+        is_isolated = bool(
+            sensor_health.get("is_sensor_fault_only")
+            or sensor_health.get("verdict") == "SENSOR_FAULT_ISOLATED"
+            or (trust < 40.0 and len(suspects) <= 2 and bulk_rms < 2.0)
+        )
+
         # 1. Deterministic Sensor fault isolation veto (Safety Rule 1)
-        if trust < 40.0 and len(suspects) <= 2 and rms_z < 2.0:
+        if is_isolated and bulk_rms < 2.0:
             final_diag = "Watch"
             conf = 0.85
             reasons.append(f"ISOLATED_SENSOR_FAULT: {', '.join(suspects)} untrusted while engine bulk physics normal.")
@@ -66,7 +73,7 @@ class FusionEngine:
                 anomaly_reconstruction_loss=anomaly_loss,
                 is_unknown_anomaly=is_unknown_anomaly,
                 physics_max_abs_z=max_z,
-                physics_residual_rms=rms_z,
+                physics_residual_rms=bulk_rms,
                 sensor_trust_score=trust,
                 suspect_sensors=suspects,
                 final_diagnosis=final_diag,
@@ -75,7 +82,7 @@ class FusionEngine:
             )
 
         # 2. Unknown Multi-Sensor Anomaly veto (Safety Rule 2)
-        if is_unknown_anomaly and max_z > 2.5:
+        if is_unknown_anomaly and max_z > 2.5 and not is_isolated:
             final_diag = "Critical"
             conf = 0.90
             reasons.append("UNKNOWN_ANOMALY_INVESTIGATE: Multi-sensor sequence reconstruction loss exceeded statistical threshold.")

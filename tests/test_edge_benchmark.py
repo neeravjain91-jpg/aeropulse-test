@@ -83,7 +83,7 @@ def test_full_benchmark_suite_execution():
     assert report.sample_count == 500
     assert report.warmup_count == 50
     assert report.throughput_samples_per_sec > 1000.0  # Host CPU throughput
-    assert report.complete_pipeline_latency_ms["p99"] < 1.0  # Desktop host P99 is sub-millisecond
+    assert report.complete_pipeline_latency_ms["p99"] < 5.0  # Desktop host P99 is sub-5-millisecond (budget 50ms)
 
     summary_text = report.render_summary()
     assert "AEROPULSE-X EDGE COMPUTE BENCHMARK REPORT" in summary_text

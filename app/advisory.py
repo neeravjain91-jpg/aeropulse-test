@@ -91,9 +91,15 @@ def fault_advisory(telemetry: dict, twin: dict, sensor_health: dict | None = Non
         )
 
     # 4. Combustion Instability & Cylinder Misfire
-    egt1 = float(telemetry.get("EGT1", 1200.0))
-    egt2 = float(telemetry.get("EGT2", 1200.0))
-    egt3 = float(telemetry.get("EGT3", 1200.0))
+    def _safe_float(val, default: float) -> float:
+        try:
+            return float(val) if val is not None else default
+        except (ValueError, TypeError):
+            return default
+
+    egt1 = _safe_float(telemetry.get("EGT1"), 1200.0)
+    egt2 = _safe_float(telemetry.get("EGT2"), 1200.0)
+    egt3 = _safe_float(telemetry.get("EGT3"), 1200.0)
     egt_spread = max(egt1, egt2, egt3) - min(egt1, egt2, egt3)
 
     if egt_spread > 120.0:

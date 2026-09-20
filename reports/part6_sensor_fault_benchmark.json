@@ -1,0 +1,626 @@
+{
+  "title": "AeroPulse-X Part 6/7: Sensor Fault Isolation & Fault-Tolerant Analytics Benchmark",
+  "benchmark_matrix": {
+    "models": [
+      "E0_Naive",
+      "E1_Range_Slew",
+      "E2_Virtual_Sensors",
+      "E3_Peer_Consistency",
+      "E4_Cross_Sensor_Rules",
+      "E5_Full_Integrated"
+    ],
+    "cases": [
+      "CASE_A_NOMINAL",
+      "CASE_B_SINGLE_DROPOUT",
+      "CASE_C_STUCK_AT",
+      "CASE_D_SENSOR_BIAS_DRIFT",
+      "CASE_E_SPIKE_INTERMITTENT",
+      "CASE_F_ENGINE_DEGRADATION",
+      "CASE_G_COMPOUND_FAULT",
+      "CASE_H_INSUFFICIENT_OBSERVABILITY"
+    ],
+    "performance_matrix": {
+      "E0_Naive": {
+        "CASE_A_NOMINAL": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 1.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_B_SINGLE_DROPOUT": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_C_STUCK_AT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_D_SENSOR_BIAS_DRIFT": {
+          "precision": 1.0,
+          "recall": 0.2857,
+          "f1_score": 0.4444,
+          "fpr": 0.0,
+          "fnr": 0.7143,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 4.0
+        },
+        "CASE_E_SPIKE_INTERMITTENT": {
+          "precision": 0.6,
+          "recall": 0.4286,
+          "f1_score": 0.5,
+          "fpr": 0.25,
+          "fnr": 0.5714,
+          "attribution_accuracy": 0.4,
+          "mean_delay_sec": 2.0
+        },
+        "CASE_F_ENGINE_DEGRADATION": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1_score": 0.6667,
+          "fpr": 0.0,
+          "fnr": 0.5,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 2.5
+        },
+        "CASE_G_COMPOUND_FAULT": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_H_INSUFFICIENT_OBSERVABILITY": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        }
+      },
+      "E1_Range_Slew": {
+        "CASE_A_NOMINAL": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_B_SINGLE_DROPOUT": {
+          "precision": 0.6667,
+          "recall": 1.0,
+          "f1_score": 0.8,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_C_STUCK_AT": {
+          "precision": 0.3333,
+          "recall": 1.0,
+          "f1_score": 0.5,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 2.5
+        },
+        "CASE_D_SENSOR_BIAS_DRIFT": {
+          "precision": 0.4667,
+          "recall": 1.0,
+          "f1_score": 0.6364,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 1.5
+        },
+        "CASE_E_SPIKE_INTERMITTENT": {
+          "precision": 0.4667,
+          "recall": 1.0,
+          "f1_score": 0.6364,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.4667,
+          "mean_delay_sec": 1.5
+        },
+        "CASE_F_ENGINE_DEGRADATION": {
+          "precision": 0.6667,
+          "recall": 1.0,
+          "f1_score": 0.8,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_G_COMPOUND_FAULT": {
+          "precision": 0.6667,
+          "recall": 1.0,
+          "f1_score": 0.8,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_H_INSUFFICIENT_OBSERVABILITY": {
+          "precision": 0.6667,
+          "recall": 1.0,
+          "f1_score": 0.8,
+          "fpr": 1.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 0.0
+        }
+      },
+      "E2_Virtual_Sensors": {
+        "CASE_A_NOMINAL": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 1.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_B_SINGLE_DROPOUT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_C_STUCK_AT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_D_SENSOR_BIAS_DRIFT": {
+          "precision": 1.0,
+          "recall": 0.2857,
+          "f1_score": 0.4444,
+          "fpr": 0.0,
+          "fnr": 0.7143,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 4.0
+        },
+        "CASE_E_SPIKE_INTERMITTENT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_F_ENGINE_DEGRADATION": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1_score": 0.6667,
+          "fpr": 0.0,
+          "fnr": 0.5,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 2.5
+        },
+        "CASE_G_COMPOUND_FAULT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_H_INSUFFICIENT_OBSERVABILITY": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        }
+      },
+      "E3_Peer_Consistency": {
+        "CASE_A_NOMINAL": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 1.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_B_SINGLE_DROPOUT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_C_STUCK_AT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_D_SENSOR_BIAS_DRIFT": {
+          "precision": 1.0,
+          "recall": 0.2857,
+          "f1_score": 0.4444,
+          "fpr": 0.0,
+          "fnr": 0.7143,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 4.0
+        },
+        "CASE_E_SPIKE_INTERMITTENT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_F_ENGINE_DEGRADATION": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1_score": 0.6667,
+          "fpr": 0.0,
+          "fnr": 0.5,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 2.5
+        },
+        "CASE_G_COMPOUND_FAULT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_H_INSUFFICIENT_OBSERVABILITY": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        }
+      },
+      "E4_Cross_Sensor_Rules": {
+        "CASE_A_NOMINAL": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 1.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_B_SINGLE_DROPOUT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_C_STUCK_AT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_D_SENSOR_BIAS_DRIFT": {
+          "precision": 1.0,
+          "recall": 0.2857,
+          "f1_score": 0.4444,
+          "fpr": 0.0,
+          "fnr": 0.7143,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 4.0
+        },
+        "CASE_E_SPIKE_INTERMITTENT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_F_ENGINE_DEGRADATION": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1_score": 0.6667,
+          "fpr": 0.0,
+          "fnr": 0.5,
+          "attribution_accuracy": 0.6667,
+          "mean_delay_sec": 2.5
+        },
+        "CASE_G_COMPOUND_FAULT": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_H_INSUFFICIENT_OBSERVABILITY": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.0,
+          "fnr": 1.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        }
+      },
+      "E5_Full_Integrated": {
+        "CASE_A_NOMINAL": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1_score": 0.0,
+          "fpr": 0.4667,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.5333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_B_SINGLE_DROPOUT": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 1.0,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_C_STUCK_AT": {
+          "precision": 0.625,
+          "recall": 1.0,
+          "f1_score": 0.7692,
+          "fpr": 0.3,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.8,
+          "mean_delay_sec": 2.5
+        },
+        "CASE_D_SENSOR_BIAS_DRIFT": {
+          "precision": 0.7,
+          "recall": 1.0,
+          "f1_score": 0.8235,
+          "fpr": 0.375,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.8,
+          "mean_delay_sec": 1.5
+        },
+        "CASE_E_SPIKE_INTERMITTENT": {
+          "precision": 0.7778,
+          "recall": 1.0,
+          "f1_score": 0.875,
+          "fpr": 0.25,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.8667,
+          "mean_delay_sec": 1.5
+        },
+        "CASE_F_ENGINE_DEGRADATION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.3333,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_G_COMPOUND_FAULT": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 0.5167,
+          "mean_delay_sec": 0.0
+        },
+        "CASE_H_INSUFFICIENT_OBSERVABILITY": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1_score": 1.0,
+          "fpr": 0.0,
+          "fnr": 0.0,
+          "attribution_accuracy": 1.0,
+          "mean_delay_sec": 0.0
+        }
+      }
+    },
+    "summary_metrics": {
+      "E0_Naive": {
+        "overall_precision": 0.9524,
+        "overall_recall": 0.678,
+        "overall_f1": 0.7921,
+        "overall_fpr": 0.0328,
+        "overall_fnr": 0.322,
+        "attribution_accuracy": 0.5333,
+        "mean_detection_delay_sec": 1.417,
+        "false_catastrophe_rate": 0.5172,
+        "false_reassurance_rate": 0.25
+      },
+      "E1_Range_Slew": {
+        "overall_precision": 0.4917,
+        "overall_recall": 1.0,
+        "overall_f1": 0.6592,
+        "overall_fpr": 1.0,
+        "overall_fnr": 0.0,
+        "attribution_accuracy": 0.3083,
+        "mean_detection_delay_sec": 0.786,
+        "false_catastrophe_rate": 0.0,
+        "false_reassurance_rate": 0.0
+      },
+      "E2_Virtual_Sensors": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.1186,
+        "overall_f1": 0.2121,
+        "overall_fpr": 0.0,
+        "overall_fnr": 0.8814,
+        "attribution_accuracy": 0.55,
+        "mean_detection_delay_sec": 3.25,
+        "false_catastrophe_rate": 0.069,
+        "false_reassurance_rate": 0.75
+      },
+      "E3_Peer_Consistency": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.1186,
+        "overall_f1": 0.2121,
+        "overall_fpr": 0.0,
+        "overall_fnr": 0.8814,
+        "attribution_accuracy": 0.55,
+        "mean_detection_delay_sec": 3.25,
+        "false_catastrophe_rate": 0.069,
+        "false_reassurance_rate": 0.75
+      },
+      "E4_Cross_Sensor_Rules": {
+        "overall_precision": 1.0,
+        "overall_recall": 0.1186,
+        "overall_f1": 0.2121,
+        "overall_fpr": 0.0,
+        "overall_fnr": 0.8814,
+        "attribution_accuracy": 0.55,
+        "mean_detection_delay_sec": 3.25,
+        "false_catastrophe_rate": 0.069,
+        "false_reassurance_rate": 0.75
+      },
+      "E5_Full_Integrated": {
+        "overall_precision": 0.7973,
+        "overall_recall": 1.0,
+        "overall_f1": 0.8872,
+        "overall_fpr": 0.2459,
+        "overall_fnr": 0.0,
+        "attribution_accuracy": 0.7312,
+        "mean_detection_delay_sec": 0.786,
+        "false_catastrophe_rate": 0.0,
+        "false_reassurance_rate": 0.0
+      }
+    }
+  },
+  "rul_non_collapse_validation": {
+    "baseline_nominal_health": 100.0,
+    "baseline_nominal_rul_hours": 1200.0,
+    "total_scenarios_tested": 5,
+    "e0_false_catastrophe_collapses": 3,
+    "e5_false_catastrophe_collapses": 0,
+    "scenarios": [
+      {
+        "scenario": "CHT_Dropout_Null",
+        "target_sensor": "CHT",
+        "nominal_health_index": 100.0,
+        "nominal_rul_hours": 1200.0,
+        "e0_health_index": 50.0,
+        "e0_rul_hours": 138.5,
+        "e0_rul_status": "WARNING_ELEVATED_WEAR",
+        "e0_collapsed": false,
+        "e5_health_index": 90.5,
+        "e5_rul_hours": 1024.6,
+        "e5_rul_status": "NOMINAL_HEALTH",
+        "e5_verdict": "SENSOR_FAULT_ISOLATED",
+        "e5_collapsed": false,
+        "rul_preservation_ratio": 0.8538
+      },
+      {
+        "scenario": "Oil_Pressure_Dropout_Zero",
+        "target_sensor": "Oil_Pressure",
+        "nominal_health_index": 100.0,
+        "nominal_rul_hours": 1200.0,
+        "e0_health_index": 32.5,
+        "e0_rul_hours": 0.0,
+        "e0_rul_status": "CRITICAL_MAINTENANCE_REQUIRED",
+        "e0_collapsed": true,
+        "e5_health_index": 91.0,
+        "e5_rul_hours": 1033.8,
+        "e5_rul_status": "NOMINAL_HEALTH",
+        "e5_verdict": "SENSOR_FAULT_ISOLATED",
+        "e5_collapsed": false,
+        "rul_preservation_ratio": 0.8615
+      },
+      {
+        "scenario": "Fuel_Flow_Spike_Outlier",
+        "target_sensor": "Fuel_Flow",
+        "nominal_health_index": 100.0,
+        "nominal_rul_hours": 1200.0,
+        "e0_health_index": 42.4,
+        "e0_rul_hours": 68.0,
+        "e0_rul_status": "WARNING_ELEVATED_WEAR",
+        "e0_collapsed": false,
+        "e5_health_index": 91.0,
+        "e5_rul_hours": 1033.8,
+        "e5_rul_status": "NOMINAL_HEALTH",
+        "e5_verdict": "SENSOR_FAULT_ISOLATED",
+        "e5_collapsed": false,
+        "rul_preservation_ratio": 0.8615
+      },
+      {
+        "scenario": "EGT2_Thermocouple_Disconnect",
+        "target_sensor": "EGT2",
+        "nominal_health_index": 100.0,
+        "nominal_rul_hours": 1200.0,
+        "e0_health_index": 14.7,
+        "e0_rul_hours": 0.0,
+        "e0_rul_status": "CRITICAL_MAINTENANCE_REQUIRED",
+        "e0_collapsed": true,
+        "e5_health_index": 92.0,
+        "e5_rul_hours": 1052.3,
+        "e5_rul_status": "NOMINAL_HEALTH",
+        "e5_verdict": "SENSOR_FAULT_ISOLATED",
+        "e5_collapsed": false,
+        "rul_preservation_ratio": 0.8769
+      },
+      {
+        "scenario": "Battery_Voltage_Drop_Transducer",
+        "target_sensor": "Battery_Voltage",
+        "nominal_health_index": 100.0,
+        "nominal_rul_hours": 1200.0,
+        "e0_health_index": 24.7,
+        "e0_rul_hours": 0.0,
+        "e0_rul_status": "CRITICAL_MAINTENANCE_REQUIRED",
+        "e0_collapsed": true,
+        "e5_health_index": 93.0,
+        "e5_rul_hours": 1070.8,
+        "e5_rul_status": "NOMINAL_HEALTH",
+        "e5_verdict": "SENSOR_FAULT_ISOLATED",
+        "e5_collapsed": false,
+        "rul_preservation_ratio": 0.8923
+      }
+    ]
+  }
+}

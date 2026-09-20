@@ -1,12 +1,15 @@
 # AeroPulse-X — Accuracy Improvement Progress
 
 ## CURRENT_PHASE
-**Part 3/7 — Physics + Temporal Feature Engineering** ✅ COMPLETE
+**Part 6/7 — Sensor Fault Isolation & Fault-Tolerant Analytics** ✅ COMPLETE
 
 ## COMPLETED_PHASES
 - [x] Part 1/7 — System Understanding + Baseline
 - [x] Part 2/7 — Dataset + Validation Integrity
 - [x] Part 3/7 — Physics + Temporal Feature Engineering
+- [x] Part 4/7 — Engine-Specific Physics Validation & Model Review
+- [x] Part 5/7 — RUL + Degradation Engineering
+- [x] Part 6/7 — Sensor Fault Isolation & Fault-Tolerant Analytics
 
 ---
 
@@ -291,17 +294,50 @@ Per-flight weakness: Flight 235 → TCN balanced_accuracy=0.760, macro_f1=0.583
 ### Part 3/7 — Physics + Temporal Feature Engineering Deliverables
 1. ✅ Evaluated Experiments E0 through E6 across 6 model families (HistGradientBoosting, ExtraTrees, RandomForest, XGBoost, LightGBM, CatBoost).
 2. ✅ Established immutable baseline (E0 HGB: Acc=0.8919, BalAcc=0.8767, MacroF1=0.8518, CritRec=0.9131, CritF1=0.7974, Latency=10.8μs, Size=939.7KB).
-3. ✅ Highest balanced accuracy achieved by E3 HGB (0.8802 vs 0.8767, Acc=0.8991), but Critical Recall dropped to 0.9087, Critical Precision dropped to 0.6599, and Macro-F1 dropped to 0.8479.
-4. ✅ Production Decision: Per Acceptance Rule, KEEP CURRENT PRODUCTION MODEL (E0 HGB). No candidate clearly improved the real-flight operational diagnostic profile.
-5. ✅ Created `app/feature_engineering.py`, `scripts/benchmark_physics_temporal.py`, `docs/PART3_PHYSICS_TEMPORAL_FEATURE_REPORT.md`, machine-readable reports in `reports/`, and 6 regression tests in `tests/test_feature_engineering_physics_temporal.py` (all passing).
+3. ✅ Production Decision: Per Acceptance Rule, KEEP CURRENT PRODUCTION MODEL (E0 HGB).
+
+### Part 4/7 — Engine-Specific Physics Validation & Model Review Deliverables
+1. ✅ Forensic residual trace: Identified and resolved engine profile mismatch (Rotax 914 F twin-turbo 1.21L vs Continental TSIO-360-MB 5.89L).
+2. ✅ Registered Continental TSIO-360-MB in `app/engine_config.py` with verified FAA TCDS E9CE parameters.
+3. ✅ Validated directional consistency across 6 failure modes (all 6 modes passed).
+4. ✅ Conducted 42-model benchmark confirming E0 superiority across critical recall and real-flight diagnostic stability.
+5. ✅ Created `docs/PART4_ENGINE_RESIDUAL_MODEL_REVIEW.md` and added 6 regression tests in `tests/test_part4_engine_physics.py`. Full suite: 398/398 passing.
+
+### Part 5/7 — RUL + Degradation Engineering Deliverables
+1. ✅ Forensic RUL audit: Decoupled ground truth labels; confirmed zero target and zero future leakage.
+2. ✅ Registered Continental TSIO-360-MB (1800.0h TBO) and Rotax 914 F (1200.0h TBO) in `app/rul_service.py` with provenance.
+3. ✅ Enriched RUL predictions with mandatory metadata: `engine_profile`, `degradation_mode`, `trajectory_version`, `failure_threshold`, `provenance`, `maintenance_tbo_horizon`.
+4. ✅ Decoupled sensor faults from engine structural wear: transducer drift widens intervals without false mechanical RUL collapse.
+5. ✅ Implemented candidate estimators under `BaseRULEstimator` in `app/rul_estimator.py` (E1 Physics Projector, E2 Power-Law Regressor, E3 Gradient Boosted Regressor, E4 Weibull Hazard Model, E5 Calibrated Uncertainty).
+6. ✅ Conducted grouped synthetic trajectory benchmark (42 trajectories, 0 overlap): E3 achieved MAE 0.93h; E5 achieved 98.5% calibrated coverage; E0 and E1 achieved zero-crossing error <= 0.009h with 0 monotonicity violations.
+7. ✅ Validated isolated NASA C-MAPSS FD001 benchmark (MAE 13.62 cycles, RMSE 18.18 cycles).
+8. ✅ Validated 14 NASA ACES operational flights for degradation consistency (CV=0.0, 100% monotonic consistency).
+9. ✅ Passed all 12 adversarial stress scenarios (NaN, Inf, dropouts, extreme temps, throttle steps, engine switching).
+10. ✅ Production Decision: **OPTION C (KEEP CURRENT RUL SYSTEM + ADD EXPERIMENTAL ESTIMATOR)**. Production health classifier remains E0 HistGradientBoosting (`models/aces_health.joblib`).
+11. ✅ Generated `docs/PART5_RUL_DEGRADATION_REPORT.md`, `reports/part5_rul_benchmark.json`, and `reports/part5_degradation_validation.json`.
+12. ✅ Created 14 dedicated regression tests in `tests/test_rul_degradation_engineering.py`. Full suite: **412/412 passing**.
+
+### Part 6/7 — Sensor Fault Isolation & Fault-Tolerant Analytics Deliverables
+1. ✅ Implemented authoritative `app/sensor_fault_isolation.py` distinguishing `NOMINAL`, `SENSOR_FAULT_ISOLATED`, `ENGINE_DEGRADATION_CONFIRMED`, `COMPOUND_FAULT`, and `INSUFFICIENT_OBSERVABILITY`.
+2. ✅ Built 8-fault taxonomy (`DROPOUT`, `STUCK_AT`, `BIAS`, `DRIFT`, `SPIKE_OUTLIER`, `INTERMITTENT`, `IMPLAUSIBLE_RATE_OF_CHANGE`, `CROSS_SENSOR_INCONSISTENCY`).
+3. ✅ Formulated strict unit contract via `TelemetryUnitAdapter` (RPM, deg_F, psi, inHg, V, A, L/h) and provenance registry (Categories A, B, C, D).
+4. ✅ Implemented 4 dependency-aware virtual sensors (Oil Pressure, Fuel Flow, CHT, Bus Voltage) with leave-one-out dependency gating.
+5. ✅ Formulated 7 physical cross-sensor coupling rules and bulk physics RMS computed strictly over trusted channels.
+6. ✅ Evaluated benchmark ablation matrix (E0 - E5): E5 achieved **0.887 F1**, **73.1% attribution accuracy**, **0.0% False Catastrophe Rate** (reduced from 51.7% in E0), **0.0% False Reassurance Rate**, and **0.79s detection delay**.
+7. ✅ Validated RUL non-collapse: 0/5 false collapses under E5, preserving 85.4% to 89.2% of nominal RUL under isolated sensor failures.
+8. ✅ Audited all 14 NASA ACES operational flights (4,355 samples); certified 100% zero-vibration Altus II compliance.
+9. ✅ Refactored `app/sensor_health.py` as a 100% backward-compatible adapter.
+10. ✅ Production Decision: **OPTION B (INTEGRATE PART 6 FAULT ISOLATION ENGINE)**.
+11. ✅ Generated `docs/PART6_SENSOR_FAULT_ISOLATION_REPORT.md`, `reports/part6_sensor_fault_benchmark.json`, and `reports/part6_sensor_health_validation.json`.
+12. ✅ Created 25 dedicated unit tests in `tests/test_sensor_fault_isolation.py`. Full repository suite: **441/441 passing (100%)**.
 
 ## NEXT_PHASE
-**Part 4/7 — Anomaly Detection & Multimodal Diagnostic Refinement**
+**Part 7/7 — Final System Integration, Mission Replay & Certification**
 
 Priority:
-1. Optimize IsolationForest contamination threshold and TCN Autoencoder reconstruction threshold $\tau$.
-2. Reduce false alarm rate on high-altitude real-flight transitions (from 14.38% in HIGH state).
-3. Multimodal fusion calibration between Model A (HGB) and Model B (TCN).
+1. End-to-end mission replay validation across all 14 ACES flights.
+2. Aerospace software verification artifacts (DO-178C / DO-254 readiness).
+3. Production deployment packaging.
 
 ## IMPORTANT_DECISIONS
 - Do NOT modify the health index formula in a way that removes all degradation sensitivity — the formula should respond to degradation, but via observable sensor deviations, not via ground-truth labels.

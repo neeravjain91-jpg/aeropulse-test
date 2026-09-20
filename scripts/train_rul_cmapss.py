@@ -21,8 +21,10 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 
+DEFAULT_CMAPSS = Path("c:/Users/ASUS/Downloads/AeroPulse-Datasets/C-MAPSS/6. Turbofan Engine Degradation Simulation Data Set/CMAPSSData")
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--cmapss-dir", required=True)
+parser.add_argument("--cmapss-dir", default=str(DEFAULT_CMAPSS) if DEFAULT_CMAPSS.exists() else None, required=not DEFAULT_CMAPSS.exists())
 parser.add_argument("--subset", default="FD001")
 parser.add_argument("--rul-cap", type=float, default=125.0)
 args = parser.parse_args()
@@ -31,6 +33,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(args.cmapss_dir).expanduser().resolve()
 OUT = ROOT / "models"
 OUT.mkdir(exist_ok=True)
+REPORTS = ROOT / "reports"
+REPORTS.mkdir(exist_ok=True)
 
 columns = (
     ["unit", "cycle"]
@@ -92,4 +96,5 @@ joblib.dump(
     OUT / "cmapss_rul_method.joblib",
 )
 (OUT / "cmapss_rul_metrics.json").write_text(json.dumps(metrics, indent=2))
+(REPORTS / "cmapss_rul_metrics.json").write_text(json.dumps(metrics, indent=2))
 print(json.dumps(metrics, indent=2))

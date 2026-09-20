@@ -1,0 +1,247 @@
+{
+  "audit_date": "2026-09-20",
+  "provenance": "AEROPULSE_X_PART5_1_HARDENING",
+  "e3_feature_ablations": {
+    "A_health_only": {
+      "features": [
+        "health_index"
+      ],
+      "mae_hours": 0.885,
+      "rmse_hours": 1.367,
+      "median_absolute_error_hours": 0.527
+    },
+    "B_health_and_elapsed": {
+      "features": [
+        "health_index",
+        "elapsed_hours"
+      ],
+      "mae_hours": 0.839,
+      "rmse_hours": 1.281,
+      "median_absolute_error_hours": 0.473
+    },
+    "C_health_and_dh_dt": {
+      "features": [
+        "health_index",
+        "dh_dt"
+      ],
+      "mae_hours": 0.806,
+      "rmse_hours": 1.26,
+      "median_absolute_error_hours": 0.448
+    },
+    "D_health_and_stress": {
+      "features": [
+        "health_index",
+        "stress_multiplier"
+      ],
+      "mae_hours": 0.863,
+      "rmse_hours": 1.333,
+      "median_absolute_error_hours": 0.503
+    },
+    "E_all_features": {
+      "features": [
+        "health_index",
+        "elapsed_hours",
+        "stress_multiplier",
+        "dh_dt",
+        "cht",
+        "egt_spread",
+        "oil_pressure",
+        "oil_temp",
+        "vibration",
+        "efficiency"
+      ],
+      "mae_hours": 0.817,
+      "rmse_hours": 1.314,
+      "median_absolute_error_hours": 0.37
+    }
+  },
+  "leave_one_mode_out": {
+    "compound": {
+      "train_trajectories": 36,
+      "test_trajectories": 6,
+      "mae_hours": 0.973,
+      "rmse_hours": 1.265,
+      "medae_hours": 0.809
+    },
+    "electrical": {
+      "train_trajectories": 36,
+      "test_trajectories": 6,
+      "mae_hours": 0.724,
+      "rmse_hours": 0.996,
+      "medae_hours": 0.512
+    },
+    "injector": {
+      "train_trajectories": 36,
+      "test_trajectories": 6,
+      "mae_hours": 0.967,
+      "rmse_hours": 1.286,
+      "medae_hours": 0.814
+    },
+    "lubrication": {
+      "train_trajectories": 36,
+      "test_trajectories": 6,
+      "mae_hours": 0.577,
+      "rmse_hours": 0.902,
+      "medae_hours": 0.306
+    },
+    "mechanical": {
+      "train_trajectories": 36,
+      "test_trajectories": 6,
+      "mae_hours": 1.072,
+      "rmse_hours": 1.614,
+      "medae_hours": 0.515
+    },
+    "misfire": {
+      "train_trajectories": 36,
+      "test_trajectories": 6,
+      "mae_hours": 0.939,
+      "rmse_hours": 1.453,
+      "medae_hours": 0.435
+    },
+    "thermal": {
+      "train_trajectories": 36,
+      "test_trajectories": 6,
+      "mae_hours": 0.942,
+      "rmse_hours": 1.333,
+      "medae_hours": 0.575
+    }
+  },
+  "leave_one_engine_out": {
+    "Continental-TSIO-360-MB": {
+      "train_trajectories": 21,
+      "test_trajectories": 21,
+      "mae_hours": 0.988,
+      "rmse_hours": 1.355,
+      "medae_hours": 0.761
+    },
+    "Rotax-914-Turbo-115HP": {
+      "train_trajectories": 21,
+      "test_trajectories": 21,
+      "mae_hours": 1.066,
+      "rmse_hours": 1.51,
+      "medae_hours": 0.718
+    }
+  },
+  "aces_feature_availability": {
+    "health_index": {
+      "status": "PARTIALLY_AVAILABLE",
+      "source": "Derived by AeroTwin diagnostic pipeline from sensor residuals / ML classifiers.",
+      "raw_channel_in_aces": false,
+      "units": "Percentage [0, 100]",
+      "risk_comment": "Requires operational digital twin model; not an instrumented telemetry sensor."
+    },
+    "elapsed_hours": {
+      "status": "AVAILABLE_IN_ACES",
+      "source": "GPS_Time timestamp delta / flight duration.",
+      "raw_channel_in_aces": true,
+      "units": "Hours",
+      "risk_comment": "Directly available from flight recorder clock."
+    },
+    "stress_multiplier": {
+      "status": "PARTIALLY_AVAILABLE",
+      "source": "Computed from altitude, ambient temp, and engine throttle/RPM.",
+      "raw_channel_in_aces": false,
+      "units": "Dimensionless factor [0.8, 3.5]",
+      "risk_comment": "Altitude and Ambient_Temp exist in ACES; throttle is derived from RPM/MAP."
+    },
+    "dh_dt": {
+      "status": "PARTIALLY_AVAILABLE",
+      "source": "Causal rolling regression slope on past health index.",
+      "raw_channel_in_aces": false,
+      "units": "Health units per hour",
+      "risk_comment": "Derived causally from historical health buffer."
+    },
+    "cht": {
+      "status": "AVAILABLE_IN_ACES",
+      "source": "Cylinder Head Temperature thermocouple (Column 22 'CHT').",
+      "raw_channel_in_aces": true,
+      "units": "Degrees Fahrenheit",
+      "risk_comment": "Fully available in real ACES flight telemetry."
+    },
+    "egt_spread": {
+      "status": "AVAILABLE_IN_ACES",
+      "source": "Exhaust Gas Temperature spread across cylinders (Columns 6-9 'EGT1'..'EGT4').",
+      "raw_channel_in_aces": true,
+      "units": "Degrees Fahrenheit",
+      "risk_comment": "Fully available in real ACES flight telemetry."
+    },
+    "oil_pressure": {
+      "status": "AVAILABLE_IN_ACES",
+      "source": "Oil pressure transducer (Column 21 'Oil_Pressure').",
+      "raw_channel_in_aces": true,
+      "units": "PSI",
+      "risk_comment": "Fully available in real ACES flight telemetry."
+    },
+    "oil_temp": {
+      "status": "AVAILABLE_IN_ACES",
+      "source": "Oil temperature sensor (Column 20 'Oil_Temp').",
+      "raw_channel_in_aces": true,
+      "units": "Degrees Fahrenheit",
+      "risk_comment": "Fully available in real ACES flight telemetry."
+    },
+    "vibration": {
+      "status": "NOT_AVAILABLE",
+      "source": "High-frequency engine casing accelerometer.",
+      "raw_channel_in_aces": false,
+      "units": "g (acceleration)",
+      "risk_comment": "CRITICAL GAP: ACES Altus II flight dataset did not record engine vibration accelerometer data. Simulator models vibration as primary mechanical wear indicator."
+    },
+    "efficiency": {
+      "status": "NOT_AVAILABLE",
+      "source": "Reduced-order brake thermodynamic efficiency calculation.",
+      "raw_channel_in_aces": false,
+      "units": "Dimensionless efficiency ratio [0.0, 1.0]",
+      "risk_comment": "CRITICAL GAP: Direct shaft torque/brake power was not instrumented in ACES; efficiency cannot be observed directly without dynamometer or estimated fuel-power model."
+    }
+  },
+  "uncertainty_audit": {
+    "conformal_calibration_q90_margin_hours": 1.47,
+    "conformal_calibration_q95_margin_hours": 1.958,
+    "overall_conformal_coverage": 0.665,
+    "overall_native_coverage": 0.604,
+    "mean_conformal_interval_width_hours": 2.72,
+    "median_conformal_interval_width_hours": 2.941,
+    "under_coverage_rate": 0.011,
+    "over_coverage_rate": 0.324,
+    "phase_breakdown": {
+      "healthy_early": {
+        "count": 151,
+        "mae_hours": 1.907,
+        "conformal_coverage": 0.424,
+        "native_coverage": 0.51
+      },
+      "moderate": {
+        "count": 53,
+        "mae_hours": 0.563,
+        "conformal_coverage": 0.906,
+        "native_coverage": 0.66
+      },
+      "severe": {
+        "count": 53,
+        "mae_hours": 0.15,
+        "conformal_coverage": 1.0,
+        "native_coverage": 0.698
+      },
+      "critical": {
+        "count": 18,
+        "mae_hours": 0.003,
+        "conformal_coverage": 1.0,
+        "native_coverage": 0.944
+      }
+    }
+  },
+  "monotonicity_and_rate_limiter_audit": {
+    "rate_limiter_parameter": "MAX_RUL_DROP_FRACTION = 0.25",
+    "finding": "The 0.25 * TBO limiter allows a single-step collapse of up to 300h (Rotax) or 450h (Continental). While preventing single-step collapse to 0 on noisy inputs, it is not physically linked to the telemetry timestep dt. An explicit dt-scaled bound is recommended.",
+    "stress_revision_finding": "Operating stress reduction (e.g. throttle down) reduces projected future wear rate, but accumulated physical degradation 100 - H(t) must never decrease. The engine does not heal wear."
+  },
+  "synthetic_target_construction_audit": {
+    "finding": "true_RUL is generated from the exact same deterministic ODE state variables that drive simulated sensor deviations. This enables E3 to invert the simulator's parametric wear curve, explaining the low 0.93h synthetic MAE. In real flight (such as ACES), vibration and efficiency channels are uninstrumented and wear is stochastic, which prevents direct translation of synthetic E3 accuracy."
+  },
+  "production_recommendation": {
+    "decision": "OPTION A (NO MATERIAL CODE DEFECT; PART 5 VALIDATED SUFFICIENTLY WITH EMPIRICAL LIMITATIONS DOCUMENTED)",
+    "production_rul_service": "KEEP CURRENT RULService (Physics-Stress Extrapolation + TBO Maintenance Ceiling)",
+    "experimental_rul_suite": "RETAIN E1-E5 in app/rul_estimator.py for SIL experimentation",
+    "production_health_classifier": "RETAIN E0 HistGradientBoosting (models/aces_health.joblib)"
+  }
+}
