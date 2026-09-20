@@ -274,7 +274,7 @@ The engine maintains strict physical separation between engine types:
 | **Cooling Method** | Liquid-cooled cylinder heads, ram air-cooled barrels | 100% Ram air-cooled cylinder heads and barrels |
 | **Normal CHT Range** | $180 - 230^\circ\text{F}$ (Max $275^\circ\text{F}$) | $300 - 400^\circ\text{F}$ (Max $460^\circ\text{F}$) |
 | **Normal Oil Pressure** | $29 - 73\text{ psi}$ (Relief $95\text{ psi}$) | $30 - 60\text{ psi}$ (Relief $100\text{ psi}$) |
-| **Certified Engine TBO** | 1,200 hours | 1,800 hours |
+| **Documented Engine TBO** | 1,200 hours | 1,800 hours |
 | **Dynamic Spool Semantics**| Fixed-geometry turbocharger with TCU wastegate | Variable absolute pressure controller (VAPC) turbocharger |
 
 > [!NOTE]

@@ -23,7 +23,7 @@ Rolling Historical Trend Estimation (dH/dt via linear least-squares over 6–20 
 Environmental & Operating Dynamic Stress Multiplier (S ∈ [0.8, 3.5])
          │
          ▼
-Multi-Engine Certified TBO Horizon Ceiling (TBO_engine ∈ [500, 2000] hours)
+Multi-Engine Documented Engine-Specific TBO/Service-Life Horizon Ceiling (TBO_engine ∈ [500, 2000] hours)
          │
          ▼
 RUL Service (Physics-Stress Weighted Trend Extrapolation + Bounded Monotonic Rate Limiter)
@@ -60,7 +60,7 @@ $$H(t_{\text{failure}}) \le 35.0$$
 
 ### Critical Semantic Distinction: TBO vs. Physical Failure
 - **Physical Failure Horizon ($t_{\text{failure}}$)**: The timestamp where structural, thermodynamic, or combustion collapse occurs ($H \le 35.0$).
-- **Maintenance / TBO Horizon ($TBO_{\text{engine}}$)**: A regulatory, certified service-life ceiling established by engine manufacturers (e.g. 1800h for Continental TSIO-360-MB per FAA TCDS E9CE; 1200h for Rotax 914 F per EASA TCDS E.121).
+- **Maintenance / TBO Horizon ($TBO_{\text{engine}}$)**: A documented engine-specific TBO/service-life horizon established by engine manufacturers (e.g. 1800h for Continental TSIO-360-MB per FAA TCDS E9CE; 1200h for Rotax 914 F per EASA TCDS E.121).
 - **Estimated RUL**: The projected operating time remaining before either physical failure or required maintenance overhaul.
 - **Invariant**: TBO is **never** equated to physical failure time. It serves as a contextual upper bound and maintenance ceiling.
 
@@ -112,7 +112,7 @@ Engine profiles and service-life horizons are rigorously isolated in `app/engine
 | **Compression Ratio** | 7.5:1 | 9.0:1 | 18.0:1 |
 | **Cooling Architecture** | Air-cooled cylinders | Liquid-cooled heads, air cylinders | Liquid-cooled |
 | **Lubrication System** | Wet sump | Dry sump | Wet sump |
-| **Certified TBO Ceiling** | **1800.0 Hours** | **1200.0 Hours** | **1500.0 Hours** |
+| **Documented Engine-Specific TBO Ceiling** | **1800.0 Hours** | **1200.0 Hours** | **1500.0 Hours** |
 | **TBO Provenance** | FAA TCDS E9CE / Altus II Baseline | EASA TCDS E.121 / Rotax Manual | Literature Proxy (Austin 2010) |
 
 > [!NOTE]
@@ -230,6 +230,6 @@ All 12 adversarial scenarios passed cleanly without unhandled exceptions, NaN ou
 
 ### Rationale:
 1. **Physical Grounding vs. Synthetic Overfitting**: E3 (Gradient Boosted Regressor) achieved exceptional accuracy on synthetic degradation curves ($\text{MAE} = 0.93$ h). However, its learned weights are fitted to the parametric kinetics of the synthetic simulator. Deploying E3 as the sole production estimator on real aero-piston engines where no empirical run-to-failure training data exists would introduce major generalization risks.
-2. **Operational Stability of Baseline E0**: The current production service (`RULService`) enforces certified TBO boundaries, causal stress scaling, and rate-of-change limits that guarantee operational stability in live flight replays and flight operations.
+2. **Operational Stability of Baseline E0**: The current production service (`RULService`) enforces documented engine-specific TBO/service-life horizons, causal stress scaling, and rate-of-change limits that guarantee operational stability in live flight replays and flight operations.
 3. **Continuous Advancement**: Adding the experimental estimators (`PhysicsInformedDegradationProjector`, `PowerLawDegradationRegressor`, `GradientBoostedRULRegressor`, `WeibullHazardModel`, and `CalibratedUncertaintyEstimator`) in `app/rul_estimator.py` allows continuous SIL research, offline benchmarking, and empirical uncertainty calibration without compromising production stability.
 4. **Health Classifier Untouched**: The production classifier remains the validated **E0 HistGradientBoosting** model (`models/aces_health.joblib`).

@@ -45,8 +45,8 @@ Every dataset, physical constant, and engine parameter in AeroPulse-X is assigne
 | `base_power_kw` | 84.5 | kW | Rotax 914 Turbo | Rotax 914 Takeoff Power (115 HP @ 5800 RPM) | `MANUFACTURER` | `VALIDATED_SPEC` | Rated maximum power |
 | `nominal_rpm` | 5500.0 | RPM | Rotax 914 Turbo | Continuous Maximum Operating Speed | `MANUFACTURER` | `VALIDATED_SPEC` | Continuous rated RPM |
 | `max_rpm` | 5800.0 | RPM | Rotax 914 Turbo | 5-Minute Takeoff Maximum Speed | `MANUFACTURER` | `VALIDATED_SPEC` | Redline limit |
-| `tbo_hours` | 1200.0 | h | Rotax 914 Turbo | Rotax Maintenance Manual (SB-914-001) | `MANUFACTURER` | `VALIDATED_SPEC` | Certified TBO limit |
-| `tbo_hours` | 2000.0 | h | AeroPiston 1.35L | Standard FAA Part 33 Certified Piston TBO | `LITERATURE` | `VALIDATED_SPEC` | General aviation TBO |
+| `tbo_hours` | 1200.0 | h | Rotax 914 Turbo | Rotax Maintenance Manual (SB-914-001) | `MANUFACTURER` | `VALIDATED_SPEC` | Documented manufacturer TBO limit |
+| `tbo_hours` | 2000.0 | h | AeroPiston 1.35L | Standard FAA Part 33 Baseline Piston TBO | `LITERATURE` | `VALIDATED_SPEC` | General aviation TBO |
 | `fuel_lhv_mj_kg` | 43.5 | MJ/kg | Avgas 100LL | ASTM D910 Aviation Gasoline Specification | `LITERATURE` | `VALIDATED_SPEC` | Lower heating value |
 | `afr_stoich` | 14.7 | ratio | Gasoline / Avgas | Chemical Stoichiometry ($C_8H_{18}$) | `DERIVED` | `DERIVED_THEORETICAL`| Air-fuel ratio |
 | `gamma` | 1.33 | ratio | Exhaust Gas | High-Temperature Combustion Gas Specific Heat Ratio | `LITERATURE` | `LITERATURE_INFORMED` | Isentropic expansion |
