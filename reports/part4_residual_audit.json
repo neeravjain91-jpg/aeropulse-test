@@ -1,0 +1,922 @@
+{
+  "phase1_trace_table": [
+    {
+      "residual_feature": "MAP_Injector_res_healthy",
+      "source_model": "HealthyReference (Empirical)",
+      "engine_profile": "Empirical ACES Training Median",
+      "units": "inHg",
+      "equation": "MAP_Injector - Median(MAP_Injector | Operating_State)",
+      "inputs": "MAP_Injector, Operating_State",
+      "output_variable": "MAP_Injector residual",
+      "calibration_source": "ACES Training Flights (11 flights)",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": true,
+      "validity_notes": "Statistically sound baseline centering; strictly train-only."
+    },
+    {
+      "residual_feature": "MAP_Injector_res_physics",
+      "source_model": "ReducedOrderPistonEngine",
+      "engine_profile": "Generic AeroPiston-4C-1.35L (Misaligned on ACES)",
+      "units": "inHg",
+      "equation": "MAP_Injector - (101.325 * (0.35 + 0.65*throttle) * (0.60 + 0.40*sigma) / 101.325 * 29.92)",
+      "inputs": "throttle, altitude_ft, ambient_c",
+      "output_variable": "Manifold Absolute Pressure expected",
+      "calibration_source": "Austin (2010) Ch 6 Speed-Density / Naturally Aspirated + Wastegate",
+      "dataset_used": "REAL_ACES (Continental TSIO-360-MB)",
+      "physically_valid": false,
+      "validity_notes": "Engine Mismatch: 1.35L 4-cyl generic model applied to 5.9L 6-cyl twin-turbo engine. Underpredicts boost (23.25 inHg exp vs 26.03 inHg obs)."
+    },
+    {
+      "residual_feature": "CHT_res_healthy",
+      "source_model": "HealthyReference (Empirical)",
+      "engine_profile": "Empirical ACES Training Median",
+      "units": "deg F",
+      "equation": "CHT - Median(CHT | Operating_State)",
+      "inputs": "CHT, Operating_State",
+      "output_variable": "CHT healthy residual",
+      "calibration_source": "ACES Training Flights",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": true,
+      "validity_notes": "Valid empirical baseline; captures state-dependent cylinder head temperature."
+    },
+    {
+      "residual_feature": "CHT_res_physics",
+      "source_model": "ReducedOrderPistonEngine",
+      "engine_profile": "Generic AeroPiston-4C-1.35L (Misaligned on ACES)",
+      "units": "deg F",
+      "equation": "(195.0 + 16.0*thermal_load + 0.5*(amb_c - 25.0) + 4.0*(alt/10000)) * (0.85 + 0.15*heat_factor)",
+      "inputs": "thermal_load (indicated_power / base_power), ambient_c, altitude_ft",
+      "output_variable": "Cylinder Head Temperature expected",
+      "calibration_source": "Empirical conduction/convection balance (Austin Ch 6)",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": false,
+      "validity_notes": "Generic thermal coefficients: thermal_load based on 84.5 kW engine rather than 156.6 kW TSIO-360."
+    },
+    {
+      "residual_feature": "EGT1_res_healthy",
+      "source_model": "HealthyReference (Empirical)",
+      "engine_profile": "Empirical ACES Training Median",
+      "units": "deg F",
+      "equation": "EGT1 - Median(EGT1 | Operating_State)",
+      "inputs": "EGT1, Operating_State",
+      "output_variable": "EGT1 healthy residual",
+      "calibration_source": "ACES Training Flights",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": true,
+      "validity_notes": "Valid statistical median centering per flight phase."
+    },
+    {
+      "residual_feature": "EGT1_res_physics",
+      "source_model": "ReducedOrderPistonEngine",
+      "engine_profile": "Generic AeroPiston-4C-1.35L (Misaligned on ACES)",
+      "units": "deg F",
+      "equation": "(1180.0 + 170.0*throttle + 35.0*(alt/10000) + 1.2*amb_c) * (0.90 + 0.10*heat_factor) + 12.0*sin(rpm*0.01)",
+      "inputs": "throttle, altitude_ft, ambient_c, rpm",
+      "output_variable": "Exhaust Gas Temperature Cylinder 1 expected",
+      "calibration_source": "Heuristic empirical combustion expansion model",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": false,
+      "validity_notes": "Sinusoidal term 12.0*sin(rpm*0.01) is non-physical synthetic cylinder perturbation."
+    },
+    {
+      "residual_feature": "Oil_Pressure_res_healthy",
+      "source_model": "HealthyReference (Empirical)",
+      "engine_profile": "Empirical ACES Training Median",
+      "units": "psi",
+      "equation": "Oil_Pressure - Median(Oil_Pressure | Operating_State)",
+      "inputs": "Oil_Pressure, Operating_State",
+      "output_variable": "Oil Pressure healthy residual",
+      "calibration_source": "ACES Training Flights",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": true,
+      "validity_notes": "Valid empirical reference; centers around nominal 60 psi."
+    },
+    {
+      "residual_feature": "Oil_Pressure_res_physics",
+      "source_model": "ReducedOrderPistonEngine",
+      "engine_profile": "Generic AeroPiston-4C-1.35L (Misaligned on ACES)",
+      "units": "psi",
+      "equation": "(48.0 + 15.0*(rpm / NOMINAL_RPM)) * max(0.60, 1.0 - 0.003*(oil_temp_f - 170.0))",
+      "inputs": "rpm, nominal_rpm, oil_temp_f",
+      "output_variable": "Engine Oil Pressure expected",
+      "calibration_source": "Heuristic positive-displacement pump curve",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": false,
+      "validity_notes": "Severe Bias: Model assumes NOMINAL_RPM=3000. ACES operates at 4300-5800 RPM, forcing expected pressure to ~70.5 psi vs true observed ~60.2 psi (-10.31 psi bias!)."
+    },
+    {
+      "residual_feature": "Oil_Temp_res_healthy",
+      "source_model": "HealthyReference (Empirical)",
+      "engine_profile": "Empirical ACES Training Median",
+      "units": "deg F",
+      "equation": "Oil_Temp - Median(Oil_Temp | Operating_State)",
+      "inputs": "Oil_Temp, Operating_State",
+      "output_variable": "Oil Temperature healthy residual",
+      "calibration_source": "ACES Training Flights",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": true,
+      "validity_notes": "Valid empirical baseline; captures sump oil thermal equilibrium."
+    },
+    {
+      "residual_feature": "Oil_Temp_res_physics",
+      "source_model": "ReducedOrderPistonEngine",
+      "engine_profile": "Generic AeroPiston-4C-1.35L (Misaligned on ACES)",
+      "units": "deg F",
+      "equation": "(165.0 + 16.0*thermal_load + 0.48*(amb_c - 25.0) + 3.5*(alt/10000)) * (0.88 + 0.12*heat_factor)",
+      "inputs": "thermal_load, ambient_c, altitude_ft",
+      "output_variable": "Engine Oil Temperature expected",
+      "calibration_source": "Heuristic dry-sump heat rejection balance",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": false,
+      "validity_notes": "Generic dry-sump thermal dissipation equation applied to Continental TSIO-360 wet-sump architecture."
+    },
+    {
+      "residual_feature": "Fuel_Flow_res_healthy",
+      "source_model": "HealthyReference (Empirical)",
+      "engine_profile": "Empirical ACES Training Median",
+      "units": "L/h (or volumetric)",
+      "equation": "Fuel_Flow - Median(Fuel_Flow | Operating_State)",
+      "inputs": "Fuel_Flow, Operating_State",
+      "output_variable": "Fuel Flow healthy residual",
+      "calibration_source": "ACES Training Flights",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": true,
+      "validity_notes": "Valid empirical baseline per operating state."
+    },
+    {
+      "residual_feature": "Fuel_Flow_res_physics",
+      "source_model": "ReducedOrderPistonEngine",
+      "engine_profile": "Generic AeroPiston-4C-1.35L (Misaligned on ACES)",
+      "units": "L/h",
+      "equation": "(12.0 + 18.0*throttle) * (0.85 + 0.30*(rpm/NOMINAL_RPM)) * (1.0 + 0.25*(alt/25000))",
+      "inputs": "throttle, rpm, nominal_rpm, altitude_ft",
+      "output_variable": "Fuel Consumption Rate expected",
+      "calibration_source": "Empirical Rotax 914 volumetric consumption map (~15-33 L/h)",
+      "dataset_used": "REAL_ACES",
+      "physically_valid": false,
+      "validity_notes": "Engine mismatch: Rotax 115 HP fuel flow map scaled to 210 HP Continental TSIO-360 engine."
+    },
+    {
+      "residual_feature": "Twin_Residual_RMS",
+      "source_model": "Heuristic Convex Combination",
+      "engine_profile": "50% HealthyRef + 50% Generic 1.35L Physics",
+      "units": "dimensionless (Z-score RMS)",
+      "equation": "sqrt(mean((0.50 * R_healthy + 0.50 * R_physics)^2 / sigma^2))",
+      "inputs": "R_healthy, R_physics for 6 channels",
+      "output_variable": "Overall Digital Twin Residual RMS",
+      "calibration_source": "AeroPulse reference twin heuristic weighting",
+      "dataset_used": "REAL_ACES & AEROPULSE_SYNTHETIC",
+      "physically_valid": false,
+      "validity_notes": "Misnamed: Heuristic 50/50 blend of statistical median and misaligned reduced-order model. Not a high-fidelity paired digital twin."
+    }
+  ],
+  "phase2_engine_matching": {
+    "nasa_aces_target": "Continental TSIO-360-MB (5.89L, 6-cyl, twin-turbo)",
+    "aeropulse_synthetic_target": "Rotax 914 F (1.211L, 4-cyl boxer, single turbo)",
+    "legacy_residual_classification": "GENERIC STATISTICAL / REDUCED-ORDER RESIDUAL",
+    "cross_engine_contamination_status": "IDENTIFIED & SEGREGATED (Generic 1.35L model applied to 5.89L engine creates systematic -10.3 psi oil pressure bias)."
+  },
+  "phase3_unit_audit": {
+    "temperature_units": "deg F for all AeroPulse engine temperatures (CHT, EGT, Oil_Temp, Alternator_Temp); Ambient_Temp in deg C.",
+    "pressure_units": "MAP in inHg (3-41 inHg); Oil_Pressure in psi (30-80 psi); atmospheric in kPa.",
+    "rotational_speed": "Engine_RPM in crankshaft RPM (2500-5800 RPM); Turbo_RPM up to 71000 RPM.",
+    "fuel_flow": "Fuel_Flow in L/h (volumetric rate).",
+    "electrical": "Battery_Voltage in Volts DC (28V nominal); Battery_Current in Amperes.",
+    "vibration": "Vibration RMS in g (Rotax synthetic only; ACES has no accelerometer).",
+    "unit_consistency_verdict": "VERIFIED (Conversion formulas tested and explicitly documented)."
+  },
+  "phase4_residual_quality": {
+    "overall_generic": {
+      "MAP_Injector": {
+        "bias": 2.83,
+        "mae": 7.13,
+        "rmse": 7.38,
+        "std": 6.82,
+        "mad": 1.6
+      },
+      "CHT": {
+        "bias": 6.33,
+        "mae": 13.65,
+        "rmse": 16.46,
+        "std": 15.2,
+        "mad": 12.32
+      },
+      "EGT1": {
+        "bias": 3.59,
+        "mae": 56.96,
+        "rmse": 65.44,
+        "std": 65.34,
+        "mad": 39.17
+      },
+      "Oil_Pressure": {
+        "bias": -10.32,
+        "mae": 11.39,
+        "rmse": 13.74,
+        "std": 9.06,
+        "mad": 8.7
+      },
+      "Oil_Temp": {
+        "bias": 3.04,
+        "mae": 24.97,
+        "rmse": 30.41,
+        "std": 30.25,
+        "mad": 24.3
+      },
+      "Fuel_Flow": {
+        "bias": 3.93,
+        "mae": 16.65,
+        "rmse": 17.5,
+        "std": 17.05,
+        "mad": 10.95
+      }
+    },
+    "overall_tsio360": {
+      "MAP_Injector": {
+        "bias": 2.83,
+        "mae": 7.13,
+        "rmse": 7.38,
+        "std": 6.82,
+        "mad": 1.6
+      },
+      "CHT": {
+        "bias": 12.04,
+        "mae": 16.98,
+        "rmse": 20.81,
+        "std": 16.98,
+        "mad": 17.2
+      },
+      "EGT1": {
+        "bias": -1.32,
+        "mae": 61.72,
+        "rmse": 69.01,
+        "std": 69.0,
+        "mad": 38.67
+      },
+      "Oil_Pressure": {
+        "bias": -5.05,
+        "mae": 6.68,
+        "rmse": 8.42,
+        "std": 6.73,
+        "mad": 6.1
+      },
+      "Oil_Temp": {
+        "bias": 8.75,
+        "mae": 26.16,
+        "rmse": 32.26,
+        "std": 31.05,
+        "mad": 25.2
+      },
+      "Fuel_Flow": {
+        "bias": 7.23,
+        "mae": 19.56,
+        "rmse": 20.62,
+        "std": 19.31,
+        "mad": 13.62
+      }
+    },
+    "by_operating_phase": {
+      "CRUISE_LOW": {
+        "MAP_Injector": {
+          "bias": -5.79,
+          "mae": 5.93,
+          "rmse": 6.43,
+          "std": 2.78,
+          "mad": 1.24
+        },
+        "CHT": {
+          "bias": -3.79,
+          "mae": 8.39,
+          "rmse": 9.65,
+          "std": 8.87,
+          "mad": 3.01
+        },
+        "EGT1": {
+          "bias": -45.91,
+          "mae": 47.49,
+          "rmse": 52.88,
+          "std": 26.25,
+          "mad": 15.38
+        },
+        "Oil_Pressure": {
+          "bias": 0.39,
+          "mae": 2.91,
+          "rmse": 3.59,
+          "std": 3.57,
+          "mad": 2.1
+        },
+        "Oil_Temp": {
+          "bias": -11.01,
+          "mae": 16.57,
+          "rmse": 23.63,
+          "std": 20.91,
+          "mad": 12.6
+        },
+        "Fuel_Flow": {
+          "bias": -14.66,
+          "mae": 16.3,
+          "rmse": 16.77,
+          "std": 8.14,
+          "mad": 1.0
+        }
+      },
+      "CRUISE": {
+        "MAP_Injector": {
+          "bias": 8.07,
+          "mae": 8.07,
+          "rmse": 8.11,
+          "std": 0.75,
+          "mad": 0.32
+        },
+        "CHT": {
+          "bias": 31.94,
+          "mae": 31.94,
+          "rmse": 32.16,
+          "std": 3.8,
+          "mad": 2.0
+        },
+        "EGT1": {
+          "bias": 89.79,
+          "mae": 89.79,
+          "rmse": 92.44,
+          "std": 22.01,
+          "mad": 12.98
+        },
+        "Oil_Pressure": {
+          "bias": -13.29,
+          "mae": 13.29,
+          "rmse": 13.34,
+          "std": 1.07,
+          "mad": 0.2
+        },
+        "Oil_Temp": {
+          "bias": 43.74,
+          "mae": 43.82,
+          "rmse": 46.12,
+          "std": 14.62,
+          "mad": 8.5
+        },
+        "Fuel_Flow": {
+          "bias": 13.61,
+          "mae": 15.38,
+          "rmse": 15.82,
+          "std": 8.07,
+          "mad": 1.99
+        }
+      },
+      "HIGH": {
+        "MAP_Injector": {
+          "bias": 7.54,
+          "mae": 7.54,
+          "rmse": 7.63,
+          "std": 1.13,
+          "mad": 0.89
+        },
+        "CHT": {
+          "bias": 9.68,
+          "mae": 11.26,
+          "rmse": 14.03,
+          "std": 10.16,
+          "mad": 8.5
+        },
+        "EGT1": {
+          "bias": -45.44,
+          "mae": 48.71,
+          "rmse": 55.37,
+          "std": 31.65,
+          "mad": 23.19
+        },
+        "Oil_Pressure": {
+          "bias": -2.74,
+          "mae": 4.12,
+          "rmse": 5.07,
+          "std": 4.27,
+          "mad": 3.2
+        },
+        "Oil_Temp": {
+          "bias": -5.04,
+          "mae": 18.73,
+          "rmse": 21.35,
+          "std": 20.75,
+          "mad": 18.5
+        },
+        "Fuel_Flow": {
+          "bias": 26.57,
+          "mae": 27.92,
+          "rmse": 28.0,
+          "std": 8.83,
+          "mad": 1.99
+        }
+      }
+    },
+    "by_load": {
+      "Low_Throttle": {
+        "MAP_Injector": {
+          "bias": -5.79,
+          "mae": 5.93,
+          "rmse": 6.43,
+          "std": 2.78,
+          "mad": 1.24
+        },
+        "CHT": {
+          "bias": -3.79,
+          "mae": 8.39,
+          "rmse": 9.65,
+          "std": 8.87,
+          "mad": 3.01
+        },
+        "EGT1": {
+          "bias": -45.91,
+          "mae": 47.49,
+          "rmse": 52.88,
+          "std": 26.25,
+          "mad": 15.38
+        },
+        "Oil_Pressure": {
+          "bias": 0.39,
+          "mae": 2.91,
+          "rmse": 3.59,
+          "std": 3.57,
+          "mad": 2.1
+        },
+        "Oil_Temp": {
+          "bias": -11.01,
+          "mae": 16.57,
+          "rmse": 23.63,
+          "std": 20.91,
+          "mad": 12.6
+        },
+        "Fuel_Flow": {
+          "bias": -14.66,
+          "mae": 16.3,
+          "rmse": 16.77,
+          "std": 8.14,
+          "mad": 1.0
+        }
+      },
+      "Mid_Throttle": {
+        "MAP_Injector": {
+          "bias": 8.07,
+          "mae": 8.07,
+          "rmse": 8.11,
+          "std": 0.75,
+          "mad": 0.32
+        },
+        "CHT": {
+          "bias": 31.94,
+          "mae": 31.94,
+          "rmse": 32.16,
+          "std": 3.8,
+          "mad": 2.0
+        },
+        "EGT1": {
+          "bias": 89.79,
+          "mae": 89.79,
+          "rmse": 92.44,
+          "std": 22.01,
+          "mad": 12.98
+        },
+        "Oil_Pressure": {
+          "bias": -13.29,
+          "mae": 13.29,
+          "rmse": 13.34,
+          "std": 1.07,
+          "mad": 0.2
+        },
+        "Oil_Temp": {
+          "bias": 43.74,
+          "mae": 43.82,
+          "rmse": 46.12,
+          "std": 14.62,
+          "mad": 8.5
+        },
+        "Fuel_Flow": {
+          "bias": 13.61,
+          "mae": 15.38,
+          "rmse": 15.82,
+          "std": 8.07,
+          "mad": 1.99
+        }
+      },
+      "High_Throttle": {
+        "MAP_Injector": {
+          "bias": 7.54,
+          "mae": 7.54,
+          "rmse": 7.63,
+          "std": 1.13,
+          "mad": 0.89
+        },
+        "CHT": {
+          "bias": 9.68,
+          "mae": 11.26,
+          "rmse": 14.03,
+          "std": 10.16,
+          "mad": 8.5
+        },
+        "EGT1": {
+          "bias": -45.44,
+          "mae": 48.71,
+          "rmse": 55.37,
+          "std": 31.65,
+          "mad": 23.19
+        },
+        "Oil_Pressure": {
+          "bias": -2.74,
+          "mae": 4.12,
+          "rmse": 5.07,
+          "std": 4.27,
+          "mad": 3.2
+        },
+        "Oil_Temp": {
+          "bias": -5.04,
+          "mae": 18.73,
+          "rmse": 21.35,
+          "std": 20.75,
+          "mad": 18.5
+        },
+        "Fuel_Flow": {
+          "bias": 26.57,
+          "mae": 27.92,
+          "rmse": 28.0,
+          "std": 8.83,
+          "mad": 1.99
+        }
+      }
+    },
+    "by_rpm_band": {
+      "RPM_Low_lt_3500": {
+        "MAP_Injector": {
+          "bias": -5.39,
+          "mae": 5.43,
+          "rmse": 5.81,
+          "std": 2.16,
+          "mad": 0.89
+        },
+        "CHT": {
+          "bias": -5.85,
+          "mae": 8.28,
+          "rmse": 9.38,
+          "std": 7.34,
+          "mad": 2.11
+        },
+        "EGT1": {
+          "bias": -49.58,
+          "mae": 50.25,
+          "rmse": 54.47,
+          "std": 22.57,
+          "mad": 13.69
+        },
+        "Oil_Pressure": {
+          "bias": 0.43,
+          "mae": 2.81,
+          "rmse": 3.51,
+          "std": 3.48,
+          "mad": 1.7
+        },
+        "Oil_Temp": {
+          "bias": -9.85,
+          "mae": 16.51,
+          "rmse": 24.93,
+          "std": 22.9,
+          "mad": 10.8
+        },
+        "Fuel_Flow": {
+          "bias": -14.82,
+          "mae": 16.66,
+          "rmse": 17.09,
+          "std": 8.51,
+          "mad": 1.0
+        }
+      },
+      "RPM_Mid_3500_4800": {
+        "MAP_Injector": {
+          "bias": 4.87,
+          "mae": 7.94,
+          "rmse": 8.07,
+          "std": 6.44,
+          "mad": 0.59
+        },
+        "CHT": {
+          "bias": 26.64,
+          "mae": 27.6,
+          "rmse": 29.46,
+          "std": 12.56,
+          "mad": 3.0
+        },
+        "EGT1": {
+          "bias": 65.83,
+          "mae": 79.74,
+          "rmse": 85.84,
+          "std": 55.09,
+          "mad": 20.67
+        },
+        "Oil_Pressure": {
+          "bias": -10.58,
+          "mae": 11.3,
+          "rmse": 12.07,
+          "std": 5.8,
+          "mad": 0.4
+        },
+        "Oil_Temp": {
+          "bias": 32.15,
+          "mae": 38.73,
+          "rmse": 42.42,
+          "std": 27.68,
+          "mad": 12.4
+        },
+        "Fuel_Flow": {
+          "bias": 7.58,
+          "mae": 14.88,
+          "rmse": 15.3,
+          "std": 13.29,
+          "mad": 1.99
+        }
+      },
+      "RPM_High_gt_4800": {
+        "MAP_Injector": {
+          "bias": 7.69,
+          "mae": 7.69,
+          "rmse": 7.78,
+          "std": 1.18,
+          "mad": 0.92
+        },
+        "CHT": {
+          "bias": 11.17,
+          "mae": 12.61,
+          "rmse": 15.66,
+          "std": 10.97,
+          "mad": 8.9
+        },
+        "EGT1": {
+          "bias": -34.81,
+          "mae": 51.45,
+          "rmse": 58.27,
+          "std": 46.73,
+          "mad": 24.11
+        },
+        "Oil_Pressure": {
+          "bias": -3.59,
+          "mae": 4.86,
+          "rmse": 6.14,
+          "std": 4.98,
+          "mad": 3.5
+        },
+        "Oil_Temp": {
+          "bias": -1.36,
+          "mae": 20.41,
+          "rmse": 23.52,
+          "std": 23.48,
+          "mad": 20.7
+        },
+        "Fuel_Flow": {
+          "bias": 25.97,
+          "mae": 27.33,
+          "rmse": 27.48,
+          "std": 9.01,
+          "mad": 1.99
+        }
+      }
+    },
+    "by_health_state": {
+      "Normal": {
+        "MAP_Injector": {
+          "bias": 2.83,
+          "mae": 7.13,
+          "rmse": 7.38,
+          "std": 6.82,
+          "mad": 1.6
+        },
+        "CHT": {
+          "bias": 12.04,
+          "mae": 16.98,
+          "rmse": 20.81,
+          "std": 16.98,
+          "mad": 17.2
+        },
+        "EGT1": {
+          "bias": -1.32,
+          "mae": 61.72,
+          "rmse": 69.01,
+          "std": 69.0,
+          "mad": 38.67
+        },
+        "Oil_Pressure": {
+          "bias": -5.05,
+          "mae": 6.68,
+          "rmse": 8.42,
+          "std": 6.73,
+          "mad": 6.1
+        },
+        "Oil_Temp": {
+          "bias": 8.75,
+          "mae": 26.16,
+          "rmse": 32.26,
+          "std": 31.05,
+          "mad": 25.2
+        },
+        "Fuel_Flow": {
+          "bias": 7.23,
+          "mae": 19.56,
+          "rmse": 20.62,
+          "std": 19.31,
+          "mad": 13.62
+        }
+      },
+      "Watch": {
+        "MAP_Injector": {
+          "bias": 1.31,
+          "mae": 7.45,
+          "rmse": 8.1,
+          "std": 7.99,
+          "mad": 6.47
+        },
+        "CHT": {
+          "bias": 3.16,
+          "mae": 15.41,
+          "rmse": 20.7,
+          "std": 20.46,
+          "mad": 11.91
+        },
+        "EGT1": {
+          "bias": -30.24,
+          "mae": 60.4,
+          "rmse": 77.58,
+          "std": 71.45,
+          "mad": 55.09
+        },
+        "Oil_Pressure": {
+          "bias": -2.86,
+          "mae": 6.06,
+          "rmse": 7.23,
+          "std": 6.64,
+          "mad": 5.5
+        },
+        "Oil_Temp": {
+          "bias": -11.85,
+          "mae": 25.66,
+          "rmse": 31.47,
+          "std": 29.16,
+          "mad": 6.8
+        },
+        "Fuel_Flow": {
+          "bias": 2.39,
+          "mae": 18.16,
+          "rmse": 20.21,
+          "std": 20.07,
+          "mad": 15.37
+        }
+      },
+      "Warning": {
+        "MAP_Injector": {
+          "bias": -7.09,
+          "mae": 9.7,
+          "rmse": 10.94,
+          "std": 8.33,
+          "mad": 5.58
+        },
+        "CHT": {
+          "bias": -6.11,
+          "mae": 18.87,
+          "rmse": 30.03,
+          "std": 29.4,
+          "mad": 10.9
+        },
+        "EGT1": {
+          "bias": -157.19,
+          "mae": 170.56,
+          "rmse": 323.35,
+          "std": 282.58,
+          "mad": 52.14
+        },
+        "Oil_Pressure": {
+          "bias": -2.03,
+          "mae": 5.81,
+          "rmse": 8.78,
+          "std": 8.54,
+          "mad": 4.1
+        },
+        "Oil_Temp": {
+          "bias": -15.82,
+          "mae": 23.81,
+          "rmse": 28.99,
+          "std": 24.29,
+          "mad": 5.4
+        },
+        "Fuel_Flow": {
+          "bias": -11.14,
+          "mae": 15.86,
+          "rmse": 17.09,
+          "std": 12.96,
+          "mad": 4.98
+        }
+      },
+      "Critical": {
+        "MAP_Injector": {
+          "bias": -13.68,
+          "mae": 13.77,
+          "rmse": 14.02,
+          "std": 3.05,
+          "mad": 1.03
+        },
+        "CHT": {
+          "bias": -7.08,
+          "mae": 15.95,
+          "rmse": 18.68,
+          "std": 17.29,
+          "mad": 14.86
+        },
+        "EGT1": {
+          "bias": -178.86,
+          "mae": 178.86,
+          "rmse": 263.24,
+          "std": 193.14,
+          "mad": 47.12
+        },
+        "Oil_Pressure": {
+          "bias": -0.8,
+          "mae": 3.51,
+          "rmse": 4.82,
+          "std": 4.75,
+          "mad": 2.8
+        },
+        "Oil_Temp": {
+          "bias": -17.35,
+          "mae": 18.52,
+          "rmse": 20.22,
+          "std": 10.37,
+          "mad": 3.0
+        },
+        "Fuel_Flow": {
+          "bias": -18.92,
+          "mae": 19.06,
+          "rmse": 19.34,
+          "std": 4.0,
+          "mad": 1.0
+        }
+      }
+    }
+  },
+  "phase5_fault_direction_validation": {
+    "overheating": {
+      "expected_direction": "CHT > 0, Oil_Temp > 0, EGT > 0 (heat accumulation)",
+      "measured_delta": {
+        "delta_CHT": 23.4,
+        "delta_Oil_Temp": 11.55,
+        "delta_EGT": 102.4
+      },
+      "direction_valid": true,
+      "status": "PASS"
+    },
+    "lubrication": {
+      "expected_direction": "Oil_Pressure < 0, Oil_Temp > 0, Vibration > 0 (bearing starvation)",
+      "measured_delta": {
+        "delta_Oil_Pressure": -15.0,
+        "delta_Oil_Temp": 18.15,
+        "delta_Vibration": 0.259
+      },
+      "direction_valid": true,
+      "status": "PASS"
+    },
+    "misfire": {
+      "expected_direction": "EGT1 << 0 (unburned fuel drop), Vibration >> 0 (torque ripple), RPM < 0",
+      "measured_delta": {
+        "delta_EGT1": -179.2,
+        "delta_Vibration": 0.65,
+        "delta_Engine_RPM": -144.0
+      },
+      "direction_valid": true,
+      "status": "PASS"
+    },
+    "injector_abnormality": {
+      "expected_direction": "Fuel_Flow < 0 (starvation), EGT_spread > 0 (cylinder asymmetry)",
+      "measured_delta": {
+        "delta_Fuel_Flow": -3.52,
+        "EGT_spread": 115.2
+      },
+      "direction_valid": true,
+      "status": "PASS"
+    },
+    "mechanical": {
+      "expected_direction": "Vibration >> 0 (journal clearance wear), RPM < 0 (drag increase)",
+      "measured_delta": {
+        "delta_Vibration": 0.546,
+        "delta_Engine_RPM": -120.0
+      },
+      "direction_valid": true,
+      "status": "PASS"
+    },
+    "electrical": {
+      "expected_direction": "Battery_Voltage < 0 (voltage sag), Alternator_Temp > 0 (diode overheat)",
+      "measured_delta": {
+        "delta_Battery_Voltage": -2.8,
+        "delta_Alternator_Temp": 25.2
+      },
+      "direction_valid": true,
+      "status": "PASS"
+    }
+  },
+  "phase6_residual_type_separation": {
+    "type_a_healthy_reference": "Empirical median/std per flight phase. Statistically sound, zero cross-flight leakage, train-only parameter fitting.",
+    "type_b_engine_model": "Thermodynamic reduced-order Otto cycle. Highly dependent on accurate engine displacement, cylinder count, and boost calibration.",
+    "type_c_paired_digital_twin": "STATUS: CONVEX HEURISTIC BLEND (0.50 Healthy + 0.50 Physics). Not a high-fidelity state-space Kalman-filtered digital twin."
+  }
+}

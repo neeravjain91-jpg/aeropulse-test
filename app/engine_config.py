@@ -205,6 +205,30 @@ class EngineConfig:
         )
 
     @classmethod
+    def continental_tsio_360(cls) -> EngineConfig:
+        return cls(
+            name="Continental-TSIO-360-MB",
+            engine_type="twin_turbocharged_spark_ignition",
+            cycle="4-stroke",
+            layout="opposed",
+            displacement_l=5.89,
+            bore_mm=112.7,
+            stroke_mm=98.4,
+            num_cylinders=6,
+            compression_ratio=7.5,
+            base_power_kw=156.6,
+            nominal_rpm=2700.0,
+            max_rpm=2800.0,
+            idle_rpm=700.0,
+            cooling_architecture="air_cooled",
+            lubrication_architecture="wet_sump",
+            turbo_critical_alt_ft=18000.0,
+            mass_power_ratio_kg_kw=0.74,
+            bsfc_nominal_kg_kwh=0.32,
+            tbo_hours=1800.0,
+        )
+
+    @classmethod
     def custom(cls, **kwargs) -> EngineConfig:
         return cls(**kwargs)
 
@@ -317,6 +341,45 @@ ENGINE_PROFILES: Dict[str, Dict[str, Any]] = {
         "bsfc_nominal": 0.33,
         "provenance": "Rotax 914 F/UL Operator Manual / EASA TCDS E.121 / Austin Ch 6.5.1",
     },
+    "Continental-TSIO-360-MB": {
+        "id": "Continental-TSIO-360-MB",
+        "name": "Continental TSIO-360-MB (Twin-Turbo Opposed-6)",
+        "cycle": "4-stroke",
+        "layout": "opposed",
+        "cylinders": 6,
+        "displacement_l": 5.89,
+        "bore_mm": 112.7,
+        "stroke_mm": 98.4,
+        "nominal_rpm": 2700.0,
+        "max_rpm": 2800.0,
+        "idle_rpm": 700.0,
+        "compression_ratio": 7.5,
+        "valvetrain": "ohv_pushrod",
+        "firing_order": [1, 6, 3, 2, 5, 4],
+        "tbo_hours": 1800.0,
+        "bsfc_nominal": 0.32,
+        "provenance": "Continental TSIO-360-MB TCDS E9CE / NASA Dryden Altus II Telemetry Baseline",
+    },
+    "TSIO_360_MB_ACES_01": {
+        "id": "TSIO_360_MB_ACES_01",
+        "canonical_id": "Continental-TSIO-360-MB",
+        "name": "Continental TSIO-360-MB (NASA ACES Flight Baseline)",
+        "cycle": "4-stroke",
+        "layout": "opposed",
+        "cylinders": 6,
+        "displacement_l": 5.89,
+        "bore_mm": 112.7,
+        "stroke_mm": 98.4,
+        "nominal_rpm": 2700.0,
+        "max_rpm": 2800.0,
+        "idle_rpm": 700.0,
+        "compression_ratio": 7.5,
+        "valvetrain": "ohv_pushrod",
+        "firing_order": [1, 6, 3, 2, 5, 4],
+        "tbo_hours": 1800.0,
+        "bsfc_nominal": 0.32,
+        "provenance": "Continental TSIO-360-MB TCDS E9CE / NASA Dryden Altus II Telemetry Baseline",
+    },
 }
 
 
@@ -330,6 +393,8 @@ def resolve_canonical_engine_id(engine_id: Optional[str]) -> str:
     if eid in ENGINE_PROFILES and "canonical_id" in ENGINE_PROFILES[eid]:
         return ENGINE_PROFILES[eid]["canonical_id"]
     eid_lower = eid.lower()
+    if "tsio" in eid_lower or "360" in eid_lower or "continental" in eid_lower or "aces" in eid_lower:
+        return "Continental-TSIO-360-MB"
     if "rotax" in eid_lower or "914" in eid_lower:
         return "Rotax-914-Turbo-115HP"
     if "diesel" in eid_lower or "inline4" in eid_lower:

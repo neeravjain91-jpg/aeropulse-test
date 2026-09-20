@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from .digital_twin import PARAMS
+from .engine_config import EngineConfig
 from .engine_model import EngineInputs, ReducedOrderPistonEngine
 
 # Prohibited target and simulator ground-truth fields (Anti-Leakage Quality Gate)
@@ -223,8 +224,9 @@ class PhysicsResidualExtractor:
     3. Paired-Digital-Twin Residuals: 50% healthy-ref + 50% physics model (AeroTwin reference)
     """
 
-    def __init__(self):
-        self.engine_physics = ReducedOrderPistonEngine()
+    def __init__(self, engine_config: Optional[EngineConfig] = None):
+        self.engine_config = engine_config
+        self.engine_physics = ReducedOrderPistonEngine(config=engine_config)
         self.healthy_stats: Dict[str, Dict[str, Dict[str, float]]] = {}
         self.is_fitted: bool = False
 

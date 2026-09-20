@@ -1,0 +1,2163 @@
+{
+  "configurations": {
+    "E0_Baseline": {
+      "features_count": 15,
+      "models": {
+        "HistGradientBoosting": {
+          "real_aces": {
+            "Accuracy": 0.8919,
+            "Balanced_Accuracy": 0.8767,
+            "Macro_F1": 0.8518,
+            "Weighted_F1": 0.8927,
+            "Critical_Precision": 0.7078,
+            "Critical_Recall": 0.9131,
+            "Critical_F1": 0.7974,
+            "Critical_FNR": 0.0869,
+            "Per_Class_F1": {
+              "Critical": 0.7974,
+              "Normal": 0.9358,
+              "Warning": 0.8765,
+              "Watch": 0.7976
+            },
+            "Confusion_Matrix": [
+              [
+                620,
+                0,
+                59,
+                0
+              ],
+              [
+                0,
+                17308,
+                0,
+                1300
+              ],
+              [
+                256,
+                2,
+                3108,
+                274
+              ],
+              [
+                0,
+                1073,
+                285,
+                5776
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 11.01,
+            "Model_Size_KB": 939.71,
+            "fit_time_seconds": 5.2
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 27.46,
+            "Model_Size_KB": 71.16
+          }
+        },
+        "ExtraTrees": {
+          "real_aces": {
+            "Accuracy": 0.8836,
+            "Balanced_Accuracy": 0.8237,
+            "Macro_F1": 0.8092,
+            "Weighted_F1": 0.8848,
+            "Critical_Precision": 0.6381,
+            "Critical_Recall": 0.7555,
+            "Critical_F1": 0.6918,
+            "Critical_FNR": 0.2445,
+            "Per_Class_F1": {
+              "Critical": 0.6918,
+              "Normal": 0.9415,
+              "Warning": 0.8101,
+              "Watch": 0.7933
+            },
+            "Confusion_Matrix": [
+              [
+                513,
+                0,
+                166,
+                0
+              ],
+              [
+                0,
+                17337,
+                0,
+                1271
+              ],
+              [
+                291,
+                0,
+                2873,
+                476
+              ],
+              [
+                0,
+                882,
+                414,
+                5838
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 5.33,
+            "Model_Size_KB": 10922.44,
+            "fit_time_seconds": 1.44
+          },
+          "synthetic": {
+            "Accuracy": 0.9343,
+            "Balanced_Accuracy": 0.9205,
+            "Macro_F1": 0.8315,
+            "Weighted_F1": 0.9447,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.8333,
+            "Critical_F1": 0.9091,
+            "Critical_FNR": 0.1667,
+            "Per_Class_F1": {
+              "Critical": 0.9091,
+              "Normal": 0.9689,
+              "Warning": 0.8511,
+              "Watch": 0.597
+            },
+            "Confusion_Matrix": [
+              [
+                25,
+                0,
+                5,
+                0
+              ],
+              [
+                0,
+                390,
+                0,
+                25
+              ],
+              [
+                0,
+                0,
+                20,
+                2
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 51.96,
+            "Model_Size_KB": 138.58
+          }
+        },
+        "RandomForest": {
+          "real_aces": {
+            "Accuracy": 0.8751,
+            "Balanced_Accuracy": 0.8375,
+            "Macro_F1": 0.8059,
+            "Weighted_F1": 0.8753,
+            "Critical_Precision": 0.5945,
+            "Critical_Recall": 0.894,
+            "Critical_F1": 0.7141,
+            "Critical_FNR": 0.106,
+            "Per_Class_F1": {
+              "Critical": 0.7141,
+              "Normal": 0.935,
+              "Warning": 0.8028,
+              "Watch": 0.7718
+            },
+            "Confusion_Matrix": [
+              [
+                607,
+                0,
+                72,
+                0
+              ],
+              [
+                0,
+                17469,
+                0,
+                1139
+              ],
+              [
+                414,
+                0,
+                2703,
+                523
+              ],
+              [
+                0,
+                1288,
+                319,
+                5527
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 5.23,
+            "Model_Size_KB": 9965.8,
+            "fit_time_seconds": 2.11
+          },
+          "synthetic": {
+            "Accuracy": 0.9795,
+            "Balanced_Accuracy": 0.9631,
+            "Macro_F1": 0.9269,
+            "Weighted_F1": 0.9803,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.8667,
+            "Critical_F1": 0.9286,
+            "Critical_FNR": 0.1333,
+            "Per_Class_F1": {
+              "Critical": 0.9286,
+              "Normal": 0.9927,
+              "Warning": 0.9167,
+              "Watch": 0.8696
+            },
+            "Confusion_Matrix": [
+              [
+                26,
+                0,
+                4,
+                0
+              ],
+              [
+                0,
+                409,
+                0,
+                6
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 52.37,
+            "Model_Size_KB": 97.2
+          }
+        },
+        "XGBoost": {
+          "real_aces": {
+            "Accuracy": 0.874,
+            "Balanced_Accuracy": 0.8054,
+            "Macro_F1": 0.8259,
+            "Weighted_F1": 0.8702,
+            "Critical_Precision": 0.8175,
+            "Critical_Recall": 0.7585,
+            "Critical_F1": 0.7869,
+            "Critical_FNR": 0.2415,
+            "Per_Class_F1": {
+              "Critical": 0.7869,
+              "Normal": 0.9276,
+              "Warning": 0.8504,
+              "Watch": 0.7386
+            },
+            "Confusion_Matrix": [
+              [
+                515,
+                0,
+                164,
+                0
+              ],
+              [
+                0,
+                17896,
+                0,
+                712
+              ],
+              [
+                115,
+                48,
+                2970,
+                507
+              ],
+              [
+                0,
+                2032,
+                211,
+                4891
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 1.19,
+            "Model_Size_KB": 743.39,
+            "fit_time_seconds": 1.95
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 2.01,
+            "Model_Size_KB": 52.32
+          }
+        },
+        "LightGBM": {
+          "real_aces": {
+            "Accuracy": 0.8804,
+            "Balanced_Accuracy": 0.866,
+            "Macro_F1": 0.8288,
+            "Weighted_F1": 0.8814,
+            "Critical_Precision": 0.6402,
+            "Critical_Recall": 0.9381,
+            "Critical_F1": 0.7611,
+            "Critical_FNR": 0.0619,
+            "Per_Class_F1": {
+              "Critical": 0.7611,
+              "Normal": 0.9321,
+              "Warning": 0.8412,
+              "Watch": 0.7808
+            },
+            "Confusion_Matrix": [
+              [
+                637,
+                0,
+                42,
+                0
+              ],
+              [
+                0,
+                17238,
+                0,
+                1370
+              ],
+              [
+                358,
+                24,
+                2939,
+                319
+              ],
+              [
+                0,
+                1116,
+                367,
+                5651
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 3.9,
+            "Model_Size_KB": 854.86,
+            "fit_time_seconds": 1.19
+          },
+          "synthetic": {
+            "Accuracy": 0.9938,
+            "Balanced_Accuracy": 0.9827,
+            "Macro_F1": 0.9741,
+            "Weighted_F1": 0.9939,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9333,
+            "Critical_F1": 0.9655,
+            "Critical_FNR": 0.0667,
+            "Per_Class_F1": {
+              "Critical": 0.9655,
+              "Normal": 0.9988,
+              "Warning": 0.9565,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                28,
+                0,
+                2,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 4.1,
+            "Model_Size_KB": 229.47
+          }
+        },
+        "CatBoost": {
+          "real_aces": {
+            "Accuracy": 0.868,
+            "Balanced_Accuracy": 0.8582,
+            "Macro_F1": 0.7895,
+            "Weighted_F1": 0.8711,
+            "Critical_Precision": 0.506,
+            "Critical_Recall": 0.9912,
+            "Critical_F1": 0.67,
+            "Critical_FNR": 0.0088,
+            "Per_Class_F1": {
+              "Critical": 0.67,
+              "Normal": 0.9317,
+              "Warning": 0.7752,
+              "Watch": 0.7812
+            },
+            "Confusion_Matrix": [
+              [
+                673,
+                0,
+                6,
+                0
+              ],
+              [
+                0,
+                16958,
+                0,
+                1650
+              ],
+              [
+                657,
+                0,
+                2558,
+                425
+              ],
+              [
+                0,
+                835,
+                396,
+                5903
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 0.49,
+            "Model_Size_KB": 205.28,
+            "fit_time_seconds": 2.82
+          },
+          "synthetic": {
+            "Accuracy": 0.9938,
+            "Balanced_Accuracy": 0.9905,
+            "Macro_F1": 0.9777,
+            "Weighted_F1": 0.9939,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9976,
+              "Warning": 0.9778,
+              "Watch": 0.9524
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                413,
+                0,
+                2
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 1.74,
+            "Model_Size_KB": 112.03
+          }
+        }
+      }
+    },
+    "E3_Generic_135L": {
+      "features_count": 56,
+      "models": {
+        "HistGradientBoosting": {
+          "real_aces": {
+            "Accuracy": 0.8991,
+            "Balanced_Accuracy": 0.8802,
+            "Macro_F1": 0.8479,
+            "Weighted_F1": 0.9007,
+            "Critical_Precision": 0.6599,
+            "Critical_Recall": 0.9087,
+            "Critical_F1": 0.7646,
+            "Critical_FNR": 0.0913,
+            "Per_Class_F1": {
+              "Critical": 0.7646,
+              "Normal": 0.9436,
+              "Warning": 0.8615,
+              "Watch": 0.8219
+            },
+            "Confusion_Matrix": [
+              [
+                617,
+                0,
+                62,
+                0
+              ],
+              [
+                0,
+                17286,
+                0,
+                1322
+              ],
+              [
+                318,
+                0,
+                3004,
+                318
+              ],
+              [
+                0,
+                745,
+                268,
+                6121
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 11.53,
+            "Model_Size_KB": 1027.93,
+            "fit_time_seconds": 6.03
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 13.56,
+            "Model_Size_KB": 105.98
+          }
+        },
+        "ExtraTrees": {
+          "real_aces": {
+            "Accuracy": 0.89,
+            "Balanced_Accuracy": 0.8426,
+            "Macro_F1": 0.8221,
+            "Weighted_F1": 0.8908,
+            "Critical_Precision": 0.6401,
+            "Critical_Recall": 0.8277,
+            "Critical_F1": 0.7219,
+            "Critical_FNR": 0.1723,
+            "Per_Class_F1": {
+              "Critical": 0.7219,
+              "Normal": 0.9448,
+              "Warning": 0.8188,
+              "Watch": 0.8028
+            },
+            "Confusion_Matrix": [
+              [
+                562,
+                0,
+                117,
+                0
+              ],
+              [
+                0,
+                17494,
+                0,
+                1114
+              ],
+              [
+                316,
+                0,
+                2849,
+                475
+              ],
+              [
+                0,
+                932,
+                353,
+                5849
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 5.21,
+            "Model_Size_KB": 11811.71,
+            "fit_time_seconds": 3.45
+          },
+          "synthetic": {
+            "Accuracy": 0.963,
+            "Balanced_Accuracy": 0.9505,
+            "Macro_F1": 0.8865,
+            "Weighted_F1": 0.9662,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.8333,
+            "Critical_F1": 0.9091,
+            "Critical_FNR": 0.1667,
+            "Per_Class_F1": {
+              "Critical": 0.9091,
+              "Normal": 0.9841,
+              "Warning": 0.898,
+              "Watch": 0.7547
+            },
+            "Confusion_Matrix": [
+              [
+                25,
+                0,
+                5,
+                0
+              ],
+              [
+                0,
+                402,
+                0,
+                13
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 52.08,
+            "Model_Size_KB": 161.65
+          }
+        },
+        "RandomForest": {
+          "real_aces": {
+            "Accuracy": 0.8709,
+            "Balanced_Accuracy": 0.846,
+            "Macro_F1": 0.801,
+            "Weighted_F1": 0.8717,
+            "Critical_Precision": 0.5563,
+            "Critical_Recall": 0.9381,
+            "Critical_F1": 0.6985,
+            "Critical_FNR": 0.0619,
+            "Per_Class_F1": {
+              "Critical": 0.6985,
+              "Normal": 0.9305,
+              "Warning": 0.8078,
+              "Watch": 0.7673
+            },
+            "Confusion_Matrix": [
+              [
+                637,
+                0,
+                42,
+                0
+              ],
+              [
+                0,
+                17345,
+                0,
+                1263
+              ],
+              [
+                508,
+                0,
+                2709,
+                423
+              ],
+              [
+                0,
+                1328,
+                316,
+                5490
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 5.25,
+            "Model_Size_KB": 8150.87,
+            "fit_time_seconds": 4.58
+          },
+          "synthetic": {
+            "Accuracy": 0.9938,
+            "Balanced_Accuracy": 0.9827,
+            "Macro_F1": 0.9741,
+            "Weighted_F1": 0.9939,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9333,
+            "Critical_F1": 0.9655,
+            "Critical_FNR": 0.0667,
+            "Per_Class_F1": {
+              "Critical": 0.9655,
+              "Normal": 0.9988,
+              "Warning": 0.9565,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                28,
+                0,
+                2,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 46.71,
+            "Model_Size_KB": 87.86
+          }
+        },
+        "XGBoost": {
+          "real_aces": {
+            "Accuracy": 0.8908,
+            "Balanced_Accuracy": 0.8417,
+            "Macro_F1": 0.8513,
+            "Weighted_F1": 0.8905,
+            "Critical_Precision": 0.8216,
+            "Critical_Recall": 0.8071,
+            "Critical_F1": 0.8143,
+            "Critical_FNR": 0.1929,
+            "Per_Class_F1": {
+              "Critical": 0.8143,
+              "Normal": 0.9375,
+              "Warning": 0.8648,
+              "Watch": 0.7884
+            },
+            "Confusion_Matrix": [
+              [
+                548,
+                0,
+                131,
+                0
+              ],
+              [
+                0,
+                17587,
+                0,
+                1021
+              ],
+              [
+                119,
+                0,
+                2994,
+                527
+              ],
+              [
+                0,
+                1325,
+                159,
+                5650
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 1.35,
+            "Model_Size_KB": 794.4,
+            "fit_time_seconds": 3.46
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 1.34,
+            "Model_Size_KB": 42.85
+          }
+        },
+        "LightGBM": {
+          "real_aces": {
+            "Accuracy": 0.8963,
+            "Balanced_Accuracy": 0.8741,
+            "Macro_F1": 0.8363,
+            "Weighted_F1": 0.8979,
+            "Critical_Precision": 0.6124,
+            "Critical_Recall": 0.919,
+            "Critical_F1": 0.735,
+            "Critical_FNR": 0.081,
+            "Per_Class_F1": {
+              "Critical": 0.735,
+              "Normal": 0.9438,
+              "Warning": 0.8463,
+              "Watch": 0.82
+            },
+            "Confusion_Matrix": [
+              [
+                624,
+                0,
+                55,
+                0
+              ],
+              [
+                0,
+                17360,
+                0,
+                1248
+              ],
+              [
+                395,
+                0,
+                2886,
+                359
+              ],
+              [
+                0,
+                821,
+                239,
+                6074
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 4.34,
+            "Model_Size_KB": 895.36,
+            "fit_time_seconds": 3.05
+          },
+          "synthetic": {
+            "Accuracy": 0.9938,
+            "Balanced_Accuracy": 0.9827,
+            "Macro_F1": 0.9741,
+            "Weighted_F1": 0.9939,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9333,
+            "Critical_F1": 0.9655,
+            "Critical_FNR": 0.0667,
+            "Per_Class_F1": {
+              "Critical": 0.9655,
+              "Normal": 0.9988,
+              "Warning": 0.9565,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                28,
+                0,
+                2,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 4.7,
+            "Model_Size_KB": 234.62
+          }
+        },
+        "CatBoost": {
+          "real_aces": {
+            "Accuracy": 0.867,
+            "Balanced_Accuracy": 0.8501,
+            "Macro_F1": 0.7889,
+            "Weighted_F1": 0.87,
+            "Critical_Precision": 0.4918,
+            "Critical_Recall": 0.9735,
+            "Critical_F1": 0.6535,
+            "Critical_FNR": 0.0265,
+            "Per_Class_F1": {
+              "Critical": 0.6535,
+              "Normal": 0.9263,
+              "Warning": 0.7926,
+              "Watch": 0.783
+            },
+            "Confusion_Matrix": [
+              [
+                661,
+                0,
+                18,
+                0
+              ],
+              [
+                0,
+                16977,
+                0,
+                1631
+              ],
+              [
+                683,
+                0,
+                2479,
+                478
+              ],
+              [
+                0,
+                1069,
+                118,
+                5947
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 0.57,
+            "Model_Size_KB": 207.82,
+            "fit_time_seconds": 4.89
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 2.25,
+            "Model_Size_KB": 124.37
+          }
+        }
+      }
+    },
+    "E3_Engine_Matched_TSIO360": {
+      "features_count": 56,
+      "models": {
+        "HistGradientBoosting": {
+          "real_aces": {
+            "Accuracy": 0.8965,
+            "Balanced_Accuracy": 0.8755,
+            "Macro_F1": 0.835,
+            "Weighted_F1": 0.8981,
+            "Critical_Precision": 0.6045,
+            "Critical_Recall": 0.9161,
+            "Critical_F1": 0.7283,
+            "Critical_FNR": 0.0839,
+            "Per_Class_F1": {
+              "Critical": 0.7283,
+              "Normal": 0.9442,
+              "Warning": 0.8472,
+              "Watch": 0.8202
+            },
+            "Confusion_Matrix": [
+              [
+                622,
+                0,
+                57,
+                0
+              ],
+              [
+                0,
+                17354,
+                0,
+                1254
+              ],
+              [
+                407,
+                0,
+                2938,
+                295
+              ],
+              [
+                0,
+                797,
+                301,
+                6036
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 11.59,
+            "Model_Size_KB": 1026.44,
+            "fit_time_seconds": 6.04
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 14.91,
+            "Model_Size_KB": 107.63
+          }
+        },
+        "ExtraTrees": {
+          "real_aces": {
+            "Accuracy": 0.8879,
+            "Balanced_Accuracy": 0.8353,
+            "Macro_F1": 0.8144,
+            "Weighted_F1": 0.8889,
+            "Critical_Precision": 0.6143,
+            "Critical_Recall": 0.7997,
+            "Critical_F1": 0.6948,
+            "Critical_FNR": 0.2003,
+            "Per_Class_F1": {
+              "Critical": 0.6948,
+              "Normal": 0.9433,
+              "Warning": 0.8179,
+              "Watch": 0.8016
+            },
+            "Confusion_Matrix": [
+              [
+                543,
+                0,
+                136,
+                0
+              ],
+              [
+                0,
+                17450,
+                0,
+                1158
+              ],
+              [
+                341,
+                0,
+                2856,
+                443
+              ],
+              [
+                0,
+                939,
+                352,
+                5843
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 5.41,
+            "Model_Size_KB": 11551.98,
+            "fit_time_seconds": 3.52
+          },
+          "synthetic": {
+            "Accuracy": 0.963,
+            "Balanced_Accuracy": 0.9505,
+            "Macro_F1": 0.8865,
+            "Weighted_F1": 0.9662,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.8333,
+            "Critical_F1": 0.9091,
+            "Critical_FNR": 0.1667,
+            "Per_Class_F1": {
+              "Critical": 0.9091,
+              "Normal": 0.9841,
+              "Warning": 0.898,
+              "Watch": 0.7547
+            },
+            "Confusion_Matrix": [
+              [
+                25,
+                0,
+                5,
+                0
+              ],
+              [
+                0,
+                402,
+                0,
+                13
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 51.77,
+            "Model_Size_KB": 162.98
+          }
+        },
+        "RandomForest": {
+          "real_aces": {
+            "Accuracy": 0.8755,
+            "Balanced_Accuracy": 0.8518,
+            "Macro_F1": 0.8035,
+            "Weighted_F1": 0.8767,
+            "Critical_Precision": 0.5492,
+            "Critical_Recall": 0.9455,
+            "Critical_F1": 0.6948,
+            "Critical_FNR": 0.0545,
+            "Per_Class_F1": {
+              "Critical": 0.6948,
+              "Normal": 0.9344,
+              "Warning": 0.8041,
+              "Watch": 0.7805
+            },
+            "Confusion_Matrix": [
+              [
+                642,
+                0,
+                37,
+                0
+              ],
+              [
+                0,
+                17342,
+                0,
+                1266
+              ],
+              [
+                527,
+                0,
+                2685,
+                428
+              ],
+              [
+                0,
+                1168,
+                316,
+                5650
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 5.22,
+            "Model_Size_KB": 8188.29,
+            "fit_time_seconds": 4.46
+          },
+          "synthetic": {
+            "Accuracy": 0.9938,
+            "Balanced_Accuracy": 0.9827,
+            "Macro_F1": 0.9741,
+            "Weighted_F1": 0.9939,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9333,
+            "Critical_F1": 0.9655,
+            "Critical_FNR": 0.0667,
+            "Per_Class_F1": {
+              "Critical": 0.9655,
+              "Normal": 0.9988,
+              "Warning": 0.9565,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                28,
+                0,
+                2,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 51.87,
+            "Model_Size_KB": 87.97
+          }
+        },
+        "XGBoost": {
+          "real_aces": {
+            "Accuracy": 0.8931,
+            "Balanced_Accuracy": 0.839,
+            "Macro_F1": 0.8502,
+            "Weighted_F1": 0.8927,
+            "Critical_Precision": 0.8323,
+            "Critical_Recall": 0.7747,
+            "Critical_F1": 0.8024,
+            "Critical_FNR": 0.2253,
+            "Per_Class_F1": {
+              "Critical": 0.8024,
+              "Normal": 0.9395,
+              "Warning": 0.8663,
+              "Watch": 0.7927
+            },
+            "Confusion_Matrix": [
+              [
+                526,
+                0,
+                153,
+                0
+              ],
+              [
+                0,
+                17599,
+                0,
+                1009
+              ],
+              [
+                106,
+                0,
+                3070,
+                464
+              ],
+              [
+                0,
+                1258,
+                225,
+                5651
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 1.23,
+            "Model_Size_KB": 796.14,
+            "fit_time_seconds": 3.21
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 1.36,
+            "Model_Size_KB": 43.18
+          }
+        },
+        "LightGBM": {
+          "real_aces": {
+            "Accuracy": 0.898,
+            "Balanced_Accuracy": 0.8789,
+            "Macro_F1": 0.8437,
+            "Weighted_F1": 0.8999,
+            "Critical_Precision": 0.6493,
+            "Critical_Recall": 0.8969,
+            "Critical_F1": 0.7532,
+            "Critical_FNR": 0.1031,
+            "Per_Class_F1": {
+              "Critical": 0.7532,
+              "Normal": 0.9439,
+              "Warning": 0.8562,
+              "Watch": 0.8215
+            },
+            "Confusion_Matrix": [
+              [
+                609,
+                0,
+                70,
+                0
+              ],
+              [
+                0,
+                17214,
+                0,
+                1394
+              ],
+              [
+                329,
+                0,
+                3033,
+                278
+              ],
+              [
+                0,
+                653,
+                342,
+                6139
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 4.37,
+            "Model_Size_KB": 895.56,
+            "fit_time_seconds": 2.67
+          },
+          "synthetic": {
+            "Accuracy": 0.9938,
+            "Balanced_Accuracy": 0.9827,
+            "Macro_F1": 0.9741,
+            "Weighted_F1": 0.9939,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9333,
+            "Critical_F1": 0.9655,
+            "Critical_FNR": 0.0667,
+            "Per_Class_F1": {
+              "Critical": 0.9655,
+              "Normal": 0.9988,
+              "Warning": 0.9565,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                28,
+                0,
+                2,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 5.16,
+            "Model_Size_KB": 237.19
+          }
+        },
+        "CatBoost": {
+          "real_aces": {
+            "Accuracy": 0.8666,
+            "Balanced_Accuracy": 0.8533,
+            "Macro_F1": 0.7879,
+            "Weighted_F1": 0.8706,
+            "Critical_Precision": 0.4873,
+            "Critical_Recall": 0.9602,
+            "Critical_F1": 0.6465,
+            "Critical_FNR": 0.0398,
+            "Per_Class_F1": {
+              "Critical": 0.6465,
+              "Normal": 0.9261,
+              "Warning": 0.7915,
+              "Watch": 0.7873
+            },
+            "Confusion_Matrix": [
+              [
+                652,
+                0,
+                27,
+                0
+              ],
+              [
+                0,
+                16759,
+                0,
+                1849
+              ],
+              [
+                686,
+                0,
+                2537,
+                417
+              ],
+              [
+                0,
+                824,
+                207,
+                6103
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 0.66,
+            "Model_Size_KB": 206.57,
+            "fit_time_seconds": 4.97
+          },
+          "synthetic": {
+            "Accuracy": 0.9959,
+            "Balanced_Accuracy": 0.9911,
+            "Macro_F1": 0.9838,
+            "Weighted_F1": 0.9959,
+            "Critical_Precision": 1.0,
+            "Critical_Recall": 0.9667,
+            "Critical_F1": 0.9831,
+            "Critical_FNR": 0.0333,
+            "Per_Class_F1": {
+              "Critical": 0.9831,
+              "Normal": 0.9988,
+              "Warning": 0.9778,
+              "Watch": 0.9756
+            },
+            "Confusion_Matrix": [
+              [
+                29,
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                414,
+                0,
+                1
+              ],
+              [
+                0,
+                0,
+                22,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "Classes": [
+              "Critical",
+              "Normal",
+              "Warning",
+              "Watch"
+            ],
+            "Inference_Latency_us": 2.48,
+            "Model_Size_KB": 120.11
+          }
+        }
+      }
+    }
+  },
+  "summary_matrix": [
+    {
+      "config": "E0_Baseline",
+      "model": "HistGradientBoosting",
+      "features": 15,
+      "aces_acc": 0.8919,
+      "aces_bal_acc": 0.8767,
+      "aces_macro_f1": 0.8518,
+      "aces_crit_rec": 0.9131,
+      "aces_crit_prec": 0.7078,
+      "aces_crit_f1": 0.7974,
+      "aces_latency_us": 11.01,
+      "model_size_kb": 939.71,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E0_Baseline",
+      "model": "ExtraTrees",
+      "features": 15,
+      "aces_acc": 0.8836,
+      "aces_bal_acc": 0.8237,
+      "aces_macro_f1": 0.8092,
+      "aces_crit_rec": 0.7555,
+      "aces_crit_prec": 0.6381,
+      "aces_crit_f1": 0.6918,
+      "aces_latency_us": 5.33,
+      "model_size_kb": 10922.44,
+      "syn_acc": 0.9343,
+      "syn_macro_f1": 0.8315,
+      "syn_crit_rec": 0.8333
+    },
+    {
+      "config": "E0_Baseline",
+      "model": "RandomForest",
+      "features": 15,
+      "aces_acc": 0.8751,
+      "aces_bal_acc": 0.8375,
+      "aces_macro_f1": 0.8059,
+      "aces_crit_rec": 0.894,
+      "aces_crit_prec": 0.5945,
+      "aces_crit_f1": 0.7141,
+      "aces_latency_us": 5.23,
+      "model_size_kb": 9965.8,
+      "syn_acc": 0.9795,
+      "syn_macro_f1": 0.9269,
+      "syn_crit_rec": 0.8667
+    },
+    {
+      "config": "E0_Baseline",
+      "model": "XGBoost",
+      "features": 15,
+      "aces_acc": 0.874,
+      "aces_bal_acc": 0.8054,
+      "aces_macro_f1": 0.8259,
+      "aces_crit_rec": 0.7585,
+      "aces_crit_prec": 0.8175,
+      "aces_crit_f1": 0.7869,
+      "aces_latency_us": 1.19,
+      "model_size_kb": 743.39,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E0_Baseline",
+      "model": "LightGBM",
+      "features": 15,
+      "aces_acc": 0.8804,
+      "aces_bal_acc": 0.866,
+      "aces_macro_f1": 0.8288,
+      "aces_crit_rec": 0.9381,
+      "aces_crit_prec": 0.6402,
+      "aces_crit_f1": 0.7611,
+      "aces_latency_us": 3.9,
+      "model_size_kb": 854.86,
+      "syn_acc": 0.9938,
+      "syn_macro_f1": 0.9741,
+      "syn_crit_rec": 0.9333
+    },
+    {
+      "config": "E0_Baseline",
+      "model": "CatBoost",
+      "features": 15,
+      "aces_acc": 0.868,
+      "aces_bal_acc": 0.8582,
+      "aces_macro_f1": 0.7895,
+      "aces_crit_rec": 0.9912,
+      "aces_crit_prec": 0.506,
+      "aces_crit_f1": 0.67,
+      "aces_latency_us": 0.49,
+      "model_size_kb": 205.28,
+      "syn_acc": 0.9938,
+      "syn_macro_f1": 0.9777,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E3_Generic_135L",
+      "model": "HistGradientBoosting",
+      "features": 56,
+      "aces_acc": 0.8991,
+      "aces_bal_acc": 0.8802,
+      "aces_macro_f1": 0.8479,
+      "aces_crit_rec": 0.9087,
+      "aces_crit_prec": 0.6599,
+      "aces_crit_f1": 0.7646,
+      "aces_latency_us": 11.53,
+      "model_size_kb": 1027.93,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E3_Generic_135L",
+      "model": "ExtraTrees",
+      "features": 56,
+      "aces_acc": 0.89,
+      "aces_bal_acc": 0.8426,
+      "aces_macro_f1": 0.8221,
+      "aces_crit_rec": 0.8277,
+      "aces_crit_prec": 0.6401,
+      "aces_crit_f1": 0.7219,
+      "aces_latency_us": 5.21,
+      "model_size_kb": 11811.71,
+      "syn_acc": 0.963,
+      "syn_macro_f1": 0.8865,
+      "syn_crit_rec": 0.8333
+    },
+    {
+      "config": "E3_Generic_135L",
+      "model": "RandomForest",
+      "features": 56,
+      "aces_acc": 0.8709,
+      "aces_bal_acc": 0.846,
+      "aces_macro_f1": 0.801,
+      "aces_crit_rec": 0.9381,
+      "aces_crit_prec": 0.5563,
+      "aces_crit_f1": 0.6985,
+      "aces_latency_us": 5.25,
+      "model_size_kb": 8150.87,
+      "syn_acc": 0.9938,
+      "syn_macro_f1": 0.9741,
+      "syn_crit_rec": 0.9333
+    },
+    {
+      "config": "E3_Generic_135L",
+      "model": "XGBoost",
+      "features": 56,
+      "aces_acc": 0.8908,
+      "aces_bal_acc": 0.8417,
+      "aces_macro_f1": 0.8513,
+      "aces_crit_rec": 0.8071,
+      "aces_crit_prec": 0.8216,
+      "aces_crit_f1": 0.8143,
+      "aces_latency_us": 1.35,
+      "model_size_kb": 794.4,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E3_Generic_135L",
+      "model": "LightGBM",
+      "features": 56,
+      "aces_acc": 0.8963,
+      "aces_bal_acc": 0.8741,
+      "aces_macro_f1": 0.8363,
+      "aces_crit_rec": 0.919,
+      "aces_crit_prec": 0.6124,
+      "aces_crit_f1": 0.735,
+      "aces_latency_us": 4.34,
+      "model_size_kb": 895.36,
+      "syn_acc": 0.9938,
+      "syn_macro_f1": 0.9741,
+      "syn_crit_rec": 0.9333
+    },
+    {
+      "config": "E3_Generic_135L",
+      "model": "CatBoost",
+      "features": 56,
+      "aces_acc": 0.867,
+      "aces_bal_acc": 0.8501,
+      "aces_macro_f1": 0.7889,
+      "aces_crit_rec": 0.9735,
+      "aces_crit_prec": 0.4918,
+      "aces_crit_f1": 0.6535,
+      "aces_latency_us": 0.57,
+      "model_size_kb": 207.82,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E3_Engine_Matched_TSIO360",
+      "model": "HistGradientBoosting",
+      "features": 56,
+      "aces_acc": 0.8965,
+      "aces_bal_acc": 0.8755,
+      "aces_macro_f1": 0.835,
+      "aces_crit_rec": 0.9161,
+      "aces_crit_prec": 0.6045,
+      "aces_crit_f1": 0.7283,
+      "aces_latency_us": 11.59,
+      "model_size_kb": 1026.44,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E3_Engine_Matched_TSIO360",
+      "model": "ExtraTrees",
+      "features": 56,
+      "aces_acc": 0.8879,
+      "aces_bal_acc": 0.8353,
+      "aces_macro_f1": 0.8144,
+      "aces_crit_rec": 0.7997,
+      "aces_crit_prec": 0.6143,
+      "aces_crit_f1": 0.6948,
+      "aces_latency_us": 5.41,
+      "model_size_kb": 11551.98,
+      "syn_acc": 0.963,
+      "syn_macro_f1": 0.8865,
+      "syn_crit_rec": 0.8333
+    },
+    {
+      "config": "E3_Engine_Matched_TSIO360",
+      "model": "RandomForest",
+      "features": 56,
+      "aces_acc": 0.8755,
+      "aces_bal_acc": 0.8518,
+      "aces_macro_f1": 0.8035,
+      "aces_crit_rec": 0.9455,
+      "aces_crit_prec": 0.5492,
+      "aces_crit_f1": 0.6948,
+      "aces_latency_us": 5.22,
+      "model_size_kb": 8188.29,
+      "syn_acc": 0.9938,
+      "syn_macro_f1": 0.9741,
+      "syn_crit_rec": 0.9333
+    },
+    {
+      "config": "E3_Engine_Matched_TSIO360",
+      "model": "XGBoost",
+      "features": 56,
+      "aces_acc": 0.8931,
+      "aces_bal_acc": 0.839,
+      "aces_macro_f1": 0.8502,
+      "aces_crit_rec": 0.7747,
+      "aces_crit_prec": 0.8323,
+      "aces_crit_f1": 0.8024,
+      "aces_latency_us": 1.23,
+      "model_size_kb": 796.14,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    },
+    {
+      "config": "E3_Engine_Matched_TSIO360",
+      "model": "LightGBM",
+      "features": 56,
+      "aces_acc": 0.898,
+      "aces_bal_acc": 0.8789,
+      "aces_macro_f1": 0.8437,
+      "aces_crit_rec": 0.8969,
+      "aces_crit_prec": 0.6493,
+      "aces_crit_f1": 0.7532,
+      "aces_latency_us": 4.37,
+      "model_size_kb": 895.56,
+      "syn_acc": 0.9938,
+      "syn_macro_f1": 0.9741,
+      "syn_crit_rec": 0.9333
+    },
+    {
+      "config": "E3_Engine_Matched_TSIO360",
+      "model": "CatBoost",
+      "features": 56,
+      "aces_acc": 0.8666,
+      "aces_bal_acc": 0.8533,
+      "aces_macro_f1": 0.7879,
+      "aces_crit_rec": 0.9602,
+      "aces_crit_prec": 0.4873,
+      "aces_crit_f1": 0.6465,
+      "aces_latency_us": 0.66,
+      "model_size_kb": 206.57,
+      "syn_acc": 0.9959,
+      "syn_macro_f1": 0.9838,
+      "syn_crit_rec": 0.9667
+    }
+  ]
+}
