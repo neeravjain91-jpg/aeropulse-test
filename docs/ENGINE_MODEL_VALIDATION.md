@@ -16,7 +16,7 @@ This report establishes the **formal validation layer** for the AeroPulse-X redu
 | Validation Category | Status | Scientific Evidence & Benchmark |
 | :--- | :---: | :--- |
 | **A. Mathematical Verification** | **COMPLETE** | **100% Thermodynamic Monotonicity** verified across 9 physical test sweeps ($d(\text{power})/d(\theta) > 0, d(\rho)/d(h) < 0$). |
-| **B. Reference Operating-Point Validation** | **COMPLETE** | **$R^2 = 0.9308$ / MAE = 6.02 kW** against published Rotax 914 manufacturer performance ratings across 5 certified operating points. |
+| **B. Reference Operating-Point Validation** | **COMPLETE** | **$R^2 = 0.9308$ / MAE = 6.02 kW** against published Rotax 914 manufacturer performance ratings across 5 documented operating points. |
 | **C. Real-Flight Telemetry Cross-Domain Check** | **COMPLETE** | **100% Envelope Consistency** and directional correlation against NASA ACES Altus II real UAV flight telemetry. |
 | **D. Physical Test-Cell Dynamometer Calibration** | **PENDING** | **NOT AVAILABLE / PENDING TEST-CELL DEPLOYMENT.** Physical dynamometer test-cell measurements do not exist in the repository; constants are literature-informed. |
 
@@ -91,7 +91,7 @@ Every model constant has been audited and cataloged with its exact provenance, s
 
 | Parameter | Value | Unit | Source Type | Confidence Status | Source / Citation | Configurable | Validated |
 | :--- | :---: | :---: | :---: | :---: | :--- | :---: | :---: |
-| `afr_stoich` | 14.7 | ratio | `published_specification` | `VALIDATED_SPEC` | Heywood (1988) Internal Combustion Engine Fundamentals, Chapter 3 | Yes | Yes |
+| `afr_stoich` | 14.7 | ratio | `derived_theoretical` | `DERIVED_THEORETICAL` | Simplified gasoline/iso-octane-equivalent combustion assumption used by the demonstrator (Heywood 1988 Ch 3) | Yes | Yes |
 | `base_friction_kw` | 6.5 | kW | `literature_assumption` | `LITERATURE_INFORMED` | Bishop-Heywood Hydrodynamic Friction Correlation for Small Light Aero-Pistons | Yes | Pending |
 | `base_power_kw` | 84.5 | kW | `published_specification` | `VALIDATED_SPEC` | Rotax 914 F/UL Takeoff Rating (115 HP @ 5800 RPM, 5 min limit) | Yes | Yes |
 | `bore_mm` | 84 | mm | `published_specification` | `VALIDATED_SPEC` | Rotax 912 ULS / Aero-Engine Type Certification Data Sheet | Yes | Yes |
@@ -101,8 +101,8 @@ Every model constant has been audited and cataloged with its exact provenance, s
 | `displacement_l` | 1.352 | liters | `published_specification` | `VALIDATED_SPEC` | Rotax 912/914 & Continental O-200 Aero-Piston Specifications / EASA TCDS E.121 | Yes | Yes |
 | `friction_rpm_exp` | 1.8 | exponent | `literature_assumption` | `LITERATURE_INFORMED` | Heywood (1988) Friction Scaling Law (Typical range: 1.6 to 2.0) | Yes | Pending |
 | `fuel_density_kg_l` | 0.72 | kg/L | `published_specification` | `VALIDATED_SPEC` | ASTM D910 / DIN EN 228 Fuel Density Standard @ 15°C | Yes | Yes |
-| `fuel_lhv_mj_kg` | 43.5 | MJ/kg | `published_specification` | `VALIDATED_SPEC` | ASTM D910 Standard Specification for Aviation Gasolines (Avgas 100LL / Mogas EN228) | Yes | Yes |
-| `gamma` | 1.33 | ratio | `literature_assumption` | `LITERATURE_INFORMED` | Heywood (1988), Internal Combustion Engine Fundamentals (Burned Gas Specific Heat Ratio) | Yes | Pending |
+| `fuel_lhv_mj_kg` | 43.5 | MJ/kg | `literature_informed` | `LITERATURE_INFORMED` | Typical aviation fuel lower heating value (ASTM D910 reference standard) applied as engineering combustion-model assumption; not a manufacturer-certified engine parameter | Yes | Pending |
+| `gamma` | 1.33 | ratio | `literature_assumption` | `LITERATURE_INFORMED` | Heywood (1988) Internal Combustion Engine Fundamentals (Burned Gas Specific Heat Ratio; engineering approximation rather than a universal constant) | Yes | Pending |
 | `idle_rpm` | 1400 | RPM | `published_specification` | `VALIDATED_SPEC` | Rotax 914 Ground/Flight Idle Operating Specification | Yes | Yes |
 | `max_rpm` | 5800 | RPM | `published_specification` | `VALIDATED_SPEC` | Rotax 912/914 Operating Limits (Redline Speed) | Yes | Yes |
 | `nominal_rpm` | 3000 | RPM | `published_specification` | `VALIDATED_SPEC` | MALE-UAV Propeller Direct Drive / Reduced Geared Shaft Reference | Yes | Yes |
@@ -118,7 +118,7 @@ Every model constant has been audited and cataloged with its exact provenance, s
 
 # 4. Operating-Point Validation Results
 
-Model predictions were evaluated against 5 certified operating points published in the **Rotax 914 F/UL Operator's Manual (OM-914)** and **EASA Type Certificate Data Sheet (TCDS E.121)**.
+Model predictions were evaluated against 5 documented operating points published in the **Rotax 914 F/UL Operator's Manual (OM-914)** and **EASA Type Certificate Data Sheet (TCDS E.121)**.
 
 ### Operating-Point Performance Matrix
 
@@ -145,7 +145,7 @@ Model predictions were evaluated against 5 certified operating points published 
 - **Power Correlation ($R^2$):** **0.9308** (High linear correlation across full operating range)
 - **Power Mean Absolute Error (MAE):** **6.02 kW** (7.1% of rated base power)
 - **Power Root Mean Squared Error (RMSE):** **7.29 kW**
-- **Takeoff & MCP Rated Accuracy:** **$< 5.3\%$ Error** on certified maximum power limits
+- **Takeoff & MCP Rated Accuracy:** **$< 5.3\%$ Error** on documented maximum power limits
 - **Key Engineering Finding:** Reduced-order linear fuel flow model provides excellent high-power tracking ($6.0\%$ error at takeoff) but overestimates idle and low-cruise fuel burn. **This confirms the necessity of physical test-cell dynamometer calibration for low-power regimes.**
 
 ---

@@ -37,7 +37,7 @@ The system establishes:
   - `Pressures`: psi (`Oil_Pressure`), inHg (`MAP_Injector`)
   - `Electrical`: V (`Battery_Voltage`), A (`Battery_Current`)
   - `Fluid Flow`: L/h (`Fuel_Flow`)
-- **Altus II Constraint Certification**: Altus II real flight data has **no vibration accelerometer**. Strictly zero synthetic vibration data was fabricated for ACES flights.
+- **Altus II Constraint Verification**: Altus II real flight data has **no vibration accelerometer**. Strictly zero synthetic vibration data was fabricated for ACES flights.
 - **Engine Profile Separation**: Strictly isolated parameters and operational limits for Continental TSIO-360-MB (1800h TBO, air-cooled, 2700 RPM) and Rotax 914 F (1200h TBO, liquid-cooled heads, 5800 RPM).
 - **TSIO-360 Terminology Invariant**: Dynamics are described strictly as *"turbocharger compressor/turbine spool dynamics, charge-air/intercooler thermodynamics, and transient boost response."*
 - **Prognostic RUL Non-Collapse**: Isolated sensor failures widen uncertainty intervals ($+40\%$) without collapsing point RUL estimates.

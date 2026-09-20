@@ -48,4 +48,4 @@ Every technical claim made by the AeroPulse-X platform has been independently au
 ## 3. Summary of Claim Disciplines
 
 1. **Zero Inflation**: All accuracy, recall, and RUL metrics are strictly derived from reproducible, leakage-free code execution.
-2. **Honest Boundary Declaration**: AeroPulse-X is a state-of-the-art physics-guided engineering demonstrator; it is not yet certified for airborne flight control on commercial or military aircraft.
+2. **Honest Boundary Declaration**: AeroPulse-X is a state-of-the-art physics-guided engineering demonstrator. Validated within the demonstrated software/SIL and controlled-test scope. No hardware, flight, regulatory, or safety certification is claimed.

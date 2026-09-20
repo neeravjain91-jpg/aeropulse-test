@@ -320,7 +320,7 @@ graph TD
 
 ## 32. Engine Model Calibration & Thermodynamic Realism
 - **Target Engine:** Rotax 914 F Turbocharged 4-Cylinder Boxer Engine (115 HP / 84.5 kW).
-- **Certified Specification Alignment (EASA TCDS E.122 / FAA E00057EN):**
+- **Documented Specification Alignment (EASA TCDS E.122 / FAA E00057EN):**
   - Displacement: $1,211\text{ cm}^3$, Bore: $79.5\text{ mm}$, Stroke: $61.0\text{ mm}$, Compression Ratio: $9.0:1$.
   - Maximum Takeoff Power: $84.5\text{ kW}$ (115 HP) @ 5,800 RPM (5 min limit, MAP $1.35\text{ bar}$ / $39.9\text{ inHg}$).
   - Maximum Continuous Power: $73.5\text{ kW}$ (100 HP) @ 5,500 RPM (MAP $1.15\text{ bar}$ / $34.0\text{ inHg}$).
@@ -369,7 +369,7 @@ AeroPulse-X is engineered upon peer-reviewed aerospace, thermodynamic, and tribo
 4. **Prognostics and Health Management of Aerospace Systems (IEEE Transactions / NASA PCoE, Saxena et al., 2008):**
    - Formal prognostic metrics: Mean Absolute Error, Monotonicity ($M$), Trendability, and $\alpha$-$\lambda$ accuracy bounds for remaining useful life prediction.
 5. **EASA Type Certificate Data Sheet No. E.122 (Rotax 914 Series Engines, European Union Aviation Safety Agency, Issue 04, 2021):**
-   - Official certified engine limits: power ratings, RPM redlines, CHT/EGT/oil pressure limits, and fuel consumption curves.
+   - Official documented engine limits: power ratings, RPM redlines, CHT/EGT/oil pressure limits, and fuel consumption curves.
 6. **MIL-STD-810H / STANAG 4586 UAV Architecture & Telemetry Standards (US DoD & NATO):**
    - Standards for environmental sensor operational limits and interoperable tactical UAV ground control station command/telemetry protocols.
 
@@ -451,7 +451,7 @@ In the spirit of complete scientific and adversarial honesty:
 ## 44. Problem Statement Compliance Gaps
 A transparent assessment of areas where physical or formal certification requirements remain open:
 - **Physical Test-Cell Calibration:** Physical dynamometer testing with real Rotax 914 F hardware was not conducted due to lack of physical engine test-cell access (designated TRL 4 Software Demonstrator).
-- **Aviation Certification Artifacts:** Formal FAA/EASA DO-178C (software) and DO-254 (electronic hardware) compliance documents are planned for Phase 2/3 and are not part of this software prototype.
+- **Aviation Certification Artifacts:** Prepare future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices as planned for Phase 2/3 (not part of this software demonstrator prototype).
 - **Native Embedded C Port:** While the Python/NumPy edge node executes in 18.9 μs on host CPU, deployment to bare-metal flight microcontrollers (e.g., STM32F7 / TMS570) requires translation to MISRA C.
 
 ---
@@ -504,7 +504,7 @@ All unsubstantiated claims and promotional buzzwords have been strictly excised 
 ---
 
 ## 50. Recommended Evidence-Backed Jury Answers
-1. **Answer 1:** *"The 100,000 records are generated from our high-fidelity multi-physics ODE solver implementing Heywood/Taylor thermodynamic equations calibrated against certified Rotax 914 F specifications and NASA ACES operational flight envelopes. No physical engines were destroyed."*
+1. **Answer 1:** *"The 100,000 records are generated from our high-fidelity multi-physics ODE solver implementing Heywood/Taylor thermodynamic equations calibrated against documented Rotax 914 F specifications and NASA ACES operational flight envelopes. No physical engines were destroyed."*
 2. **Answer 2:** *"NASA C-MAPSS was strictly used as an external prognostic methodology benchmark to validate our Weibull hazard formulation and monotonicity metrics. All primary engine fault models are strictly based on our Rotax 914 F thermodynamic model."*
 3. **Answer 3:** *"Our Tier 1 arbitration evaluates physics consistency residuals across multiple independent channels ($EGT$, $CHT$, $MAP$, $Oil\ P$). A real cylinder overheat is physically accompanied by corresponding changes in EGT, oil temperature, or engine load; an isolated single-channel voltage jump without thermodynamic correlation is correctly isolated as a sensor failure."*
 4. **Answer 4:** *"The 18.9 μs latency is benchmarked on vectorized NumPy/Scikit-Learn C-extensions on AMD64. For flight certification (Phase 2), the inference weights and ODE equations are designed for direct conversion to MISRA C running on ARM Cortex-R5/M7 microcontrollers."*
@@ -513,7 +513,7 @@ All unsubstantiated claims and promotional buzzwords have been strictly excised 
 7. **Answer 7:** *"Our CAN layer implements standard 11-bit identifier priority arbitration (`0x100` emergency cutouts take precedence over `0x104` diagnostics) with 500 kbps bit-timing calculations and CRC-8 integrity verification."*
 8. **Answer 8:** *"Our RUL engine combines Arrhenius degradation kinetics with exponential smoothing and monotonic wear accumulation constraints ($d(\text{Wear})/dt \ge 0$), achieving a monotonicity score of 0.982."*
 9. **Answer 9:** *"Unlike peer projects that use basic static thresholds and open-loop telemetry plots, AeroPulse-X provides a closed-loop physics-informed hybrid architecture, dual-tier sensor arbitration, autonomous FADEC derate feedback, and 277 verified automated tests."*
-10. **Answer 10:** *"AeroPulse-X is currently at TRL 4 (Software-in-the-Loop Demonstrator). Phase 2 will execute physical dynamometer data collection, hardware CAN bus transceiver integration, and porting to MISRA C for DO-178C certification."*
+10. **Answer 10:** *"AeroPulse-X is currently at TRL 4 (Software-in-the-Loop Demonstrator). Phase 2 will execute physical dynamometer data collection, hardware CAN bus transceiver integration, and prepare future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices."*
 
 ---
 
@@ -587,6 +587,6 @@ AeroPulse-X is formally cataloged as a **Technology Readiness Level 4 (TRL 4) Co
 1. **Physical Engine Dynamometer Data Acquisition:** Instrument a physical Rotax 914 F test-cell with high-frequency telemetry logging to replace synthetic degradation trajectories with empirical wear data.
 2. **Hardware-in-the-Loop (HIL) Test Bench:** Connect the flight computer running AeroPulse-X to a physical Vector CANoe / Kvaser CAN bus transceiver rig with simulated electronic sensor voltage injection.
 3. **Bare-Metal Embedded Porting:** Translate the Python edge inference node and thermodynamic ODE solver into MISRA C/C++ targeted for dual-core ARM Cortex-R5 / STM32H7 avionics flight microcontrollers.
-4. **DO-178C / DO-254 Artifact Generation:** Formalize software requirements, design documents, source code traceability, and structural coverage analysis (MC/DC) required for aviation certification.
+4. **Certification-Readiness Artifact Generation:** Prepare future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices (software requirements, design documents, source code traceability, and structural coverage analysis).
 
 ---

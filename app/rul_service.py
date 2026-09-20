@@ -50,7 +50,7 @@ class RULService:
     # Maximum RUL drop fraction per evaluation step (prevents 1199→0 collapse)
     MAX_RUL_DROP_FRACTION: float = 0.25
 
-    # Engine TBO mapping (Certified specifications / published operator manuals)
+    # Engine TBO mapping (Documented specifications / published operator manuals)
     # TBO is a maintenance service-life ceiling, not a physical failure time.
     ENGINE_TBO_HOURS: Dict[str, float] = {
         "AeroPiston-4C-1.35L": 2000.0,
@@ -72,7 +72,7 @@ class RULService:
         self._engine_states: Dict[str, EngineRULState] = {}
 
     def get_engine_tbo(self, engine_id: Optional[str] = None) -> float:
-        """Returns certified/published TBO hours for the specified engine."""
+        """Returns documented engine-specific TBO hours for the specified engine."""
         eid = engine_id or self.default_engine_id
         if eid in self.ENGINE_TBO_HOURS:
             return self.ENGINE_TBO_HOURS[eid]

@@ -6,6 +6,9 @@
 **Starting Commit**: `668d0eafa46be7aeccf0b7b9f3121b52974a985a`  
 **Status**: COMPLETE & VALIDATED (412/412 tests passing)  
 
+> [!IMPORTANT]
+> **Scope Disclaimer**: Validated within the demonstrated software/SIL and controlled-test scope. No hardware, flight, regulatory, or safety certification is claimed.
+
 ---
 
 ## 1. Existing RUL Architecture
@@ -108,12 +111,17 @@ Engine profiles and service-life horizons are rigorously isolated in `app/engine
 | **Engine Architecture** | Twin-Turbocharged Opposed-6 | Single-Turbocharged Opposed-4 | Turbocharged Inline-4 |
 | **Displacement** | 5.89 L (360 cu in) | 1.211 L | 1.991 L |
 | **Rated Power** | 156.6 kW (210 HP) | 84.5 kW (115 HP) | 114 kW (155 HP) |
-| **Nominal RPM** | 2700 RPM | 5500 RPM | 2800 RPM |
+| **Operating RPM** | Idle 700, Cruise 2450, Max 2700 | Idle 1400, Cruise 4800-5500, Max 5800 | Idle 900, Cruise 2300, Max 2800 |
 | **Compression Ratio** | 7.5:1 | 9.0:1 | 18.0:1 |
-| **Cooling Architecture** | Air-cooled cylinders | Liquid-cooled heads, air cylinders | Liquid-cooled |
+| **Cooling Architecture** | 100% Ram air-cooled cylinders | Liquid-cooled heads, air cylinders | Liquid-cooled |
+| **Normal CHT Limits** | 300 - 400°F (Max 460°F) | 180 - 230°F (Max 260-275°F) | 180 - 220°F (Max 250°F) |
+| **Normal Oil Pressure** | 30 - 60 psi (Relief 100 psi) | 29 - 73 psi (Relief 95 psi) | 35 - 75 psi (Relief 90 psi) |
+| **Fuel Flow Limits** | Cruise 45-55 L/h, Takeoff 75 L/h | Cruise 25-33 L/h, Takeoff 38 L/h | Cruise 18-24 L/h, Takeoff 30 L/h |
 | **Lubrication System** | Wet sump | Dry sump | Wet sump |
-| **Documented Engine-Specific TBO Ceiling** | **1800.0 Hours** | **1200.0 Hours** | **1500.0 Hours** |
-| **TBO Provenance** | FAA TCDS E9CE / Altus II Baseline | EASA TCDS E.121 / Rotax Manual | Literature Proxy (Austin 2010) |
+| **Documented Engine TBO / Service-Life Horizon** | **1800.0 Hours** | **1200.0 Hours** | **1500.0 Hours** |
+| **TBO Provenance** | FAA TCDS E9CE / Cont. SIL98-9C | EASA TCDS E.121 / Rotax SB-914-001 | Literature Proxy (Austin 2010) |
+| **Provenance Class** | `MANUFACTURER` | `MANUFACTURER` | `LITERATURE` |
+| **Validation Status** | `VALIDATED_SPEC` | `VALIDATED_SPEC` | `LITERATURE_INFORMED` |
 
 > [!NOTE]
 > **Aero-Piston Turbocharger Dynamics**: Continental TSIO-360-MB behavior is governed strictly by **turbocharger compressor/turbine spool dynamics, charge-air/intercooler thermodynamics, and transient boost response**. It does not possess a turbofan gas-turbine core.

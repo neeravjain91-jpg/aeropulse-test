@@ -167,7 +167,7 @@ Every parameter in the AeroPulse-X registry is explicitly tagged with its proven
   "source_type": "published_specification",
   "source": "Rotax 914 F/UL Operator Manual / EASA TCDS E.121",
   "confidence_status": "VALIDATED_SPEC",
-  "provenance_tier": "MANUFACTURER_CERTIFIED"
+  "provenance_tier": "MANUFACTURER_SPEC"
 }
 ```
 

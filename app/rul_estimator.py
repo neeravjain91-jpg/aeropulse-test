@@ -135,7 +135,7 @@ def calculate_causal_stress(context: Optional[Dict[str, Any]] = None) -> float:
 
 
 def get_profile_tbo(engine_id: Optional[str]) -> float:
-    """Returns certified/published maintenance TBO ceiling hours."""
+    """Returns documented engine-specific maintenance TBO ceiling hours."""
     eid = (engine_id or "Rotax-914-Turbo-115HP").lower()
     if "continental" in eid or "tsio" in eid or "360" in eid:
         return 1800.0  # Continental TSIO-360-MB FAA TCDS E9CE
@@ -147,7 +147,7 @@ def get_profile_tbo(engine_id: Optional[str]) -> float:
         return 500.0
     if "wankel" in eid or "rotary" in eid:
         return 1000.0
-    return 2000.0  # AeroPiston-4C-1.35L baseline
+    return 2000.0  # Demonstrator generic fallback baseline (AeroPiston-4C-1.35L)
 
 
 # =====================================================================

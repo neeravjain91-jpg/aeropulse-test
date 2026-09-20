@@ -325,18 +325,18 @@ Per-flight weakness: Flight 235 → TCN balanced_accuracy=0.760, macro_f1=0.583
 5. ✅ Formulated 7 physical cross-sensor coupling rules and bulk physics RMS computed strictly over trusted channels.
 6. ✅ Evaluated benchmark ablation matrix (E0 - E5): E5 achieved **0.887 F1**, **73.1% attribution accuracy**, **0.0% False Catastrophe Rate** (reduced from 51.7% in E0), **0.0% False Reassurance Rate**, and **0.79s detection delay**.
 7. ✅ Validated RUL non-collapse: 0/5 false collapses under E5, preserving 85.4% to 89.2% of nominal RUL under isolated sensor failures.
-8. ✅ Audited all 14 NASA ACES operational flights (4,355 samples); certified 100% zero-vibration Altus II compliance.
+8. ✅ Audited all 14 NASA ACES operational flights (4,355 samples); verified 100% zero-vibration Altus II compliance.
 9. ✅ Refactored `app/sensor_health.py` as a 100% backward-compatible adapter.
 10. ✅ Production Decision: **OPTION B (INTEGRATE PART 6 FAULT ISOLATION ENGINE)**.
 11. ✅ Generated `docs/PART6_SENSOR_FAULT_ISOLATION_REPORT.md`, `reports/part6_sensor_fault_benchmark.json`, and `reports/part6_sensor_health_validation.json`.
 12. ✅ Created 25 dedicated unit tests in `tests/test_sensor_fault_isolation.py`. Full repository suite: **441/441 passing (100%)**.
 
 ## NEXT_PHASE
-**Part 7/7 — Final System Integration, Mission Replay & Certification**
+**Part 7/7 — Final System Integration, Mission Replay & Capstone Validation**
 
 Priority:
 1. End-to-end mission replay validation across all 14 ACES flights.
-2. Aerospace software verification artifacts (DO-178C / DO-254 readiness).
+2. Prepare future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices.
 3. Production deployment packaging.
 
 ## IMPORTANT_DECISIONS

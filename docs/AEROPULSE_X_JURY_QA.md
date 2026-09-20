@@ -72,7 +72,7 @@
 - **Evidence-Based Answer:** app/virtual_fadec.py implements autonomous closed-loop safety control laws. When CHT exceeds 135 C or oil pressure drops below 2.0 bar, the Virtual FADEC overrides manual pilot throttle, dynamically derating engine power by up to 30% to stabilize temperatures and extend flight range to an emergency divert base.
 
 #### Q20: Can your Virtual FADEC control a physical aircraft engine today?
-- **Evidence-Based Answer:** **No.** It is a software SIL control law demonstrator. Interfacing with physical actuator servos requires DO-178C / DO-254 certifiable embedded hardware.
+- **Evidence-Based Answer:** **No.** It is a software SIL control law demonstrator. Interfacing with physical actuator servos requires embedded hardware and preparing future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices.
 
 ### PART 3 — AI/ML, Data Quality & Scientific Leakage (Questions 21 to 30)
 
@@ -159,7 +159,7 @@
 - **Evidence-Based Answer:** AeroPulse-X has a substantially more comprehensive **avionics SIL pipeline** (Virtual 12-bit ADC, CAN 2.0B with CRC-8, Virtual ECU, Virtual FADEC safety derating, Virtual Power/Watchdog), cryptographically authenticated HMAC-SHA256 telemetry, a zero-dependency 3D WebGL tactical ground station, and a formal dataset provenance registry cataloging domain boundaries.
 
 #### Q45: Is AeroPulse-X flight-ready for deployment on an Indian Army or Navy UAV tomorrow?
-- **Evidence-Based Answer:** **No.** AeroPulse-X is currently at **Technology Readiness Level 4 (TRL 4 — Software Demonstrator validated in laboratory environment)**. Flight deployment requires porting to DO-254 / DO-178C certified embedded hardware, physical CAN transceiver interfacing, and physical dynamometer test-cell calibration.
+- **Evidence-Based Answer:** **No.** AeroPulse-X is currently at **Technology Readiness Level 4 (TRL 4 — Software Demonstrator validated in laboratory environment)**. Flight deployment requires porting to embedded hardware, preparing future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices, physical CAN transceiver interfacing, and physical dynamometer test-cell calibration.
 
 #### Q46: What datasets were actually used, and what does each prove?
 - **Evidence-Based Answer:**

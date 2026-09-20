@@ -501,5 +501,5 @@ pytest -v
 | **Full Regression Suite** | 100% green pass rate across all tests | Verified. 306/306 tests passing. | **PASSED** |
 
 ---
-*Report Certified by: Antigravity AI Engineering Team*
+*Report Verified by: Antigravity AI Engineering Team*
 *AeroPulse-X Hybrid Digital Twin Platform — Version 2.4-DL*

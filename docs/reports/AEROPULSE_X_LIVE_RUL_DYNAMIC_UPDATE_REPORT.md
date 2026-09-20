@@ -21,10 +21,10 @@ During the live web demonstration of AeroPulse-X at `https://aeropulse-test.verc
 ## 2. Mathematical Formulation of Dynamic RUL Kinetics
 
 ### 2.1 Multi-Engine Time-Between-Overhaul (TBO) Base
-Initial operational potential is governed by published certified aircraft engine overhaul horizons:
+Initial operational potential is governed by documented engine-specific TBO/service-life horizons and demonstrator generic fallbacks:
 $$\text{TBO}(\text{Engine}) = \begin{cases}
 1200.0\text{ h} & \text{Rotax 914 Turbo (115 HP)} \\
-2000.0\text{ h} & \text{AeroPiston 4C 1.35L} \\
+2000.0\text{ h} & \text{AeroPiston 4C 1.35L (Demonstrator Generic Fallback)} \\
 1500.0\text{ h} & \text{Generic Inline-4 AeroDiesel} \\
 500.0\text{ h} & \text{Generic 2-Stroke Twin (50 HP)} \\
 1000.0\text{ h} & \text{Generic Wankel Rotary (40 HP)}

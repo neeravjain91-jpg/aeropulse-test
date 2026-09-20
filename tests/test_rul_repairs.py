@@ -59,7 +59,7 @@ def test_rul_sensor_fault_isolation():
     assert res_mech["rul_hours"] < 100.0
 
 def test_multi_engine_tbo_parameterization():
-    """Verify that Rotax 914 (1200h TBO) and Lycoming/AeroPiston (2000h TBO) scale correctly."""
+    """Verify that Rotax 914 (1200h documented TBO) and AeroPiston (2000h demonstrator fallback TBO) scale correctly."""
     service = RULService()
     
     assert service.get_engine_tbo("Rotax-914-Turbo-115HP") == 1200.0

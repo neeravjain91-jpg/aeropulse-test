@@ -123,17 +123,20 @@ To prevent non-physical feature blending or unscientific domain cross-contaminat
 AeroPulse-X provides clean parametric isolation between distinct propulsion configurations:
 
 1. **Rotax 914 F Turbocharged Piston Engine**:
-   - Architecture: 4-cylinder, 4-stroke, liquid-cooled cylinder heads, air-cooled cylinders.
-   - Operating Window: Idle 1400 RPM, Nominal Cruise 4800 RPM, Max Continuous 5500 RPM, Takeoff 5800 RPM.
-   - TBO Horizon: 1200 flight hours.
-   - Thermal Limits: CHT $260^\circ\text{F}$, Oil Temp $266^\circ\text{F}$, MAP $39.5\text{ inHg}$.
+   - Architecture: 4-cylinder, 4-stroke, liquid-cooled cylinder heads, ram air-cooled cylinder barrels (Rotax OM-914 / EASA TCDS E.121; `VALIDATED_SPEC`).
+   - Operating Window: Idle 1400 RPM, Nominal Cruise 4800–5500 RPM, Max Continuous 5500 RPM, Takeoff 5800 RPM (Rotax OM-914).
+   - Documented Engine TBO / Service-Life Horizon: 1200 flight hours (Rotax SB-914-001 / EASA TCDS E.121; `VALIDATED_SPEC`).
+   - Thermal & Pressure Limits: CHT $180 - 230^\circ\text{F}$ normal (Max $260 - 275^\circ\text{F}$), Oil Temp $266^\circ\text{F}$ max, Oil Pressure $29 - 73\text{ psi}$ (Relief $95\text{ psi}$), MAP $39.5\text{ inHg}$.
+   - Fuel Flow Limits: Cruise 25–33 L/h, Takeoff 38 L/h (Rotax OM-914 fuel curves).
+   - Turbocharger Behavior: Fixed-geometry turbocharger with electronic TCU wastegate control and critical altitude of 16,000 ft.
 
 2. **Continental TSIO-360-MB Aircraft Engine**:
-   - Architecture: 6-cylinder, direct-drive, horizontally opposed, air-cooled, fuel-injected.
-   - Operating Window: Idle 700 RPM, Nominal Cruise 2450 RPM, Takeoff 2700 RPM.
-   - TBO Horizon: 1800 flight hours.
-   - Thermal Limits: CHT $460^\circ\text{F}$, Oil Temp $240^\circ\text{F}$, MAP $38.0\text{ inHg}$.
-   - Dynamics Terminology: *"turbocharger compressor/turbine spool dynamics, charge-air/intercooler thermodynamics, and transient boost response."*
+   - Architecture: 6-cylinder, direct-drive, horizontally opposed, 100% ram air-cooled, fuel-injected (Continental M-18 / FAA TCDS E9CE; `VALIDATED_SPEC`).
+   - Operating Window: Idle 700 RPM, Nominal Cruise 2450 RPM, Takeoff 2700 RPM (FAA TCDS E9CE).
+   - Documented Engine TBO / Service-Life Horizon: 1800 flight hours (Continental SIL98-9C / FAA TCDS E9CE; `VALIDATED_SPEC`).
+   - Thermal & Pressure Limits: CHT $300 - 400^\circ\text{F}$ normal (Max $460^\circ\text{F}$), Oil Temp $240^\circ\text{F}$ max, Oil Pressure $30 - 60\text{ psi}$ (Relief $100\text{ psi}$), MAP $38.0\text{ inHg}$.
+   - Fuel Flow Limits: Cruise 45–55 L/h, Takeoff 75 L/h (Continental X30596 power charts).
+   - Dynamics Terminology: *"turbocharger compressor/turbine spool dynamics, charge-air/intercooler thermodynamics, and transient boost response."* Continental TSIO-360 is a reciprocating piston engine and does not utilize turbofan gas-turbine core components.
 
 ### Empirical Switching Isolation Test (`ENGINE_SWITCH_ISOLATION`)
 - **Step 1 (Rotax 914 F)**: TBO = 1200.0h, Health Index = 64.0, Verdict = `NOMINAL`.

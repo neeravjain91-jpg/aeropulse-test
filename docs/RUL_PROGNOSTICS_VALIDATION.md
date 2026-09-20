@@ -212,7 +212,7 @@ The NASA ACES (Aviation Commercial/General Aviation Engine Sensor) database prov
 
 ## 15. Physical Aero-Piston RUL Validation Roadmap & Test-Cell Protocol
 
-To advance AeroPulse-X from a verified scientific demonstrator to an airworthiness-certified prognostic engine health monitor, the following experimental protocol is established:
+To advance AeroPulse-X from a verified scientific demonstrator toward future airworthiness and operational readiness, the following experimental protocol is established:
 
 ```
                   PHYSICAL ENGINE VALIDATION ROADMAP

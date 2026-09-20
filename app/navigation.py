@@ -480,7 +480,7 @@ class SimulatedGPSSource(GPSSource):
         alt_end = w_end.altitude_ft
         curr_alt = alt_start + (alt_end - alt_start) * s_curve
 
-        # Enforce aircraft certified service ceiling
+        # Enforce aircraft documented service ceiling
         if self.uav_profile and self.uav_profile.service_ceiling_ft > 0:
             curr_alt = min(curr_alt, self.uav_profile.service_ceiling_ft)
 

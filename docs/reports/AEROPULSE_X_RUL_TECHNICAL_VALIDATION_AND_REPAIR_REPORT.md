@@ -22,7 +22,7 @@ A comprehensive, 3-stage audit was executed across the Remaining Useful Life (RU
 | **Slope Continuity at -0.20/h** | 60x Discontinuous Jump (4.44h vs 265h) | Perfectly Continuous (251.26h vs 250.00h) | **RESOLVED** |
 | **Critical Zero-RUL Trigger** | Failed (Health floor clamped to 40.0 > 35.0) | Passed (Health drops to 25.0 -> RUL = 0.0h) | **RESOLVED** |
 | **Sensor Drift Life-Consumption** | False Wear: Dropped RUL 1444h -> 124h | Isolated: RUL = 2000h (Only Trust Degraded) | **RESOLVED** |
-| **Multi-Engine TBO Dynamic Scaling** | Hardcoded 2000.0h (Rotax 914 ignored) | Fully Parameterized (1200h, 1500h, 2000h) | **RESOLVED** |
+| **Multi-Engine TBO Dynamic Scaling** | Hardcoded 2000.0h (Rotax 914 ignored) | Fully Parameterized (Rotax 1200h documented, AeroPiston 2000h demonstrator fallback) | **RESOLVED** |
 | **De-trended Horizon Hardcap** | Hardcoded 500.0h upper ceiling | Dynamic `max_horizon_hours = tbo_hours` | **RESOLVED** |
 | **Regression Test Suite** | 294 Passed | **299/299 Passed (100%)** | **VERIFIED** |
 
@@ -34,7 +34,7 @@ A comprehensive, 3-stage audit was executed across the Remaining Useful Life (RU
 AeroPulse-X implements a **hybrid physics-guided prognostics demonstrator** designed for four-stroke spark-ignition and turbocharged aero-piston unmanned aerial vehicle (UAV) engines (such as the Rotax 914 and custom AeroPiston 1.35L platforms).
 
 - **Methodology**: It combines thermodynamic wear physics (cumulative mission stress derived from altitude, ambient temperature, high throttle saturation, and rapid thermal cycling) with rolling-window linear health-index trend extrapolation and calibrated empirical uncertainty intervals.
-- **Operational Meaning**: It calculates the estimated flight hours remaining until the engine's aggregated Health Index ($H$) degrades to the certified critical overhaul threshold ($H_{	ext{crit}} = 35.0\%$).
+- **Operational Meaning**: It calculates the estimated flight hours remaining until the engine's aggregated Health Index ($H$) degrades to the defined critical overhaul threshold ($H_{\text{crit}} = 35.0\%$).
 - **Demonstrator Status**: The pipeline is an algorithmically sound, mathematically verified methodology demonstrator. It is not currently trained on physical destructive run-to-failure test-cell data of physical aero-piston engines, as no such public physical dataset exists in aviation science.
 
 ---

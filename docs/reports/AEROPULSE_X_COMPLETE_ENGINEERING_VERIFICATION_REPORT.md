@@ -187,7 +187,7 @@ Dual-detector architecture:
 The RUL engine calculates remaining flight hours to critical threshold ($H_{\text{crit}} = 35.0\%$):
 - **Monotone Hourly Extrapolation**: $\dot{H} = |\text{slope}|$ in health points/hour.
 - **Dynamic Health Floor**: $H = 100 - \text{sev} \cdot 75.0$ (reaches $25.0 < 35.0$, triggering critical overhaul).
-- **Multi-Engine TBO**: Parameterized for Rotax 914 (1200h), AeroPiston 1.35L (2000h), AeroDiesel (1500h).
+- **Multi-Engine TBO**: Parameterized for documented manufacturer horizons (Rotax 914: 1200h) and demonstrator generic fallbacks (AeroPiston 1.35L: 2000h, AeroDiesel: 1500h).
 
 ---
 
@@ -266,8 +266,8 @@ Benchmarked on host CPU across 5,000 frames:
 ## 24. Multi-Engine Architecture & Isolation
 
 - Parameterized configurations for:
-  1. `AeroPiston-4C-1.35L` (4-stroke Boxer, 2000h TBO)
-  2. `Rotax-914-Turbo-115HP` (4-stroke Turbo Boxer, 1200h TBO)
+  1. `AeroPiston-4C-1.35L` (4-stroke Boxer, 2000h demonstrator generic fallback TBO)
+  2. `Rotax-914-Turbo-115HP` (4-stroke Turbo Boxer, 1200h documented manufacturer TBO)
   3. `Generic-Inline4-AeroDiesel` (4-stroke Diesel, 1500h TBO)
   4. `Generic-2Stroke-Twin-50HP` (2-stroke Twin, 500h TBO)
   5. `Generic-Rotary-Wankel-40HP` (Wankel Rotary, 1000h TBO)
@@ -337,7 +337,7 @@ Detailed in [AEROPULSE_X_CLAIM_VERIFICATION_MATRIX.md](file:///C:/Users/ASUS/Dow
 
 ## 34. Limitations
 
-1. **Test-Cell Destructive Run-to-Failure Telemetry**: Long-term physical dynamometer wear telemetry is required for certified maintenance dispatch.
+1. **Test-Cell Destructive Run-to-Failure Telemetry**: Long-term physical dynamometer wear telemetry is required before operational maintenance dispatch can be authorized.
 2. **Propeller Aeroelasticity**: Modeled as lumped damping factors rather than full 3D fluid-structure co-simulation.
 
 ---

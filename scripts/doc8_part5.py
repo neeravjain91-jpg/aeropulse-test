@@ -14,7 +14,7 @@
 - **Evidence-Based Answer:** AeroPulse-X has a substantially more comprehensive **avionics SIL pipeline** (Virtual 12-bit ADC, CAN 2.0B with CRC-8, Virtual ECU, Virtual FADEC safety derating, Virtual Power/Watchdog), cryptographically authenticated HMAC-SHA256 telemetry, a zero-dependency 3D WebGL tactical ground station, and a formal dataset provenance registry cataloging domain boundaries.
 
 #### Q45: Is AeroPulse-X flight-ready for deployment on an Indian Army or Navy UAV tomorrow?
-- **Evidence-Based Answer:** **No.** AeroPulse-X is currently at **Technology Readiness Level 4 (TRL 4 — Software Demonstrator validated in laboratory environment)**. Flight deployment requires porting to DO-254 / DO-178C certified embedded hardware, physical CAN transceiver interfacing, and physical dynamometer test-cell calibration.
+- **Evidence-Based Answer:** **No.** AeroPulse-X is currently at **Technology Readiness Level 4 (TRL 4 — Software Demonstrator validated in laboratory environment)**. Flight deployment requires porting to embedded hardware, preparing future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices, physical CAN transceiver interfacing, and physical dynamometer test-cell calibration.
 
 #### Q46: What datasets were actually used, and what does each prove?
 - **Evidence-Based Answer:**

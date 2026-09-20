@@ -3,7 +3,7 @@
 Simulates the onboard FADEC supervisory controller for AeroPulse-X.
 Responsibilities:
   - Ingests and decodes CAN frames from the Virtual ECU
-  - Monitors certified engine operating limits & thresholds
+  - Monitors documented engine operating limits & thresholds
   - Generates formal Diagnostic Trouble Codes (DTCs) with severity levels
   - Computes supervisory control actions & derating requests
   - Exposes commanded vs measured control states
@@ -82,7 +82,7 @@ class VirtualFADEC:
         self.last_rx_sequence: int = -1
         self.last_rx_timestamp_ms: float = 0.0
 
-        # Certified Aero-Piston Operating Thresholds (Rotax 914 Reference)
+        # Documented Aero-Piston Operating Thresholds (Rotax 914 Reference)
         self.LIMIT_MAX_RPM = 5800.0
         self.LIMIT_CONTINUOUS_RPM = 5500.0
         self.LIMIT_MAX_CHT_F = 245.0

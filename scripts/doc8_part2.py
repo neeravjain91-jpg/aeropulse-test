@@ -29,4 +29,4 @@
 - **Evidence-Based Answer:** app/virtual_fadec.py implements autonomous closed-loop safety control laws. When CHT exceeds 135 C or oil pressure drops below 2.0 bar, the Virtual FADEC overrides manual pilot throttle, dynamically derating engine power by up to 30% to stabilize temperatures and extend flight range to an emergency divert base.
 
 #### Q20: Can your Virtual FADEC control a physical aircraft engine today?
-- **Evidence-Based Answer:** **No.** It is a software SIL control law demonstrator. Interfacing with physical actuator servos requires DO-178C / DO-254 certifiable embedded hardware.
+- **Evidence-Based Answer:** **No.** It is a software SIL control law demonstrator. Interfacing with physical actuator servos requires embedded hardware and preparing future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices.

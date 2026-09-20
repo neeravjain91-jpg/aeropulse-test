@@ -135,7 +135,7 @@ def test_uav_service_ceiling_enforcement_in_flight_dynamics():
 
 
 def test_uav_max_speed_clamping_in_flight_dynamics():
-    """Verify that true airspeed cannot exceed the aircraft's certified max speed."""
+    """Verify that true airspeed cannot exceed the aircraft's documented max speed."""
     predator = get_uav_profile("UAV_MALE_MQ1_PREDATOR")  # Max speed: 117 kt
     wps = [
         MissionWaypoint("WP0", "Origin", 28.5, 77.0, 8000.0, "CRUISE", 150.0),

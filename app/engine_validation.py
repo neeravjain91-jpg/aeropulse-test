@@ -457,7 +457,7 @@ class EngineModelValidator:
                 expected_relationship="Outputs finite and d(Power)/d(RPM) >= 0 across standard curve",
                 observed_trend=f"Power spans {rpm_tests[0]['Brake_Power_kW']} kW to {rpm_tests[-1]['Brake_Power_kW']} kW",
                 outcome="PASS" if (rpm_finite and rpm_power_monotonic) else "FAIL",
-                details="Evaluated at 6 continuous operating speeds across certified envelope",
+                details="Evaluated at 6 continuous operating speeds across documented envelope",
             )
         )
 

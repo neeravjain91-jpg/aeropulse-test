@@ -72,10 +72,10 @@ EDGE EXECUTION & AVIONICS
 - **Architecture**: 4-Cylinder Horizontally Opposed Boxer, 4-Stroke Spark-Ignition, Turbocharged
 - **Displacement**: 1.211 Liters
 - **Rated Takeoff Power**: 84.5 kW (115 HP) @ 5800 RPM
-- **TBO**: 1,200 flight hours
+- **TBO**: 1,200 flight hours (documented manufacturer horizon)
 - **3D Visualization**: Strictly 4-Cylinder Boxer layout (horizontally opposed cylinders along crank centerline)
 - **Isolated Alternative Profiles**:
-  - `AeroPiston-4C-1.35L` (Naturally Aspirated 4-Cylinder Boxer, 2000h TBO)
+  - `AeroPiston-4C-1.35L` (Naturally Aspirated 4-Cylinder Boxer, 2000h demonstrator generic fallback TBO)
   - `Generic-Inline4-AeroDiesel` (Austro AE330 proxy, 1.991L Inline-4 Diesel, 1500h TBO)
   - `Generic-2Stroke-Twin-50HP` (2-Stroke Opposed Twin, 500h TBO)
   - `Generic-Rotary-Wankel-40HP` (Wankel Rotary, 1000h TBO)

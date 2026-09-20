@@ -89,4 +89,4 @@ The Prognostic Horizon is the earliest mission time before failure when predicte
 
 ## 3. Prognostic Conclusion
 
-The AeroPulse-X hybrid prognostics engine is a verified, mathematically continuous, and calibrated methodology demonstrator. Physical test-cell dynamometer wear measurements are required for certified aircraft maintenance deployment.
+The AeroPulse-X hybrid prognostics engine is a verified, mathematically continuous, and calibrated methodology demonstrator. Physical test-cell dynamometer wear measurements are required before operational aircraft maintenance deployment can be authorized.

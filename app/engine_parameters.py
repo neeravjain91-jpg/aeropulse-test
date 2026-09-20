@@ -2,7 +2,7 @@
 
 Provides a structured, auditable provenance metadata system for every physical
 parameter in the aero-piston digital twin. Explicitly distinguishes:
-  - published_specification (manufacturer/TCDS certified values)
+  - published_specification (manufacturer/TCDS documented values)
   - literature_assumption (established textbook/paper empirical values)
   - derived (computed from first principles)
   - calibrated (test-cell dynamometer measured - currently PENDING)
@@ -205,12 +205,12 @@ class EngineParameterRegistry:
                 name="fuel_lhv_mj_kg",
                 value=43.5,
                 unit="MJ/kg",
-                source_type=ParameterSourceType.PUBLISHED_SPECIFICATION,
-                source="ASTM D910 Standard Specification for Aviation Gasolines (Avgas 100LL / Mogas EN228)",
-                confidence_status=ValidationStatus.VALIDATED_SPEC,
-                notes="Lower heating value (net calorific value) of aviation gasoline",
+                source_type=ParameterSourceType.LITERATURE_ASSUMPTION,
+                source="ASTM D910 reference value applied as engineering combustion-model assumption; not a manufacturer-certified engine parameter",
+                confidence_status=ValidationStatus.LITERATURE_INFORMED,
+                notes="Lower heating value (net calorific value) of aviation gasoline (combustion assumption)",
                 is_configurable=True,
-                is_validated=True,
+                is_validated=False,
                 lower_bound=42.0,
                 upper_bound=45.0,
             ),
@@ -218,10 +218,10 @@ class EngineParameterRegistry:
                 name="afr_stoich",
                 value=14.7,
                 unit="ratio",
-                source_type=ParameterSourceType.PUBLISHED_SPECIFICATION,
+                source_type=ParameterSourceType.DERIVED,
                 source="Heywood (1988) Internal Combustion Engine Fundamentals, Chapter 3",
-                confidence_status=ValidationStatus.VALIDATED_SPEC,
-                notes="Chemically stoichiometric air-to-fuel mass ratio for unleaded gasoline",
+                confidence_status=ValidationStatus.DERIVED_THEORETICAL,
+                notes="Simplified gasoline/iso-octane-equivalent combustion assumption used by the demonstrator; does not imply ASTM D910 directly specifies 14.7",
                 is_configurable=True,
                 is_validated=True,
                 lower_bound=13.5,
@@ -247,7 +247,7 @@ class EngineParameterRegistry:
                 source_type=ParameterSourceType.LITERATURE_ASSUMPTION,
                 source="Heywood (1988), Internal Combustion Engine Fundamentals (Burned Gas Specific Heat Ratio)",
                 confidence_status=ValidationStatus.LITERATURE_INFORMED,
-                notes="Effective ratio of specific heats (Cp/Cv) for high-temperature cylinder combustion gases",
+                notes="Effective ratio of specific heats (Cp/Cv) for high-temperature cylinder combustion gases; engineering approximation rather than a universal constant for all exhaust conditions",
                 is_configurable=True,
                 is_validated=False,
                 lower_bound=1.28,

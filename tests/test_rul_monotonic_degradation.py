@@ -198,7 +198,7 @@ def test_multi_engine_session_isolation():
         engine_id="Rotax-914-Turbo-115HP",
     )
 
-    # Engine B (AeroPiston: 2000h TBO)
+    # Engine B (AeroPiston: 2000h demonstrator fallback TBO)
     res_aero = svc.estimate_rul(
         health_index=100.0,
         context={"elapsed_hours": 1.0, "engine_id": "AeroPiston-4C-1.35L"},

@@ -7,6 +7,9 @@
 **Status**: VALIDATED & COMPLETE (441/441 tests passing)  
 **Execution Mode**: High-Reliability Dual-Engine Diagnostic Framework  
 
+> [!IMPORTANT]
+> **Scope Disclaimer**: Validated within the demonstrated software/SIL and controlled-test scope. No hardware, flight, regulatory, or safety certification is claimed.
+
 ---
 
 ## 1. Executive Summary
@@ -24,7 +27,7 @@ Part 6 of AeroPulse-X establishes and validates an authoritative, physics-ground
 - **Zero False Catastrophe**: Across synthetic and operational benchmark scenarios, E5 achieved a **0.0% False Catastrophe Rate** (reduced from **51.7%** in naive baseline E0). An isolated sensor failure never falsely collapses engine health or RUL.
 - **Zero False Reassurance**: Genuine multi-channel engine degradation was detected with a **0.0% False Reassurance Rate**, catching 100% of physical wear events.
 - **Prognostic RUL Non-Collapse**: Injected sensor dropouts (e.g., Oil Pressure to 0 psi or CHT dropout) that caused naive baseline E0 to collapse RUL to **0.0 hours (CRITICAL)** resulted in **zero false RUL collapses** under E5, preserving **85.4% to 89.2%** of nominal RUL while widening uncertainty bands appropriately.
-- **Real ACES Audit**: Audited 4,355 operational telemetry samples across all 14 NASA Dryden Altus II UAV flights in `FINAL_DATASET/ACES/aces_health.csv`. Certified **100% strict compliance with the zero-vibration Altus II constraint** (zero synthetic vibration fabricated).
+- **Real ACES Audit**: Audited 4,355 operational telemetry samples across all 14 NASA Dryden Altus II UAV flights in `FINAL_DATASET/ACES/aces_health.csv`. Verified **100% strict compliance with the zero-vibration Altus II constraint** (zero synthetic vibration fabricated).
 - **100% Test Suite Pass**: All **25/25** dedicated sensor fault isolation tests pass in 1.55s, and all **441/441** repository tests pass with zero regressions.
 
 ---
@@ -99,7 +102,7 @@ The engine classifies each channel into one of eight mutually exclusive physical
 
 | Fault Type Enum | Physical Mechanism | Detection Invariant | Default Trust Penalty |
 | :--- | :--- | :--- | :---: |
-| `NOMINAL` | Transducer operating nominally within certified envelope | $y_i \in [y_{\min}, y_{\max}]$, $|\dot{y}_i| \le S_{\max}$, consistent coupling | $100.0$ (Score = 100) |
+| `NOMINAL` | Transducer operating nominally within documented envelope | $y_i \in [y_{\min}, y_{\max}]$, $|\dot{y}_i| \le S_{\max}$, consistent coupling | $100.0$ (Score = 100) |
 | `DROPOUT` | Open circuit, wire severance, power loss, ADC rail | $y_i \in \{\text{None}, \text{NaN}, \text{Inf}\} \lor y_i \le 0$ for positive channels | $5.0 - 10.0$ (SUSPECT) |
 | `STUCK_AT` | ADC freeze, transducer mechanical seizure, software deadlock | Sample variance $\text{Var}(y_i) < 10^{-6}$ over $\ge 8$ dynamic engine cycles | $25.0$ (SUSPECT) |
 | `BIAS` | Transducer zero-shift, ground loop, reference voltage shift | Constant non-zero offset corroborated as isolated against peers | $35.0 - 45.0$ (SUSPECT) |
@@ -115,7 +118,7 @@ The engine classifies each channel into one of eight mutually exclusive physical
 
 To prevent catastrophic dimensional errors, all telemetry channels entering the fault isolation layer are strictly normalized through `TelemetryUnitAdapter` into canonical engineering units:
 
-| Canonical Channel | Canonical Unit | Rotax 914 Certified Range | Continental TSIO-360 Certified Range | Unit Validation Rule |
+| Canonical Channel | Canonical Unit | Rotax 914 Documented Range | Continental TSIO-360 Documented Range | Unit Validation Rule |
 | :--- | :---: | :---: | :---: | :--- |
 | `Engine_RPM` | $\text{RPM}$ | $[0, 5800]$ | $[0, 2800]$ | Revolutions per minute; strictly non-negative. |
 | `MAP_Injector` | $\text{inHg}$ | $[10.0, 42.0]$ | $[10.0, 40.0]$ | Absolute intake manifold pressure. |
@@ -222,7 +225,7 @@ $$\text{RMS}_{z, \text{trusted}} = \sqrt{\frac{1}{|K_{\text{trusted}}|} \sum_{i 
 where $K_{\text{trusted}} = \{i \mid \text{Status}(i) == \text{"TRUSTED"}\}$.
 
 ### Observability Gate Contract
-If transducer dropouts reduce the trusted channel fraction below certified operating limits:
+If transducer dropouts reduce the trusted channel fraction below documented operating limits:
 
 $$\text{Fraction}_{\text{trusted}} = \frac{|K_{\text{trusted}}|}{|K_{\text{monitored}}|} < 0.60 \quad \lor \quad |K_{\text{trusted}}| < 4$$
 
@@ -265,20 +268,22 @@ When a sensor fault is isolated (`is_sensor_fault_only == True`), `app/inference
 
 The engine maintains strict physical separation between engine types:
 
-| Parameter | Rotax 914 F (Rotax-914-Turbo-115HP) | Continental TSIO-360-MB |
-| :--- | :--- | :--- |
-| **Cylinder Count / Layout** | 4-cylinder horizontally opposed | 6-cylinder horizontally opposed |
-| **Displacement** | 1,211 cc (73.9 cu in) | 5,892 cc (360.0 cu in) |
-| **Rated Takeoff Power** | 115 HP @ 5800 RPM | 210 HP @ 2700 RPM |
-| **Continuous Cruise Power**| 100 HP @ 5500 RPM | 180 HP @ 2500 RPM |
-| **Cooling Method** | Liquid-cooled cylinder heads, ram air-cooled barrels | 100% Ram air-cooled cylinder heads and barrels |
-| **Normal CHT Range** | $180 - 230^\circ\text{F}$ (Max $275^\circ\text{F}$) | $300 - 400^\circ\text{F}$ (Max $460^\circ\text{F}$) |
-| **Normal Oil Pressure** | $29 - 73\text{ psi}$ (Relief $95\text{ psi}$) | $30 - 60\text{ psi}$ (Relief $100\text{ psi}$) |
-| **Documented Engine TBO** | 1,200 hours | 1,800 hours |
-| **Dynamic Spool Semantics**| Fixed-geometry turbocharger with TCU wastegate | Variable absolute pressure controller (VAPC) turbocharger |
+| Parameter | Rotax 914 F (Rotax-914-Turbo-115HP) | Continental TSIO-360-MB | Source & Provenance | Validation Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **Cylinder Count / Layout** | 4-cylinder horizontally opposed | 6-cylinder horizontally opposed | Rotax OM-914 / Continental M-18 | `VALIDATED_SPEC` |
+| **Displacement** | 1,211 cc (73.9 cu in) | 5,892 cc (360.0 cu in) | EASA TCDS E.121 / FAA TCDS E9CE | `VALIDATED_SPEC` |
+| **Rated Takeoff Power** | 115 HP @ 5800 RPM | 210 HP @ 2700 RPM | EASA TCDS E.121 / FAA TCDS E9CE | `VALIDATED_SPEC` |
+| **Continuous Cruise Power**| 100 HP @ 5500 RPM | 180 HP @ 2500 RPM | Rotax OM-914 / FAA TCDS E9CE | `VALIDATED_SPEC` |
+| **Operating RPM Limits** | Idle 1400, Cruise 4800-5500, Max 5800 RPM | Idle 700, Cruise 2450, Max 2700 RPM | Rotax OM-914 / Continental X30596 | `VALIDATED_SPEC` |
+| **Cooling Method** | Liquid-cooled cylinder heads, ram air-cooled barrels | 100% Ram air-cooled cylinder heads and barrels | Rotax OM-914 / Continental M-18 | `VALIDATED_SPEC` |
+| **Normal CHT Range** | $180 - 230^\circ\text{F}$ (Max $260-275^\circ\text{F}$) | $300 - 400^\circ\text{F}$ (Max $460^\circ\text{F}$) | Rotax OM-914 / Continental X30596 | `VALIDATED_SPEC` |
+| **Normal Oil Pressure** | $29 - 73\text{ psi}$ (Relief $95\text{ psi}$) | $30 - 60\text{ psi}$ (Relief $100\text{ psi}$) | Rotax OM-914 / FAA TCDS E9CE | `VALIDATED_SPEC` |
+| **Fuel Flow Limits** | Continuous 33.0 L/h, Takeoff 38.0 L/h | Cruise 45.0-55.0 L/h, Takeoff 75.0 L/h | Rotax OM-914 / Continental X30596 | `VALIDATED_SPEC` |
+| **Documented Engine TBO / Service-Life Horizon** | 1,200 hours | 1,800 hours | Rotax SB-914-001 / Cont. SIL98-9C | `VALIDATED_SPEC` |
+| **Dynamic Spool Semantics**| Fixed-geometry turbocharger with TCU wastegate | Variable absolute pressure controller (VAPC) turbocharger | Rotax OM-914 / Altus II Baseline | `VALIDATED_SPEC` |
 
 > [!NOTE]
-> **TSIO-360 Physics Constraint**: When reporting on TSIO-360 dynamics, terminology is strictly restricted to: *"turbocharger compressor/turbine spool dynamics, charge-air/intercooler thermodynamics, and transient boost response."*
+> **TSIO-360 Physics Constraint**: When reporting on TSIO-360 dynamics, terminology is strictly restricted to: *"turbocharger compressor/turbine spool dynamics, charge-air/intercooler thermodynamics, and transient boost response."* Continental TSIO-360 is a reciprocating piston engine and does not utilize turbofan gas-turbine core components.
 
 ---
 
@@ -364,7 +369,7 @@ An exhaustive audit of the 14 NASA Dryden Altus II operational flights in `FINAL
 | `aces1am_2002_207` | 10,900 | 273 | 23.2 | 0.00% | 27.5% | 3.7% | Nominal descent; MAP decay tracking |
 | `aces1am_2002_210` | 12,258 | 307 | 22.9 | 0.00% | 26.4% | 4.2% | Final flight mission profile stability |
 
-### Altus II Constraint Certification
+### Altus II Constraint Verification
 - **Zero-Vibration Transducer Compliance**: The Altus II flight vehicle was instrumented without an accelerometer. The test harness verified that no artificial vibration channel was fabricated for ACES flights, preserving scientific data integrity.
 
 ---
@@ -374,7 +379,7 @@ An exhaustive audit of the 14 NASA Dryden Altus II operational flights in `FINAL
 Evaluated via `tests/test_edge_deployment.py` and `tests/test_sensor_fault_isolation.py`:
 1. **Non-Numeric / String Ingestion**: Telemetry payloads containing non-numeric strings (e.g. `{"Oil_Temp": "INVALID_STR"}`) are sanitized safely by `_safe_float` without raising unhandled exceptions, categorizing the affected channel as `DROPOUT`.
 2. **Non-Finite Floats (`NaN`, `Inf`)**: Injected `float("nan")` and `float("inf")` values are trapped at boundary ingestion, assigning minimum trust score ($5.0$) and preventing numerical poison from contaminating floating-point OLS regressors.
-3. **Completely Empty Telemetry (`{}`)**: Evaluated gracefully within $<1.5\text{ ms}$, defaulting to `INSUFFICIENT_OBSERVABILITY` with certified advisory alerts.
+3. **Completely Empty Telemetry (`{}`)**: Evaluated gracefully within $<1.5\text{ ms}$, defaulting to `INSUFFICIENT_OBSERVABILITY` with verified advisory alerts.
 
 ---
 
@@ -433,8 +438,8 @@ A dedicated test suite `tests/test_sensor_fault_isolation.py` validates all 15 f
 | **False Reassurance Risk** | Moderate (25.0%) | **Zero (0.0%)** | Low (non-actuating) |
 | **Prognostic RUL Stability**| Catastrophic collapse to 0h | **Preserved (85.4% - 89.2% nominal)** | Unchanged in primary |
 | **Edge Compute Overhead** | Minimal ($<0.5\text{ ms}$) | Low ($<1.2\text{ ms}$, within 5ms budget)| Low ($<1.2\text{ ms}$) |
-| **Backward Compatibility** | High (status quo) | **100% Certified Compatible** | High |
-| **Certification Defensibility**| Low (fails FAA/EASA sensor veto)| **High (Category A/B/C Provenance)**| Moderate |
+| **Backward Compatibility** | High (status quo) | **100% Verified Compatible** | High |
+| **Standards Defensibility**| Low (untraceable sensor veto)| **High (Category A/B/C Provenance)**| Moderate |
 
 ### Official Production Recommendation: Option B (Integrate Part 6 Engine)
 The evidence conclusively establishes that **Option B is the only scientifically defensible and flight-safe configuration**. Rejecting sensor fault isolation (Option A) leaves the vehicle vulnerable to catastrophic false alarms and unnecessary emergency shutdowns. Shadow mode (Option C) is unnecessary given the 100% test pass rate and backward-compatible adapter.
@@ -449,5 +454,5 @@ The evidence conclusively establishes that **Option B is the only scientifically
 
 ### Part 7 Roadmap (Final Integration & Mission Demonstration)
 1. **End-to-End Mission Replay Demonstration**: Replay full 14-flight ACES profiles and synthetic degradation profiles through the complete integrated stack.
-2. **Certification Dossier Compilation**: Finalize aerospace software verification artifacts for DO-178C / DO-254 compliance tracking.
+2. **Future Certification Readiness**: Prepare future certification-readiness traceability artifacts informed by DO-178C / DO-254 practices.
 3. **Deployment Container Packaging**: Package edge and cloud services for production flight software deployment.

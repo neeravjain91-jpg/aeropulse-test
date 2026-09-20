@@ -51,7 +51,7 @@ graph TD
         - Corrupted Frame & CRC Dropouts"]
         
         FADEC["Virtual FADEC (app/virtual_fadec.py)
-        - Certified Operating Limits (RPM, CHT, Oil)
+        - Documented Operating Limits (RPM, CHT, Oil)
         - DTC Generation & Lifecycle
         - Autonomic Derate Control Laws"]
     end
@@ -102,7 +102,7 @@ The CAN communication layer implements standard **ISO 11898 / CAN 2.0B 8-byte fr
 
 # 3. Virtual FADEC Supervisory Logic & DTC System
 
-The Virtual FADEC continuously evaluates certified aero-piston operational thresholds (Rotax 914 Type Certificate limits) and executes closed-loop supervisory control:
+The Virtual FADEC continuously evaluates documented aero-piston operational thresholds (Rotax 914 Type Certificate limits) and executes closed-loop supervisory control:
 
 ### Diagnostic Trouble Code (DTC) Registry
 

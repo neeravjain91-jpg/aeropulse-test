@@ -248,7 +248,7 @@ AeroPulse-X enforces a **single authoritative pipeline** where all downstream an
 
 ## 8. Physical Test Cell Experimental Validation Strategy
 
-To transition AeroPulse-X from a verified digital twin prototype to an airworthy certified prognostic system, the following 4-phase physical testing roadmap is defined:
+To transition AeroPulse-X from a verified digital twin prototype toward future production and flight readiness, the following 4-phase physical testing roadmap is defined:
 
 ```
 +---------------------------------------------------------------------------------------------------+
