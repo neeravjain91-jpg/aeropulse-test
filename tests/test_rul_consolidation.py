@@ -51,9 +51,10 @@ def test_critical_health_threshold_produces_zero_rul():
 
 def test_rul_monotonicity_under_degradation():
     service = RULService()
-    healthy = service.predict({'Degradation_Severity': 0.1})
-    moderate = service.predict({'Degradation_Severity': 0.4})
-    severe = service.predict({'Degradation_Severity': 0.8})
+    # RC-1 fix: use health_index (sev=0.1→92.5, sev=0.4→70.0, sev=0.8→40.0)
+    healthy = service.predict({'health_index': 92.5})
+    moderate = service.predict({'health_index': 70.0})
+    severe = service.predict({'health_index': 40.0})
     assert healthy['rul_hours'] > moderate['rul_hours'] > severe['rul_hours']
 
 def test_method_labeling_is_accurate():

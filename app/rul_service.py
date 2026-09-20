@@ -333,19 +333,9 @@ class RULService:
             base_health = float(telemetry["health_index"])
         elif "health_index" in context:
             base_health = float(context["health_index"])
-        elif "Degradation_State" in telemetry:
-            deg_state = telemetry["Degradation_State"]
-            if isinstance(deg_state, dict):
-                mech_keys = [k for k in deg_state if k != "sensor"]
-                mech_sev = max([float(deg_state[k]) for k in mech_keys]) if mech_keys else 0.0
-                sensor_sev = float(deg_state.get("sensor", 0.0))
-            else:
-                mech_sev = float(deg_state)
-            base_health = max(0.0, min(100.0, 100.0 - mech_sev * 75.0))
-        elif "Degradation_Severity" in telemetry:
-            mech_sev = float(telemetry["Degradation_Severity"])
-            base_health = max(0.0, min(100.0, 100.0 - mech_sev * 75.0))
         else:
+            # RC-1 leakage fix: Do NOT derive base_health from
+            # Degradation_State or Degradation_Severity (ground-truth labels).
             base_health = 100.0
 
         slope = context.get("degradation_slope")

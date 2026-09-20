@@ -48,6 +48,10 @@ class MissionWhatIfRUL:
         )
         deg_sev = float(sim_telemetry.get("Degradation_Severity", 0.0))
         health_index = max(0.0, min(100.0, 100.0 - deg_sev * 75.0))
+        # Pass health_index explicitly since rul_service no longer reads
+        # Degradation_Severity (RC-1 leakage fix). In what-if mode, health_index
+        # is derived from mission simulation parameters, not ground-truth labels.
+        sim_telemetry["health_index"] = health_index
         rul_res = self.rul_service.predict(sim_telemetry, scenario.to_dict())
         cht = float(sim_telemetry.get("CHT", 145.0))
         fuel_flow = float(sim_telemetry.get("Fuel_Flow", 30.0))

@@ -222,18 +222,23 @@ class AeroTwinAI:
         # ---------------------------------------------------------
         # 8. BASE HEALTH INDEX CALCULATION
         # ---------------------------------------------------------
+        # RC-1 leakage fix: health index is computed ONLY from observables:
+        #   - ML/fusion diagnostic state (from sensor readings)
+        #   - Digital twin physics residual RMS (from sensor vs model comparison)
+        #   - Sensor trust score (from cross-channel consistency)
+        # Degradation_Severity is a simulator ground-truth label and MUST NOT
+        # be used as a predictor or penalty term.
         base_health_index = (
             100.0
             - HEALTH_ORDER.get(diagnostic_evidence.final_diagnosis, 1) * 18.0
             - min(float(twin["residual_rms"]), 12.0) * 4.0
             - max(0.0, 100.0 - sensor_health["overall_trust_score"]) * 0.10
         )
-        base_health_index = max(0.0, min(100.0, base_health_index))
+        health_index_value = max(0.0, min(100.0, base_health_index))
 
-        # Degradation Penalty
+        # Record ground-truth severity for reporting/evaluation only (NOT used in index)
         degradation_severity = max(0.0, min(1.0, float(telemetry.get("Degradation_Severity", 0.0))))
-        degradation_penalty = degradation_severity * 45.0
-        health_index_value = max(0.0, min(100.0, base_health_index - degradation_penalty))
+        degradation_penalty = 0.0  # RC-1: no ground-truth penalty
 
         # Fused Health State Thresholds
         if health_index_value >= 85:
@@ -250,7 +255,9 @@ class AeroTwinAI:
         # ---------------------------------------------------------
         # 9. RUL PREDICTION
         # ---------------------------------------------------------
-        rul = self.rul.predict(telemetry, context=context)
+        rul_context = dict(context) if context else {}
+        rul_context["health_index"] = health_index_value
+        rul = self.rul.predict(telemetry, context=rul_context)
 
         # ---------------------------------------------------------
         # 10. EXPLAINABILITY & UNCERTAINTY

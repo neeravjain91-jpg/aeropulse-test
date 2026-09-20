@@ -188,7 +188,7 @@ class DataQualityValidator:
             timestamp_monotonicity_passed=all_ts_monotonic,
             physical_bounds_passed=all_bounds_passed,
             physical_bound_violations=all_violations[:10],
-            causal_coupling_passed=True,
+            causal_coupling_passed=True,  # NOTE: placeholder — no dynamic causal coupling test implemented
             sensor_vs_engine_separation_passed=sensor_separation_passed,
             rul_ground_truth_passed=all_rul_passed,
             trajectory_leakage_audit=leakage_audit,

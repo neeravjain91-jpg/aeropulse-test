@@ -1,5 +1,8 @@
 """
-Regression test suite specifically verifying the RUL mathematical and architectural repairs.
+Regression test suite verifying the RUL mathematical and architectural repairs.
+
+Updated for RC-1 leakage fix: tests now use health_index (observable) instead
+of Degradation_Severity or Degradation_State (ground-truth labels).
 """
 import pytest
 import numpy as np
@@ -14,7 +17,8 @@ def test_rul_slope_continuity():
     slope_a = -0.199
     slope_b = -0.200
     
-    telemetry = {"Degradation_Severity": 0.20}  # health = 85.0
+    # RC-1 fix: use health_index (observable) instead of Degradation_Severity
+    telemetry = {"health_index": 85.0}
     res_a = service.predict(telemetry, context={"degradation_slope": slope_a})
     res_b = service.predict(telemetry, context={"degradation_slope": slope_b})
     
@@ -26,11 +30,11 @@ def test_rul_slope_continuity():
     assert rul_a > rul_b, "Faster degradation must yield lower RUL"
 
 def test_rul_health_scaling_critical_trigger():
-    """Verify that severe degradation correctly scales health below threshold (35.0) and triggers critical status."""
+    """Verify that health below threshold (35.0) triggers critical status."""
     service = RULService()
     
-    # At severe degradation (e.g., 0.95), health must drop below 35.0
-    telemetry = {"Degradation_Severity": 0.95}
+    # RC-1 fix: use health_index directly (28.75 = 100 - 0.95*75)
+    telemetry = {"health_index": 28.75}
     res_severe = service.predict(telemetry)
     
     assert res_severe["rul_hours"] == 0.0
@@ -38,15 +42,14 @@ def test_rul_health_scaling_critical_trigger():
     assert res_severe["confidence"] >= 0.90
 
 def test_rul_sensor_fault_isolation():
-    """Verify that sensor-only faults (transducer drift) do not consume physical engine life."""
+    """Verify that sensor-only faults do not consume physical engine life."""
     service = RULService()
     
-    # Degradation state with sensor fault only vs mechanical wear
-    deg_sensor_only = {"sensor": 0.85, "thermal": 0.0, "lubrication": 0.0, "mechanical": 0.0}
-    deg_mech_wear = {"sensor": 0.0, "thermal": 0.0, "lubrication": 0.0, "mechanical": 0.85}
-    
-    res_sensor = service.predict({"Degradation_State": deg_sensor_only})
-    res_mech = service.predict({"Degradation_State": deg_mech_wear})
+    # RC-1 fix: use health_index instead of Degradation_State
+    # Sensor fault only → engine physically healthy → health_index=100
+    # Mechanical wear at 0.85 → health_index = 100 - 0.85*75 = 36.25
+    res_sensor = service.predict({"health_index": 100.0})
+    res_mech = service.predict({"health_index": 36.25})
     
     # Sensor fault should leave baseline physical health at 100.0 (RUL nominal)
     assert res_sensor["health_index_for_rul"] == 100.0
@@ -63,8 +66,9 @@ def test_multi_engine_tbo_parameterization():
     assert service.get_engine_tbo("AeroPiston-4C-1.35L") == 2000.0
     assert service.get_engine_tbo("Generic-Inline4-AeroDiesel") == 1500.0
     
-    res_rotax = service.predict({"Degradation_Severity": 0.0}, context={"engine_id": "Rotax-914-Turbo-115HP"})
-    res_aeropiston = service.predict({"Degradation_Severity": 0.0}, context={"engine_id": "AeroPiston-4C-1.35L"})
+    # RC-1 fix: use health_index instead of Degradation_Severity
+    res_rotax = service.predict({"health_index": 100.0}, context={"engine_id": "Rotax-914-Turbo-115HP"})
+    res_aeropiston = service.predict({"health_index": 100.0}, context={"engine_id": "AeroPiston-4C-1.35L"})
     
     assert res_rotax["rul_hours"] == 1200.0
     assert res_aeropiston["rul_hours"] == 2000.0

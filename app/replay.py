@@ -145,24 +145,16 @@ def _trajectory_health(
             1,
         )
 
-    # Keep the initial healthy portion close to the actual AI health.
-    # As fault severity progresses, introduce a bounded degradation
-    # trajectory of up to 55 health points.
-    degradation_penalty = (
-        55.0 * severity
-    )
-
-    replay_health = (
-        base_health
-        - degradation_penalty
-    )
-
+    # RC-2 fix: The AI health_index from analyze() already reflects
+    # degradation effects through observable sensor deviations detected
+    # by the digital twin and ML classifiers. No additional ground-truth
+    # severity penalty should be applied.
     return round(
         max(
             0.0,
             min(
                 100.0,
-                replay_health,
+                base_health,
             ),
         ),
         1,
@@ -394,6 +386,10 @@ def run_replay(
         eid = scenario.get("engine_id", "Rotax-914-Turbo-115HP")
         tbo_hours = _RUL.get_engine_tbo(eid)
         stress = _RUL.calculate_mission_stress(scenario)
+
+        # Pass AI-inferred replay health to RUL service
+        # (RC-1 fix: service no longer reads Degradation_Severity)
+        point["health_index"] = replay_health
 
         fallback = _RUL.predict(
             point,

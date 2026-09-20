@@ -62,15 +62,18 @@ class RULModel:
 
 
 def health_index(telemetry: dict) -> float:
-    """Construct a bounded health index from correlated degradation indicators."""
-    severity = float(telemetry.get("Degradation_Severity", 0.0))
+    """Construct a bounded health index from observable sensor indicators only.
+
+    RC-1 leakage fix: Degradation_Severity is a simulator ground-truth label
+    and must NOT be used as a predictor. Health index uses only observables.
+    """
     oil_pressure = float(telemetry.get("Oil_Pressure", 60.0))
     vibration = float(telemetry.get("Vibration", 0.5))
     efficiency = float(telemetry.get("Efficiency", 0.65))
     oil_penalty = max(0.0, min(1.0, (60.0 - oil_pressure) / 45.0))
     vib_penalty = max(0.0, min(1.0, (vibration - 0.5) / 1.5))
     eff_penalty = max(0.0, min(1.0, (0.65 - efficiency) / 0.35))
-    value = 1.0 - (0.55 * severity + 0.20 * oil_penalty + 0.15 * vib_penalty + 0.10 * eff_penalty)
+    value = 1.0 - (0.40 * oil_penalty + 0.35 * vib_penalty + 0.25 * eff_penalty)
     return max(0.0, min(1.0, value))
 
 
