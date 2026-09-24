@@ -1,0 +1,12 @@
+flowchart TD
+    Residuals["13 Physics Residuals"] --> IF["Isolation Forest<br/>(Point Outlier Score)"]
+    Residuals --> TCN_AE["Temporal TCN Autoencoder<br/>(Sequence MSE Score)"]
+    Residuals --> Rules["Physical Limit Crossings<br/>(CHT > 135°C, OilP < 1.5 bar)"]
+    
+    IF --> Fusion["Hybrid Fusion Arbiter (app/fusion.py)"]
+    TCN_AE --> Fusion
+    Rules --> Fusion
+    
+    Fusion --> Decision{"Ensemble Voting Logic"}
+    Decision -->|Low FAR Consensus| Alert["Verified Anomaly Alert<br/>(FAR = 5.79%, F1 = 69.04%)"]
+    Decision -->|Single Transient| Filter["Transient Filtered Out<br/>(Suppresses False Alarms)"]

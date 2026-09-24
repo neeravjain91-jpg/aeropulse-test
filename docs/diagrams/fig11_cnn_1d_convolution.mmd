@@ -1,0 +1,4 @@
+flowchart LR
+    A["Input Time Series (Channel c)<br/>[x_0, x_1, x_2, x_3, x_4, x_5, ...]"] --> B["Sliding Kernel K=3<br/>[w_0, w_1, w_2]"]
+    B --> C["Dot Product + Bias<br/>y[t] = sum(w_k * x[t-k]) + b"]
+    C --> D["Output Feature Map<br/>[y_0, y_1, y_2, y_3, ...]"]

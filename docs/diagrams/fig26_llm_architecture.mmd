@@ -1,0 +1,11 @@
+flowchart TD
+    InText["Input Prompt Text"] --> Tok["Byte-Pair Encoding (BPE) Tokenizer"]
+    Tok --> Emb["Token Embeddings + Positional Encodings"]
+    Emb --> Block1["Decoder Block 1 (MHA + SwiGLU + Pre-LN)"]
+    Block1 --> Block2["Decoder Block 2"]
+    Block2 --> BlockN["Decoder Block N (e.g. 32 Layers)"]
+    BlockN --> Norm["Final RMS / LayerNorm"]
+    Norm --> Head["Unembed Linear Head (Vocab Size)"]
+    Head --> Logits["Next-Token Logits"]
+    Logits --> Sample["Temperature Sampling (T=0.1)"]
+    Sample --> NextTok["Next Generated Token"]

@@ -1,0 +1,5 @@
+flowchart TD
+    L0["Input Telemetry (dt=1s)"] --> L1["Layer 1 (Dilation d=1, Step=1s)"]
+    L1 --> L2["Layer 2 (Dilation d=2, Step=2s)"]
+    L2 --> L3["Layer 3 (Dilation d=4, Step=4s)"]
+    L3 --> RF["Total Receptive Field = 29 Seconds<br/>RF = 1 + 2*(3-1)*(1 + 2 + 4) = 29s"]

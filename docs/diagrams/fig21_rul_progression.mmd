@@ -1,0 +1,6 @@
+flowchart LR
+    A["Mission Start<br/>Health Index H = 100%"] --> B["Normal Cruising<br/>Mild Degradation Slope dH/dt"]
+    B --> C["Thermal / Misfire Event<br/>Accelerated Degradation dH/dt"]
+    C --> D["Weibull Cumulative Hazard<br/>h(t) Exponential Wear"]
+    D --> E["Warning Threshold<br/>H_warn = 60%"]
+    E --> F["Failure Threshold<br/>H_crit = 20% (RUL = 0 Hours)"]

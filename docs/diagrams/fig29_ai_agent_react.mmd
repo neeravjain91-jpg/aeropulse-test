@@ -1,0 +1,8 @@
+flowchart TD
+    Goal["User Diagnostic Goal"] --> Thought["Agent Thought: Reason about missing data"]
+    Thought --> Action["Agent Action: Select avionics tool to call"]
+    Action --> ToolAPI["Call Avionics API:<br/>get_sensor_health('CHT2')"]
+    ToolAPI --> Obs["Observation: Sensor valid, Delta CHT = +18°C"]
+    Obs --> Decision{"Sufficient Evidence ?"}
+    Decision -->|No| Thought
+    Decision -->|Yes| Synthesis["Final Diagnostic Synthesis & Remediation"]

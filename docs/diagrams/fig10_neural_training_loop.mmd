@@ -1,0 +1,15 @@
+flowchart TD
+    A["Start Epoch e (1..15)"] --> B["Fetch Mini-Batch (B=256)"]
+    B --> C["Forward Pass: logits = model(X)"]
+    C --> D["Loss Computation: loss = criterion(logits, y)"]
+    D --> E["Zero Gradients: optimizer.zero_grad()"]
+    E --> F["Backward Pass: loss.backward()"]
+    F --> G["Parameter Update: optimizer.step() via AdamW"]
+    G --> H{"More Batches<br/>in Epoch ?"}
+    H -->|Yes| B
+    H -->|No| I["Anneal Learning Rate: scheduler.step()"]
+    I --> J["Evaluate Held-Out Validation Flights"]
+    J --> K["Checkpoint Best State Dict"]
+    K --> L{"Max Epochs<br/>Reached ?"}
+    L -->|No| A
+    L -->|Yes| M["Export PyTorch (.pt) & TorchScript (.ts)"]

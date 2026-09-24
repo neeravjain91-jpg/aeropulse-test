@@ -1,0 +1,10 @@
+flowchart TD
+    A["Raw Sensor Channel i"] --> B{"Hard Range Check<br/>min <= val <= max ?"}
+    B -->|No| F1["ISOLATE: Out-of-Bounds Sensor"]
+    B -->|Yes| C{"Slew Rate Check<br/>|dx/dt| <= max_slew ?"}
+    C -->|No| F2["ISOLATE: Physically Impossible Slew"]
+    C -->|Yes| D{"Stuck Value Check<br/>var(x, 10s) > eps ?"}
+    D -->|No| F3["ISOLATE: Frozen Transducer"]
+    D -->|Yes| E{"Cross-Sensor Consistency<br/>e.g. CHT vs EGT Correlated ?"}
+    E -->|No| F4["ISOLATE: Instrument Bias Failure"]
+    E -->|Yes| Trusted["MARK SENSOR TRUSTED<br/>(Pass to Digital Twin & ML)"]

@@ -1,0 +1,6 @@
+flowchart LR
+    X_t["Input x_t"] --> Cell["RNN Cell"]
+    H_prev["Past Hidden State h_{t-1}"] --> Cell
+    Cell --> H_t["Current Hidden State h_t = tanh(W_hh*h_{t-1} + W_xh*x_t + b)"]
+    H_t --> Out["Output y_t"]
+    H_t --> Next["To Next Step h_t"]

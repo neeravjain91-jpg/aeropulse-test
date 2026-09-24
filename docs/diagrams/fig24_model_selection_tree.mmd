@@ -1,0 +1,8 @@
+flowchart TD
+    Q1{"Is the data tabular<br/>without temporal order?"}
+    Q1 -->|Yes| HGB["Select HistGradientBoosting<br/>(Low Latency, High Calibration)"]
+    Q1 -->|No| Q2{"Is sub-millisecond edge<br/>inference required?"}
+    Q2 -->|Yes| Q3{"Is the task supervised<br/>or novelty detection?"}
+    Q3 -->|Supervised| TCN["Select 1D Causal TCN<br/>(RF=29s, Latency=0.81ms)"]
+    Q3 -->|Novelty Detection| AE["Select TCN Autoencoder<br/>(Nominal Training, AUROC=0.968)"]
+    Q2 -->|No / High Latency| XFormer["Consider Temporal Transformers<br/>(Higher compute & memory)"]

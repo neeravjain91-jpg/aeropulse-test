@@ -1,0 +1,28 @@
+graph TD
+    AI["Artificial Intelligence (AI)"]
+    AI --> RuleBased["Rule-Based Systems (Deterministic)"]
+    AI --> ML["Machine Learning (ML)"]
+    AI --> GenAI["Generative AI"]
+    
+    ML --> Sup["Supervised Learning"]
+    ML --> Unsup["Unsupervised Learning"]
+    ML --> RL["Reinforcement Learning"]
+    ML --> DL["Deep Learning (Neural Networks)"]
+    
+    Sup --> HGB["HistGradientBoosting (ACES Health)"]
+    Sup --> RF["Random Forest / ExtraTrees"]
+    Unsup --> IF["Isolation Forest (ACES Anomaly)"]
+    Unsup --> PCA["PCA / Clustering"]
+    
+    DL --> CNN["CNN (1D / 2D)"]
+    DL --> RNN["RNN / LSTM / GRU"]
+    DL --> TCN["TCN (PhysicsResidualTCN)"]
+    DL --> AE["Autoencoders (TCN Autoencoder)"]
+    DL --> XFormer["Transformers"]
+    
+    GenAI --> LLM["LLMs (Gemini / GPT-4o-mini)"]
+    GenAI --> Vision["Computer Vision Generation"]
+    GenAI --> Multi["Multimodal AI (Audio + Vision + Text)"]
+    
+    classDef highlight fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a;
+    class HGB,IF,TCN,AE,LLM highlight;

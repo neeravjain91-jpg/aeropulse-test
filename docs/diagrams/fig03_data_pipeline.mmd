@@ -1,0 +1,9 @@
+flowchart LR
+    A["Raw Sensor Telemetry<br/>(CAN Frames @ 1 Hz)"] --> B["Data Ingestion &<br/>Schema Validation"]
+    B --> C["Outlier & Dropout<br/>Filtering (NaN / Slew)"]
+    C --> D["Sensor Fault Isolation<br/>(Trusted Channels)"]
+    D --> E["Reference Twin<br/>Thermodynamic Solver"]
+    E --> F["Physics Residual<br/>Computation (r = x - x_twin)"]
+    F --> G["Temporal Windowing<br/>(W=30s Continuous Block)"]
+    G --> H["ML Diagnostic Inference<br/>(HGB & TCN & TCN-AE)"]
+    H --> I["Health State & Anomaly<br/>Output Payload"]

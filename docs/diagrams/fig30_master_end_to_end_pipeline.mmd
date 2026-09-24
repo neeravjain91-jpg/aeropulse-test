@@ -1,0 +1,26 @@
+flowchart TD
+    SENSORS["1. Engine Transducers (RPM, CHT, EGT, Oil, Fuel, MAP)"] --> CAN["2. CAN Aerospace Bus (1 Hz)"]
+    CAN --> VAL["3. Ingestion & Hard Sanity Checking"]
+    VAL --> SFI["4. Sensor Fault Isolation Engine (Z-Score Corroboration)"]
+    SFI --> TRUSTED["5. Trusted Channel Filtering"]
+    
+    TRUSTED --> TWIN["6. Reference Digital Twin (Thermodynamic Ground Truth)"]
+    TWIN --> RESID["7. 13 Physics-Normalized Residuals (r = x - x_twin)"]
+    
+    RESID --> HGB["8. HistGradientBoosting Health Classifier (F1=89.19%)"]
+    RESID --> TCN["9. Causal TCN Sequence Model (Shadow Mode)"]
+    RESID --> ANOM["10. Temporal Autoencoder & Isolation Forest"]
+    
+    HGB --> ARBITER["11. Multi-Source Diagnostic Arbiter (Conservative State)"]
+    TCN --> ARBITER
+    ANOM --> ARBITER
+    
+    ARBITER --> RUL["12. RUL Engine (Weibull Hazard + Health Degradation)"]
+    RUL --> JSON["13. Structured Mission Intelligence JSON Payload"]
+    
+    JSON --> REPORT_ENG["14. Grounded LLM Report Service & Fallback Engine"]
+    REPORT_ENG --> AUDIT["15. Deterministic Claim Validation Pass"]
+    AUDIT --> DASHBOARD["16. Technician & Mission Commander Display"]
+
+    classDef highlight fill:#dbeafe,stroke:#1e40af,stroke-width:2px;
+    class TWIN,HGB,ARBITER,RUL,DASHBOARD highlight;

@@ -1,0 +1,40 @@
+graph TD
+    subgraph Aircraft["UAV Airborne Segment (1 Hz Telemetry)"]
+        Sensors["Engine Transducers<br/>(RPM, CHT, EGT, Oil, Fuel, MAP)"] --> CAN["CAN Aerospace Bus / ECU"]
+        CAN --> Sanity["Sanity & Range Validation"]
+        Sanity --> SFI["Sensor Fault Isolation Engine"]
+    end
+
+    subgraph EdgeCore["Edge Processing Core (Deterministic & Statistical)"]
+        SFI --> Twin["Reference Physics Digital Twin<br/>(Thermodynamic Baseline)"]
+        SFI --> Residuals["13 Physics-Normalized Residuals<br/>r = x_meas - x_twin"]
+        Twin --> Residuals
+        
+        Residuals --> HGB["HistGradientBoosting Classifier<br/>(Normal / Watch / Warning / Critical)"]
+        Residuals --> TCN["PhysicsResidualTCN (Shadow Mode)<br/>(29s Temporal Dynamics)"]
+        Residuals --> Anom["Isolation Forest & TCN-AE<br/>(Unsupervised Anomaly Scoring)"]
+        
+        HGB --> Arbiter["Multi-Source Diagnostic Arbiter"]
+        TCN --> Arbiter
+        Anom --> Arbiter
+        
+        Arbiter --> RUL["Weibull RUL Prognostics Engine<br/>(Time-to-Overhaul Horizon)"]
+    end
+
+    subgraph Ground["Ground Station & Maintenance Segment"]
+        Arbiter --> JSON["Structured Mission Intelligence JSON"]
+        RUL --> JSON
+        
+        JSON --> DetRep["Deterministic Fallback Generator<br/>(100% Offline Markdown/HTML)"]
+        JSON --> LLMRep["Grounded LLM Report Service<br/>(Gemini / OpenAI API)"]
+        
+        LLMRep --> Validate{"Numerical Claim<br/>Validation Pass"}
+        Validate -->|Passed| Report["Final Mission Intelligence Report"]
+        Validate -->|Discrepancy| DetRep
+        DetRep --> Report
+        
+        Report --> UI["Flight Line Maintenance Dashboard"]
+    end
+
+    classDef primary fill:#e0f2fe,stroke:#0284c7,stroke-width:2px;
+    class HGB,Twin,Arbiter,RUL,Report primary;

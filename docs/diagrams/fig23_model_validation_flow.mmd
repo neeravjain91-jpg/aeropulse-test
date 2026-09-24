@@ -1,0 +1,8 @@
+flowchart TD
+    A["NASA ACES 14 Total Flights"] --> B["GroupShuffleSplit(groups=Flight, test_size=0.20)"]
+    B --> C["11 Training Flights (80%)<br/>Zero overlap with test"]
+    B --> D["3 Held-Out Test Flights (20%)<br/>(191, 225, 235 - Completely Locked)"]
+    C --> E["K-Fold Group Cross-Validation"]
+    E --> F["Train Point HGB & Sequence TCN"]
+    D --> G["Final Held-Out Benchmark<br/>(Unbiased Generalization Score)"]
+    F --> G

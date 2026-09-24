@@ -1,0 +1,21 @@
+flowchart TD
+    In["Input Tensor x (B, C_in, W)"] --> Conv1["CausalConv1d (Kernel 3, Dilation d)"]
+    In --> Skip{"C_in == C_out ?"}
+    Skip -->|Yes| Identity["Identity Skip"]
+    Skip -->|No| Conv1x1["1x1 Conv Projection"]
+    
+    Conv1 --> BN1["BatchNorm1d"]
+    BN1 --> Act1["ReLU Activation"]
+    Act1 --> Drop1["Dropout (0.10)"]
+    
+    Drop1 --> Conv2["CausalConv1d (Kernel 3, Dilation d)"]
+    Conv2 --> BN2["BatchNorm1d"]
+    BN2 --> Act2["ReLU Activation"]
+    Act2 --> Drop2["Dropout (0.10)"]
+    
+    Drop2 --> AddNode["Addition Node: F(x) + residual"]
+    Identity --> AddNode
+    Conv1x1 --> AddNode
+    
+    AddNode --> FinalReLU["Final ReLU Activation"]
+    FinalReLU --> Out["Output Tensor y (B, C_out, W)"]

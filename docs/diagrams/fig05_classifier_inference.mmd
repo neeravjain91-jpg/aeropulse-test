@@ -1,0 +1,9 @@
+flowchart TD
+    A["Current 15-Feature Vector x(t)"] --> B["HistGradientBoosting Predictor<br/>(models/aces_health.joblib)"]
+    B --> C["Raw Class Logits"]
+    C --> D["Calibrated Probabilities<br/>[P_norm, P_watch, P_warn, P_crit]"]
+    D --> E{"Max Probability<br/>State Decision"}
+    E -->|State 0| F["NORMAL<br/>(Green: Nominal Envelopes)"]
+    E -->|State 1| G["WATCH<br/>(Yellow: Minor Residual Drift)"]
+    E -->|State 2| H["WARNING<br/>(Orange: Subsystem Exceedance)"]
+    E -->|State 3| I["CRITICAL<br/>(Red: Emergency Threshold Violation)"]

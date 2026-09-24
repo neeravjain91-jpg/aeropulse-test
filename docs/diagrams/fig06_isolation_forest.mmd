@@ -1,0 +1,16 @@
+flowchart TD
+    A["Input Feature Vector x"] --> B["Pass x down iTree 1..T"]
+    subgraph Tree["Random Isolation Tree (iTree)"]
+        T1["Select Random Feature f"] --> T2["Select Random Cut Value p"]
+        T2 --> T3{"x_f < p ?"}
+        T3 -->|Yes| T4["Traverse Left Child"]
+        T3 -->|No| T5["Traverse Right Child"]
+        T4 --> T6["Repeat until Isolated"]
+        T5 --> T6
+    end
+    B --> Tree
+    Tree --> C["Compute Path Length h(x) across Ensemble"]
+    C --> D["Calculate Anomaly Score s(x, n) = 2^(-E(h(x))/c(n))"]
+    D --> E{"s(x, n) > Threshold ?"}
+    E -->|Yes (Short Path)| F["ANOMALY FLAGGED<br/>(Structural / Mechanical Outlier)"]
+    E -->|No (Deep Path)| G["NOMINAL OPERATION<br/>(Dense Normal Region)"]

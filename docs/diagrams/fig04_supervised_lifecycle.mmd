@@ -1,0 +1,10 @@
+flowchart TD
+    A["Problem Definition<br/>(4-Class UAV Engine Health)"] --> B["Telemetry Collection<br/>(NASA ACES 14 Flights)"]
+    B --> C["Strict Partitioning<br/>(GroupShuffleSplit by Flight ID)"]
+    C --> D["Train Set: 11 Flights<br/>(105,095 Windows)"]
+    C --> E["Held-Out Test: 3 Flights<br/>(29,630 Windows - Locked)"]
+    D --> F["Model Training & Tuning<br/>(HistGradientBoosting / TCN)"]
+    F --> G["Validation & Calibration<br/>(ECE & Brier Score)"]
+    E --> H["Unbiased Final Evaluation<br/>(Zero Leakage Verified)"]
+    G --> H
+    H --> I["Deployment to Edge Runtime<br/>(models/aces_health.joblib)"]

@@ -1,0 +1,9 @@
+flowchart LR
+    A["Continuous 1 Hz Flight Telemetry<br/>t=0, t=1, t=2, ..., t=N"] --> B["Verify Continuity: dt == 1.0s"]
+    B --> C["Window Slicing Engine<br/>Window Size W = 30 seconds"]
+    C --> D["Window 1: t in [0..29]<br/>Shape: (13 channels, 30s)"]
+    C --> E["Window 2: t in [1..30]<br/>Shape: (13 channels, 30s)"]
+    C --> F["Window 3: t in [2..31]<br/>Shape: (13 channels, 30s)"]
+    D --> G["Batch Tensor Formation<br/>Shape: (B, 13, 30)"]
+    E --> G
+    F --> G

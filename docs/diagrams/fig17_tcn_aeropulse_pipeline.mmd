@@ -1,0 +1,8 @@
+flowchart LR
+    A["30-Second Continuous Window<br/>Shape: (B, 13, 30)"] --> B["Block 1: 13 -> 32 channels (d=1)"]
+    B --> C["Block 2: 32 -> 32 channels (d=2)"]
+    C --> D["Block 3: 32 -> 32 channels (d=4)"]
+    D --> E["Extract Final Causal Slice<br/>features[:, :, -1] (B, 32)"]
+    E --> F["Linear Head: nn.Linear(32, 4)"]
+    F --> G["Softmax Layer"]
+    G --> H["Health Probabilities<br/>[Normal, Watch, Warning, Critical]"]

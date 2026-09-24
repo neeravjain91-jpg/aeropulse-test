@@ -1,0 +1,13 @@
+flowchart TD
+    A["Raw Telemetry Transducers"] --> B["Static Point Features<br/>(RPM, MAP, Fuel_Flow)"]
+    A --> C["Physical Reference Residuals<br/>(delta_CHT, delta_EGT, delta_OilP)"]
+    A --> D["Dynamic Rates of Change<br/>(dRPM/dt, dCHT/dt)"]
+    A --> E["Thermodynamic Ratios<br/>(EGT_Spread, AFR_Ratio)"]
+    
+    B --> F["Feature Matrix Concatenation"]
+    C --> F
+    D --> F
+    E --> F
+    
+    F --> G["Strict Leakage Filter<br/>(Exclude label derivatives & *_rz)"]
+    G --> H["Standardized Input Tensor to ML Models"]

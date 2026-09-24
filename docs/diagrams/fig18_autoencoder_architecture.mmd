@@ -1,0 +1,21 @@
+flowchart LR
+    subgraph Encoder["Encoder (Compression)"]
+        In["Input Window X<br/>(13 channels x 30s)"] --> E1["Conv1d d=1 (32 ch)"]
+        E1 --> E2["Conv1d d=2 (16 ch)"]
+        E2 --> E3["Conv1d d=4 (8 ch)"]
+    end
+
+    subgraph Bottleneck["Latent Representation"]
+        E3 --> Z["Latent Code Z<br/>(8 channels x 30s)"]
+    end
+
+    subgraph Decoder["Decoder (Reconstruction)"]
+        Z --> D1["Conv1d d=4 (16 ch)"]
+        D1 --> D2["Conv1d d=2 (32 ch)"]
+        D2 --> D3["Conv1d d=1 (13 ch)"]
+        D3 --> Rec["Reconstructed Window X^<br/>(13 channels x 30s)"]
+    end
+
+    In --> MSE["Reconstruction MSE<br/>Loss = ||X - X^||^2"]
+    Rec --> MSE
+    MSE --> AnomScore["Anomaly Score vs tau=0.66747"]

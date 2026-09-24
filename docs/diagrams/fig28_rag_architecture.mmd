@@ -1,0 +1,17 @@
+flowchart TD
+    subgraph Ingestion["Manual Ingestion (Offline)"]
+        AMM["Engine Maintenance Manuals (AMM)"] --> Chunk["Semantic Markdown Chunking (350 tokens)"]
+        Chunk --> EmbModel["Embedding Model (e.g. text-embedding-3)"]
+        EmbModel --> VectorDB["Vector Database (HNSW Index: Qdrant/FAISS)"]
+    end
+
+    subgraph QueryFlow["Query Execution (Runtime)"]
+        TechQuery["Technician Query:<br/>'Torque limit on fuel rail relief valve?'"] --> QEmb["Embed Query"]
+        QEmb --> Search["Cosine Similarity Search Top-K"]
+        VectorDB --> Search
+        Search --> Context["Retrieved Document Excerpts"]
+        Context --> Prompt["Augmented Grounded Prompt"]
+        TechQuery --> Prompt
+        Prompt --> LLM["LLM Synthesis"]
+        LLM --> CitedAns["Evidence-Backed Answer with AMM Citations"]
+    end

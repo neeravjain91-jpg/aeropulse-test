@@ -1,0 +1,5 @@
+flowchart TD
+    W_Def["Weibull Cumulative Hazard: h(t) = (beta / eta) * (t / eta)^(beta - 1)"]
+    W_Def --> B1["beta < 1.0: Infant Mortality Regime<br/>(Decreasing Failure Rate - Manufacturing Defect)"]
+    W_Def --> B2["beta = 1.0: Random Failure Regime<br/>(Constant Failure Rate - Bird Strike / Debris)"]
+    W_Def --> B3["beta = 2.4: Piston Engine Wear-Out Regime<br/>(AeroPulse Baseline - Increasing Mechanical Wear)"]

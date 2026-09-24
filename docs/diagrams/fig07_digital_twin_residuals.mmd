@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph Flight["Aircraft State"]
+        Sensors["Measured Sensor Value<br/>x_meas (e.g. CHT = 138°C)"]
+        Env["Flight Conditions<br/>(RPM, MAP, Airspeed, T_amb)"]
+    end
+    
+    subgraph Twin["Reference Physics Twin"]
+        Env --> Solver["Thermodynamic Conservation Equations<br/>(Mass & Energy Balance)"]
+        Solver --> Predicted["Expected Twin Baseline<br/>x_twin (e.g. CHT = 120°C)"]
+    end
+    
+    Sensors --> Subtractor["Subtraction Node<br/>r = x_meas - x_twin"]
+    Predicted --> Subtractor
+    
+    Subtractor --> Residual["Physics-Normalized Residual<br/>r = +18.0°C<br/>(Genuine Heat Deficit Detected)"]

@@ -1,0 +1,9 @@
+flowchart TD
+    subgraph NonCausal["Standard Non-Causal Conv1D (Future Leakage)"]
+        NC_In["Inputs: x_{t-1}, x_t, x_{t+1}"] --> NC_Out["Output y_t depends on Future x_{t+1}"]
+    end
+
+    subgraph Causal["1D Causal Conv1D (AeroPulse Architecture)"]
+        C_Pad["Left Padding (K-1)*d Zeros"] --> C_In["Inputs strictly: x_{t-2}, x_{t-1}, x_t"]
+        C_In --> C_Out["Output y_t strictly depends on Past & Present <= t"]
+    end

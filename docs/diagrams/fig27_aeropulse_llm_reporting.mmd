@@ -1,0 +1,10 @@
+flowchart TD
+    A["Deterministic MissionSummary JSON"] --> B["Format Grounded Prompt Payload"]
+    B --> C{"API Key Configured ?"}
+    C -->|No| Fallback["Deterministic Fallback Engine<br/>(11-sec Exec / 17-sec Eng Report)"]
+    C -->|Yes| LLMCall["Call LLM Provider<br/>(Gemini / OpenAI @ T=0.1)"]
+    LLMCall --> ValPass["validate_report_claims()<br/>(Verify Trajectory, Health %, Peak CHT)"]
+    ValPass -->|Passed Valid| AIReport["AI Intelligence Report Generated"]
+    ValPass -->|Hallucination Discrepancy| Fallback
+    Fallback --> FinalOut["Markdown / HTML Report Output"]
+    AIReport --> FinalOut

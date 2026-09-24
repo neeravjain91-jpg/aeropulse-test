@@ -1,0 +1,25 @@
+flowchart TD
+    subgraph Inputs
+        X_t["Input x_t"]
+        H_prev["Hidden State h_{t-1}"]
+        C_prev["Cell State c_{t-1}"]
+    end
+
+    subgraph Gates["LSTM Gating Mechanisms"]
+        F_gate["Forget Gate: f_t = sigmoid(W_f [h_{t-1}, x_t] + b_f)"]
+        I_gate["Input Gate: i_t = sigmoid(W_i [h_{t-1}, x_t] + b_i)"]
+        C_tilde["Candidate: c~_t = tanh(W_c [h_{t-1}, x_t] + b_c)"]
+        O_gate["Output Gate: o_t = sigmoid(W_o [h_{t-1}, x_t] + b_o)"]
+    end
+
+    Inputs --> Gates
+    C_prev --> C_mult["Multiply (c_{t-1} * f_t)"]
+    F_gate --> C_mult
+    I_gate --> C_add_in["Multiply (i_t * c~_t)"]
+    C_tilde --> C_add_in
+    C_mult --> C_new["New Cell State c_t = (c_{t-1}*f_t) + (i_t*c~_t)"]
+    C_add_in --> C_new
+
+    C_new --> Tanh_C["tanh(c_t)"]
+    Tanh_C --> H_new["New Hidden State h_t = o_t * tanh(c_t)"]
+    O_gate --> H_new

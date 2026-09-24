@@ -1,0 +1,21 @@
+flowchart TD
+    subgraph Projections
+        X["Input Tokens X (T x d_model)"] --> WQ["Query Projection W_Q"]
+        X --> WK["Key Projection W_K"]
+        X --> WV["Value Projection W_V"]
+        WQ --> Q["Queries Q"]
+        WK --> K["Keys K"]
+        WV --> V["Values V"]
+    end
+
+    subgraph Attention
+        Q --> Dot["Matrix Multiply Q * K^T"]
+        K --> Dot
+        Dot --> Scale["Scale by sqrt(d_k)"]
+        Scale --> Mask["Apply Causal Mask (-inf for future)"]
+        Mask --> Softmax["Softmax Layer (Attention Weights)"]
+        Softmax --> AttVal["Multiply Weights * V"]
+        V --> AttVal
+    end
+
+    AttVal --> Out["Contextualized Token Representations"]
