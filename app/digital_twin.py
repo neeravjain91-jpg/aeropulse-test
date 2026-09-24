@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Optional
 from collections import deque
 
 from .config import MODEL_DIR
+from .engine_config import EngineConfig
 from .engine_model import EngineInputs, ReducedOrderPistonEngine
 
 
@@ -85,16 +86,45 @@ class ReferenceTwin:
     def _contextual_expected(self, ref: dict, context: dict | None) -> dict:
         context = context or {}
         expected = {p: float(ref[p]["median"]) for p in PARAMS}
-        alt_ft = float(context.get("altitude_ft", 0.0))
+        alt_ft = max(0.0, float(context.get("altitude_ft", 0.0)))
         amb_c = float(context.get("ambient_c", 25.0))
-        if alt_ft > 5000.0:
-            alt_ratio = (alt_ft - 5000.0) / 20000.0
-            expected["MAP_Injector"] *= max(0.60, 1.0 - 0.25 * alt_ratio)
-        if amb_c > 35.0:
-            hot_ratio = (amb_c - 35.0) / 15.0
-            expected["CHT"] *= (1.0 + 0.04 * hot_ratio)
-            expected["Oil_Temp"] *= (1.0 + 0.05 * hot_ratio)
-            expected["EFI_Water_Temp"] *= (1.0 + 0.04 * hot_ratio)
+        dur_h = max(0.0, float(context.get("duration_h", 4.0)))
+
+        # Standard ISA Barometric calculation
+        h_m = alt_ft * 0.3048
+        t_amb_k = 273.15 + amb_c - 0.0065 * h_m
+        p_amb_ratio = math.pow(max(0.1, t_amb_k / (273.15 + amb_c)), 5.255)
+        sigma = max(0.20, min(1.15, p_amb_ratio * ((273.15 + amb_c) / max(100.0, t_amb_k))))
+
+        altitude_factor = alt_ft / 10000.0
+        hot_factor = max(0.0, amb_c - 25.0) / 25.0
+        endurance_factor = max(0.0, dur_h - 4.0) / 8.0
+
+        if "MAP_Injector" in expected:
+            expected["MAP_Injector"] *= (0.45 + 0.55 * sigma)
+
+        for key in ["EGT1", "EGT2", "EGT3"]:
+            if key in expected:
+                expected[key] *= (1.0 + 0.025 * altitude_factor + 0.035 * hot_factor + 0.02 * endurance_factor)
+
+        if "Oil_Temp" in expected:
+            expected["Oil_Temp"] *= (1.0 + 0.03 * hot_factor + 0.02 * endurance_factor)
+
+        if "EFI_Water_Temp" in expected:
+            expected["EFI_Water_Temp"] *= (1.0 + 0.025 * hot_factor + 0.015 * endurance_factor)
+
+        if "CHT" in expected:
+            expected["CHT"] *= (1.0 + 0.02 * altitude_factor + 0.04 * hot_factor + 0.02 * endurance_factor)
+
+        if "Alternator_Temp" in expected:
+            expected["Alternator_Temp"] *= (1.0 + 0.015 * hot_factor + 0.01 * endurance_factor)
+
+        if bool(context.get("rapid_throttle", False)):
+            if "Engine_RPM" in expected:
+                expected["Engine_RPM"] *= 1.04
+            if "Fuel_Flow" in expected:
+                expected["Fuel_Flow"] *= 1.08
+
         return expected
 
     def _physics_expected(self, ref: dict, context: dict | None) -> dict:
@@ -105,7 +135,13 @@ class ReferenceTwin:
         ambient = float(context.get("ambient_c", 25.0))
         load = context.get("load")
 
-        current = self.engine_model.predict(
+        engine_id = str(context.get("engine_id") or context.get("engine_profile") or "")
+        if "continental" in engine_id.lower() or "360" in engine_id.lower() or "aces" in engine_id.lower():
+            model = ReducedOrderPistonEngine(EngineConfig.continental_tsio_360())
+        else:
+            model = self.engine_model
+
+        current = model.predict(
             EngineInputs(rpm=rpm, throttle=throttle, altitude_ft=altitude, ambient_c=ambient, load=load)
         )
         return {p: float(current[ENGINE_MODEL_MAP[p]]) for p in PARAMS}
@@ -117,16 +153,12 @@ class ReferenceTwin:
 
         simulation_mode = str(context.get("data_source", "")).lower() in {"simulation", "uav_simulation", "live_uav"}
 
+        physics_expected = self._physics_expected(ref, context)
         if simulation_mode:
-            physics_expected = self._physics_expected(ref, context)
             expected = dict(physics_expected)
         else:
             contextual_expected = self._contextual_expected(ref, context)
-            physics_expected = self._physics_expected(ref, context)
-            expected = {
-                p: 0.50 * float(contextual_expected[p]) + 0.50 * float(physics_expected[p])
-                for p in PARAMS
-            }
+            expected = dict(contextual_expected)
 
         sanitized_telemetry = self._sanitize_telemetry(telemetry, expected)
 

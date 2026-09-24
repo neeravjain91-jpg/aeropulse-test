@@ -263,16 +263,20 @@ def run_replay(
         )
 
         ratio = i / max(1, steps - 1)
-        uav_pos = gps.get_position(ratio)
+        is_waypoint_driven = bool(scenario.get("waypoints") or scenario.get("preset"))
+        override_alt = float(scenario.get("altitude_ft", 3000)) if (scenario.get("simulation_mode") == "manual_override" or not is_waypoint_driven) else None
 
-        if scenario.get("simulation_mode") != "manual_override":
+        pos_ctx = {"manual_altitude_override": True, "altitude_ft": override_alt} if override_alt is not None else None
+        uav_pos = gps.get_position(ratio, mission_context=pos_ctx)
+
+        if override_alt is not None:
+            step_alt = override_alt
+            step_amb = float(scenario.get("ambient_c", 25))
+            step_dur = float(scenario.get("duration_h", 4))
+        else:
             step_alt = uav_pos.altitude_ft
             step_amb = uav_pos.ambient_c
             step_dur = max(0.5, gps.total_duration_min / 60.0)
-        else:
-            step_alt = float(scenario.get("altitude_ft", 3000))
-            step_amb = float(scenario.get("ambient_c", 25))
-            step_dur = float(scenario.get("duration_h", 4))
 
         point = mission_adjust(
             point,
@@ -330,14 +334,19 @@ def run_replay(
                 fault_severity,
             )
 
+        step_context = dict(scenario)
+        step_context["altitude_ft"] = step_alt
+        step_context["ambient_c"] = step_amb
+        step_context["duration_h"] = step_dur
+
         analysis = ai.analyze(
             point,
-            context=scenario,
+            context=step_context,
         )
 
         risk = mission_risk(
             analysis,
-            scenario,
+            step_context,
         )
 
         anomaly_flag = bool(
@@ -511,6 +520,12 @@ def run_replay(
                     ][
                         "overall_trust_score"
                     ],
+
+                "fault_candidates": analysis.get("fault_candidates", []),
+                "sensor_health": analysis.get("sensor_health", {}),
+                "twin": analysis.get("twin", {}),
+                "mission_risk": risk,
+                "maintenance_advisory": analysis.get("maintenance_advisory", ""),
 
                 "rul": rul,
 
