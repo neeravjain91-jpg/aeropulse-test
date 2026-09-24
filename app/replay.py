@@ -233,9 +233,10 @@ def run_replay(
         )
     )
 
-    _RUL.reset(scenario.get("engine_id"))
+    eid = scenario.get("engine_id", "Rotax-914-Turbo-115HP")
+    _RUL.reset(eid)
     if hasattr(ai, "reset"):
-        ai.reset(scenario.get("engine_id"))
+        ai.reset(eid)
 
     timeline = []
 

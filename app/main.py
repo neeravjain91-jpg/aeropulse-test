@@ -1807,6 +1807,16 @@ async def telemetry_stream(
                     4,
                 ),
 
+                "twin": analysis.get("twin", {}),
+
+                "fault_candidates": analysis.get("fault_candidates", []),
+
+                "sensor_health": analysis.get("sensor_health", {}),
+
+                "maintenance_advisory": analysis.get("maintenance_advisory", ""),
+
+                "mission_risk": risk,
+
                 "telemetry_version": (
                     telemetry_packet.telemetry_version
                 ),

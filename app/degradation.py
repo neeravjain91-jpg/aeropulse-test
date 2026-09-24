@@ -82,6 +82,7 @@ def estimate_degradation_horizon(
     )
 
     current = float(window[-1])
+    net_drop = float(np.max(window) - window[-1])
 
     confidence = max(
         0.0,
@@ -95,7 +96,16 @@ def estimate_degradation_horizon(
     )
 
     # 1. Active Degrading trajectory (negative slope)
-    if slope_per_hour < -0.15:
+    # Require genuine degradation trend: statistically meaningful fit (r2 >= 0.15),
+    # observable cumulative health drop across window (net_drop >= 1.5),
+    # operating in degraded health zone (current < 80.0), or steep rapid degradation slope (slope_per_hour < -1.0).
+    # This prevents micro-sensor-noise around nominal health (e.g. 96-98%) from triggering false RUL collapse.
+    is_degrading = (
+        slope_per_hour < -0.15
+        and (r2 >= 0.15 or net_drop >= 1.5 or current < 80.0 or slope_per_hour < -1.0)
+    )
+
+    if is_degrading:
         degradation_rate = -slope_per_hour
         hours_to_threshold = max(
             0.0,

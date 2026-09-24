@@ -2721,7 +2721,11 @@ function startReplayTimer() {
     $('healthIndex').textContent = fmt(p.health_index, 1);
     $('missionRisk').textContent = `${p.risk_level} ${fmt(p.risk_score, 0)}`;
     $('missionRisk').className = 'kpi ' + stateClass(p.risk_level);
-    $('residual').textContent = fmt(p.residual_rms, 2);
+    const resVal = (p.twin && p.twin.residual_rms != null) ? p.twin.residual_rms : (p.residual_rms != null ? p.residual_rms : null);
+    if (resVal != null) {
+      $('residual').textContent = fmt(resVal, 2);
+      $('residual').className = 'kpi ' + (resVal < 1.5 ? 'good' : resVal < 3.0 ? 'warn' : 'bad');
+    }
     $('anomaly').textContent = `replay • t=${fmt(p.time_min, 0)} min • ${p.primary_fault || 'Normal'}`;
     $('anomaly').className = 'tiny ' + (p.anomaly_score > 0.05 ? 'bad' : 'good');
 
@@ -2742,6 +2746,20 @@ function startReplayTimer() {
         $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
       }
       updateCockpitPrognostics(rulVal, lower, upper, p.health_state, p.risk_level, p.risk_score, p.maintenance_advisory);
+    } else {
+      const statusText = (p.rul && p.rul.status) ? p.rul.status.replace(/_/g, ' ') : 'STABLE / NOMINAL';
+      if ($('rul')) {
+        $('rul').textContent = '> 1200 h';
+        $('rul').className = 'kpi good';
+      }
+      if ($('rulSub')) {
+        $('rulSub').textContent = `Status: ${statusText} • Nominal Operation`;
+      }
+      if ($('pxRUL')) {
+        $('pxRUL').textContent = '> 1200 h';
+        $('pxRUL').className = 'good';
+      }
+      updateCockpitPrognostics(1200, 1080, 1320, p.health_state, p.risk_level, p.risk_score, p.maintenance_advisory);
     }
 
     if (p.uav) {
@@ -3258,8 +3276,10 @@ function renderAnalysis(r){
     $('reliability').textContent=`reliability index ${fmt(r.mission_risk.mission_reliability_index,1)}`;
   }
 
-  if (r.twin) {
-    $('residual').textContent=fmt(r.twin.residual_rms,2);
+  const resVal = (r.twin && r.twin.residual_rms != null) ? r.twin.residual_rms : (r.residual_rms != null ? r.residual_rms : (r.twin_residual_rms != null ? r.twin_residual_rms : null));
+  if (resVal != null) {
+    $('residual').textContent=fmt(resVal,2);
+    $('residual').className='kpi '+(resVal<1.5?'good':resVal<3.0?'warn':'bad');
   }
   $('anomaly').textContent=`anomaly ${r.anomaly_flag?'DETECTED':'normal'} • score ${fmt(r.anomaly_score,3)}`;
   $('anomaly').className='tiny '+(r.anomaly_flag?'bad':'good');
@@ -3385,6 +3405,20 @@ function renderAnalysis(r){
       $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
     }
     updateCockpitPrognostics(rulVal, lower, upper, r.health_state, r.mission_risk?.level, r.mission_risk?.score, r.maintenance_advisory);
+  } else {
+    const statusText = rulObj?.status ? rulObj.status.replace(/_/g, ' ') : 'STABLE / NOMINAL';
+    if ($('rul')) {
+      $('rul').textContent = '> 1200 h';
+      $('rul').className = 'kpi good';
+    }
+    if ($('rulSub')) {
+      $('rulSub').textContent = `Status: ${statusText} • Nominal Operation`;
+    }
+    if ($('pxRUL')) {
+      $('pxRUL').textContent = '> 1200 h';
+      $('pxRUL').className = 'good';
+    }
+    updateCockpitPrognostics(1200, 1080, 1320, r.health_state, r.mission_risk?.level, r.mission_risk?.score, r.maintenance_advisory);
   }
 
   if (r.uav) {
@@ -3525,7 +3559,11 @@ async function startLiveStream(){
       $('healthIndex').textContent=fmt(p.health_index,1);
       $('missionRisk').textContent=`${p.risk_level} ${fmt(p.risk_score,0)}`;
       $('missionRisk').className='kpi '+stateClass(p.risk_level);
-      $('residual').textContent=fmt(p.residual_rms,2);
+      const resVal = (p.twin && p.twin.residual_rms != null) ? p.twin.residual_rms : (p.residual_rms != null ? p.residual_rms : null);
+      if (resVal != null) {
+        $('residual').textContent=fmt(resVal,2);
+        $('residual').className='kpi '+(resVal<1.5?'good':resVal<3.0?'warn':'bad');
+      }
       $('anomaly').textContent=`streaming • t=${fmt(p.time_min,0)} min • ${p.primary_fault}`;
 
       const rulVal = (p.rul && p.rul.rul_hours != null) ? p.rul.rul_hours : (p.rul_hours != null ? p.rul_hours : null);
@@ -3545,6 +3583,20 @@ async function startLiveStream(){
           $('pxRUL').className = rulVal < 10 ? 'bad' : rulVal < 50 ? 'warn' : 'good';
         }
         updateCockpitPrognostics(rulVal, lower, upper, p.health_state, p.risk_level, p.risk_score, p.maintenance_advisory);
+      } else {
+        const statusText = (p.rul && p.rul.status) ? p.rul.status.replace(/_/g, ' ') : 'STABLE / NOMINAL';
+        if ($('rul')) {
+          $('rul').textContent = '> 1200 h';
+          $('rul').className = 'kpi good';
+        }
+        if ($('rulSub')) {
+          $('rulSub').textContent = `Status: ${statusText} • Nominal Operation`;
+        }
+        if ($('pxRUL')) {
+          $('pxRUL').textContent = '> 1200 h';
+          $('pxRUL').className = 'good';
+        }
+        updateCockpitPrognostics(1200, 1080, 1320, p.health_state, p.risk_level, p.risk_score, p.maintenance_advisory);
       }
 
       if(p.uav){

@@ -172,3 +172,76 @@ def test_replay_health_progression_nominal():
         assert pt["health_state"] == "Normal"
         assert pt["health_index"] >= 85.0
         assert pt["risk_level"] == "LOW"
+
+
+def test_replay_rul_continuity_nominal():
+    """Verify that nominal flight RUL remains monotonic and never experiences false degradation collapse."""
+    payload = {
+        "fault": "none",
+        "severity": 0.0,
+        "steps": 15,
+        "operating_state": "CRUISE",
+        "altitude_ft": 3000,
+        "ambient_c": 25,
+        "duration_h": 1,
+    }
+    response = client.post("/api/replay", json=payload)
+    assert response.status_code == 200
+    timeline = response.json().get("timeline", [])
+    assert len(timeline) == 15
+
+    for i, pt in enumerate(timeline):
+        rul = pt.get("rul", {})
+        rul_h = pt.get("rul_hours")
+        assert rul_h is not None, f"Step {i} RUL was None"
+        assert rul_h > 1000.0, f"Step {i} RUL unexpectedly collapsed to {rul_h}"
+        assert rul.get("status") == "NOMINAL_HEALTH", f"Step {i} status was {rul.get('status')}"
+        if i > 0:
+            step_drop = timeline[i - 1]["rul_hours"] - rul_h
+            assert 0.0 <= step_drop < 1.0, f"Step {i} non-monotonic or abrupt drop: {step_drop}"
+
+
+def test_replay_rul_active_degradation_overheating():
+    """Verify that severe overheating triggers active degradation status and rapid RUL reduction."""
+    payload = {
+        "fault": "overheating",
+        "severity": 0.7,
+        "steps": 15,
+        "operating_state": "CRUISE",
+        "altitude_ft": 3000,
+        "ambient_c": 25,
+        "duration_h": 1,
+    }
+    response = client.post("/api/replay", json=payload)
+    assert response.status_code == 200
+    timeline = response.json().get("timeline", [])
+    assert len(timeline) == 15
+
+    # Initial steps are nominal
+    assert timeline[0]["rul_hours"] > 1000.0
+    # Fault develops after onset (step >= 5)
+    late_steps = timeline[10:]
+    assert any(pt.get("rul", {}).get("status") == "ACTIVE_DEGRADATION" for pt in late_steps)
+    assert timeline[-1]["rul_hours"] < 10.0
+
+
+def test_websocket_stream_twin_diagnostics_payload():
+    """Verify that WebSocket telemetry stream enriches points with digital twin and diagnostics data."""
+    with client.websocket_connect("/ws/telemetry") as ws:
+        ws.send_json({"steps": 12, "fault": "none", "playback_interval_s": 0.05})
+        start_msg = ws.receive_json()
+        assert start_msg.get("type") == "start"
+
+        telemetry_msg = ws.receive_json()
+        assert telemetry_msg.get("type") == "telemetry"
+        point = telemetry_msg.get("data", {})
+
+        assert "twin" in point, "twin missing from streaming telemetry point"
+        twin = point["twin"]
+        assert "residual_rms" in twin
+        assert "expected" in twin
+        assert "z_scores" in twin
+        assert "fault_candidates" in point
+        assert "sensor_health" in point
+        assert "maintenance_advisory" in point
+        assert "mission_risk" in point
